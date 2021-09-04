@@ -155,7 +155,6 @@ stretch_arm:
     - SPARS
     - SPARStwo
 stretch_gripper:
-  default_planner_config: RRTConnect
   planner_configs:
     - AnytimePathShortening
     - SBL
@@ -183,6 +182,34 @@ stretch_gripper:
     - SPARStwo
 stretch_head:
   default_planner_config: RRTConnect
+  planner_configs:
+    - AnytimePathShortening
+    - SBL
+    - EST
+    - LBKPIECE
+    - BKPIECE
+    - KPIECE
+    - RRT
+    - RRTConnect
+    - RRTstar
+    - TRRT
+    - PRM
+    - PRMstar
+    - FMT
+    - BFMT
+    - PDST
+    - STRIDE
+    - BiTRRT
+    - LBTRRT
+    - BiEST
+    - ProjEST
+    - LazyPRM
+    - LazyPRMstar
+    - SPARS
+    - SPARStwo
+  projection_evaluator: joints(joint_head_pan,joint_head_tilt)
+  longest_valid_segment_fraction: 0.005
+armgrip:
   planner_configs:
     - AnytimePathShortening
     - SBL
