@@ -1,15 +1,17 @@
 <launch>
 
-  <arg name="map_yaml"                doc="filepath to previously captured map (required)" />
-  <arg name="rviz"     default="true" doc="whether to show Rviz" />
+  <arg name="map_yaml"                                                   doc="filepath to previously captured map (required)" />
+  <arg name="rviz"                   default="true"                      doc="whether to show Rviz" />
+  <arg name="gazebo_world"           default="worlds/willowgarage.world" doc="the environment within which Stretch is loaded in Gazebo" />
+  <arg name="gazebo_gpu_lidar"       default="false"                     doc="whether to compute lidar with hardware acceleration (requires GPU)" />
+  <arg name="gazebo_visualize_lidar" default="false"                     doc="whether to visualize planar lidar within Gazebo" />
 
-  <!-- STRETCH DRIVER -->
-  <param name="/stretch_driver/broadcast_odom_tf" type="bool" value="true"/>
-  <param name="/stretch_driver/mode" type="string" value="navigation" />
-  <include file="$(find stretch_core)/launch/stretch_driver.launch" pass_all_args="true"/>
-
-  <!-- LASER RANGE FINDER -->
-  <include file="$(find stretch_core)/launch/rplidar.launch" />
+  <!-- GAZEBO SIMULATION -->
+  <include file="$(find stretch_gazebo)/launch/gazebo.launch">
+    <arg name="world" value="$(arg gazebo_world)" />
+    <arg name="visualize_lidar" value="$(arg gazebo_visualize_lidar)" />
+    <arg name="gpu_lidar" value="$(arg gazebo_gpu_lidar)" />
+  </include>
 
   <!-- MAP SERVER -->
   <node name="map_server" pkg="map_server" type="map_server" args="$(arg map_yaml)" />
@@ -24,7 +26,7 @@
     <rosparam file="$(find stretch_navigation)/config/local_costmap_params.yaml" command="load" />
     <rosparam file="$(find stretch_navigation)/config/global_costmap_params_withmap.yaml" command="load" />
     <rosparam file="$(find stretch_navigation)/config/base_local_planner_params.yaml" command="load" />
-    <remap from="/cmd_vel" to="/stretch/cmd_vel" />
+    <remap from="/cmd_vel" to="/stretch_diff_drive_controller/cmd_vel" />
   </node>
 
   <!-- VISUALIZE -->

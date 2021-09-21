@@ -17,7 +17,6 @@
         <joint name="joint_arm_l1"/>
         <joint name="joint_arm_l0"/>
         <joint name="joint_wrist_yaw"/>
-        <chain base_link="base_link" tip_link="link_grasp_center"/>
     </group>
     <group name="stretch_gripper">
         <link name="link_gripper"/>
@@ -26,13 +25,11 @@
         <link name="link_gripper_finger_right"/>
         <link name="link_gripper_fingertip_left"/>
         <link name="link_gripper_fingertip_right"/>
-        <joint name="joint_gripper_finger_right"/>
-        <joint name="joint_gripper_finger_left"/>
     </group>
     <group name="stretch_head">
+        <joint name="joint_head_pan" />
+        <joint name="joint_head_tilt" />
         <link name="camera_link"/>
-        <joint name="joint_head_pan"/>
-        <joint name="joint_head_tilt"/>
     </group>
     <!--GROUP STATES: Purpose: Define a named state for a particular group, in terms of joint values. This is useful to define states like 'folded arms'-->
     <group_state name="home" group="stretch_arm">
@@ -40,7 +37,7 @@
         <joint name="joint_arm_l1" value="0"/>
         <joint name="joint_arm_l2" value="0"/>
         <joint name="joint_arm_l3" value="0"/>
-        <joint name="joint_lift" value="0.3646"/>
+        <joint name="joint_lift" value="0"/>
         <joint name="joint_wrist_yaw" value="0"/>
     </group_state>
     <group_state name="extended" group="stretch_arm">
@@ -52,15 +49,15 @@
         <joint name="joint_wrist_yaw" value="4"/>
     </group_state>
     <group_state name="home" group="stretch_head">
-        <joint name="joint_head_pan" value="0"/>
-        <joint name="joint_head_tilt" value="0"/>
+        <joint name="joint_head_pan" value="0.0"/>
+        <joint name="joint_head_tilt" value="0.0"/>
     </group_state>
     <group_state name="low_head" group="stretch_head">
         <joint name="joint_head_pan" value="-3.5"/>
         <joint name="joint_head_tilt" value="-1.2"/>
     </group_state>
     <group_state name="high_head" group="stretch_head">
-        <joint name="joint_head_pan" value="1"/>
+        <joint name="joint_head_pan" value="1.0"/>
         <joint name="joint_head_tilt" value="0.5"/>
     </group_state>
     <group_state name="open" group="stretch_gripper">
@@ -68,16 +65,15 @@
         <joint name="joint_gripper_finger_right" value="0.3"/>
     </group_state>
     <group_state name="closed" group="stretch_gripper">
-        <joint name="joint_gripper_finger_left" value="0"/>
-        <joint name="joint_gripper_finger_right" value="0"/>
+        <joint name="joint_gripper_finger_left" value="0.0"/>
+        <joint name="joint_gripper_finger_right" value="0.0"/>
     </group_state>
     <!--END EFFECTOR: Purpose: Represent information about an end effector.-->
-    <end_effector name="stretch_gripper" parent_link="link_wrist_yaw" group="stretch_gripper" parent_group="stretch_arm"/>
+    <end_effector name="gripper" parent_link="link_grasp_center" group="stretch_arm"/>
     <!--VIRTUAL JOINT: Purpose: this element defines a virtual joint between a robot link and an external frame of reference (considered fixed with respect to the robot)-->
-    <virtual_joint name="world" type="fixed" parent_frame="world" child_link="base_link"/>
+    <!--virtual_joint name="position" type="floating" parent_frame="map" child_link="base_link"/-->
     <!--DISABLE COLLISIONS: By default it is assumed that any link of the robot could potentially come into collision with any other link in the robot. This tag disables collision checking between a specified pair of links. -->
     <disable_collisions link1="base_link" link2="camera_link" reason="Never"/>
-    <disable_collisions link1="base_link" link2="caster_link" reason="Adjacent"/>
     <disable_collisions link1="base_link" link2="laser" reason="Adjacent"/>
     <disable_collisions link1="base_link" link2="link_arm_l0" reason="Never"/>
     <disable_collisions link1="base_link" link2="link_arm_l1" reason="Never"/>
@@ -408,4 +404,5 @@
     <disable_collisions link1="link_right_wheel" link2="link_wrist_yaw" reason="Never"/>
     <disable_collisions link1="link_right_wheel" link2="respeaker_base" reason="Never"/>
     <disable_collisions link1="link_wrist_yaw" link2="respeaker_base" reason="Never"/>
+    <disable_collisions link1="caster_link" link2="base_link" reason="Adjacent"/>
 </robot>
