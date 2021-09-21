@@ -155,7 +155,6 @@ stretch_arm:
     - SPARS
     - SPARStwo
 stretch_gripper:
-  default_planner_config: RRTConnect
   planner_configs:
     - AnytimePathShortening
     - SBL
@@ -208,3 +207,5 @@ stretch_head:
     - LazyPRMstar
     - SPARS
     - SPARStwo
+  projection_evaluator: joints(joint_head_pan,joint_head_tilt)
+  longest_valid_segment_fraction: 0.005
