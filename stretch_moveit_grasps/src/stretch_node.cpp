@@ -85,12 +85,14 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "move_group_interface_tutorial");
   ros::NodeHandle node_handle;
   ros::AsyncSpinner spinner(1);
+
   spinner.start();
+
   moveit::planning_interface::MoveGroupInterface m(PLANNING_GROUP);
   move_group_interface = &m;
-  move_group_interface->getCurrentPose();
   move_group_interface->setGoalTolerance(0.01);
   move_group_interface->setPlanningTime(20.0);
+  
   ros::Subscriber sub = node_handle.subscribe("moveboi", 1000, stretchCallback);
   ros::waitForShutdown();
   return 0;
