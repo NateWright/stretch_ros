@@ -1,16 +1,19 @@
 {
-  "configurations": [
-    {
-      "browse": {
-        "databaseFilename": "",
-        "limitSymbolsToIncludedHeaders": true
-      },
-      "includePath": [
-        "/opt/ros/noetic/include/**",
-        "/usr/include/**"
-      ],
-      "name": "ROS"
-    }
-  ],
-  "version": 4
+    "configurations": [
+        {
+            "browse": {
+                "databaseFilename": "",
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "includePath": [
+                "/opt/ros/noetic/include/**",
+                "/usr/include/**",
+                "/home/csrobot/catkin_ws/src/**",
+                "/home/csrobot/catkin_ws/src/moveit_visual_tools/include",
+                "/home/csrobot/catkin_ws/src/moveit/moveit_ros/planning_interface/move_group_interface/include"
+            ],
+            "name": "ROS"
+        }
+    ],
+    "version": 4
 }

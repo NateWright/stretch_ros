@@ -1,3 +1,0 @@
-<launch>
-    <node pkg="stretch_moveit_grasps" type="moveit_cpp_tutorial" name="moveit_cpp_tutorial" output="screen"/>
-</launch>

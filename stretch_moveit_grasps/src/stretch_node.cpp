@@ -54,21 +54,22 @@ void stretchCallback(const geometry_msgs::Pose target_pose1){
   ros::AsyncSpinner s(1);
   s.start();
   // Get current pose
-  geometry_msgs::PoseStamped ps = move_group_interface->getCurrentPose();
-  geometry_msgs::Pose target_pose2 = ps.pose;
+  //geometry_msgs::PoseStamped ps = move_group_interface->getCurrentPose();
+  //geometry_msgs::Pose target_pose2 = ps.pose;
   moveit::planning_interface::MoveGroupInterface::Plan my_plan;
 
   // Debug Print
-  ROS_INFO("1: %f, %f, %f", target_pose1.position.x, target_pose1.position.y, target_pose1.position.z);
-  ROS_INFO("2b: %f, %f, %f", target_pose2.position.x, target_pose2.position.y, target_pose2.position.z);
+  //ROS_INFO("1: %f, %f, %f", target_pose1.position.x, target_pose1.position.y, target_pose1.position.z);
+  //ROS_INFO("2b: %f, %f, %f, %f", target_pose2.orientation.x, target_pose2.orientation.y, target_pose2.orientation.z, target_pose2.orientation.w);
 
-  target_pose2.position.z = target_pose2.position.z + target_pose1.position.z;
-  target_pose2.position.y = target_pose2.position.y - target_pose1.position.y;
+  //target_pose2.position.z = target_pose2.position.z + target_pose1.position.z;
+  //target_pose2.position.y = target_pose2.position.y - target_pose1.position.y;
+  //target_pose2.orientation = target_pose1.orientation;
 
-  ROS_INFO("2a: %f, %f, %f", target_pose2.position.x, target_pose2.position.y, target_pose2.position.z);
+  //ROS_INFO("2a: %f, %f, %f, %f", target_pose2.orientation.x, target_pose2.orientation.y, target_pose2.orientation.z, target_pose2.orientation.w);
 
   // Setting pose
-  move_group_interface->setPoseTarget(target_pose2);
+  move_group_interface->setPoseTarget(target_pose1);
   // Planning
   bool success = (move_group_interface->plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
   // Executing

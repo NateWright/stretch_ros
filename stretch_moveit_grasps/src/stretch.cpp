@@ -133,44 +133,52 @@ int main(int argc, char** argv)
   moveit::planning_interface::MoveGroupInterface::Plan my_plan;
   bool success;
   ros::Rate r(10);
-  while(1){
-    ps = move_group_interface.getCurrentPose();
-    target_pose1 = move_group_interface.getCurrentPose().pose;
-    target_pose1.position.z += 0.25;
-    //target_pose1.position.y -= 0.1;
-    move_group_interface.setPoseTarget(target_pose1);
-    move_group_interface.setGoalTolerance(0.01);
-    success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-    move_group_interface.execute(my_plan);
-    r.sleep();
-    ps = move_group_interface.getCurrentPose();
-    target_pose1 = move_group_interface.getCurrentPose().pose;
-    //target_pose1.position.z += 0.1;
-    target_pose1.position.y -= 0.25;
-    move_group_interface.setPoseTarget(target_pose1);
-    move_group_interface.setGoalTolerance(0.01);
-    success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-    move_group_interface.execute(my_plan);
-    r.sleep();
-    ps = move_group_interface.getCurrentPose();
-    target_pose1 = move_group_interface.getCurrentPose().pose;
-    target_pose1.position.z -= 0.25;
-    //target_pose1.position.y -= 0.1;
-    move_group_interface.setPoseTarget(target_pose1);
-    move_group_interface.setGoalTolerance(0.01);
-    success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-    move_group_interface.execute(my_plan);
-    r.sleep();
-    ps = move_group_interface.getCurrentPose();
-    target_pose1 = move_group_interface.getCurrentPose().pose;
-    //target_pose1.position.z += 0.1;
-    target_pose1.position.y += 0.25;
-    move_group_interface.setPoseTarget(target_pose1);
-    move_group_interface.setGoalTolerance(0.01);
-    success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
-    move_group_interface.execute(my_plan);
-    r.sleep();
-  }
+  // while(1){
+  //   ps = move_group_interface.getCurrentPose();
+  //   target_pose1 = move_group_interface.getCurrentPose().pose;
+  //   target_pose1.position.z += 0.25;
+  //   //target_pose1.position.y -= 0.1;
+  //   move_group_interface.setPoseTarget(target_pose1);
+  //   move_group_interface.setGoalTolerance(0.01);
+  //   success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+  //   move_group_interface.execute(my_plan);
+  //   r.sleep();
+  //   ps = move_group_interface.getCurrentPose();
+  //   target_pose1 = move_group_interface.getCurrentPose().pose;
+  //   //target_pose1.position.z += 0.1;
+  //   target_pose1.position.y -= 0.25;
+  //   move_group_interface.setPoseTarget(target_pose1);
+  //   move_group_interface.setGoalTolerance(0.01);
+  //   success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+  //   move_group_interface.execute(my_plan);
+  //   r.sleep();
+  //   ps = move_group_interface.getCurrentPose();
+  //   target_pose1 = move_group_interface.getCurrentPose().pose;
+  //   target_pose1.position.z -= 0.25;
+  //   //target_pose1.position.y -= 0.1;
+  //   move_group_interface.setPoseTarget(target_pose1);
+  //   move_group_interface.setGoalTolerance(0.01);
+  //   success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+  //   move_group_interface.execute(my_plan);
+  //   r.sleep();
+  //   ps = move_group_interface.getCurrentPose();
+  //   target_pose1 = move_group_interface.getCurrentPose().pose;
+  //   //target_pose1.position.z += 0.1;
+  //   target_pose1.position.y += 0.25;
+  //   move_group_interface.setPoseTarget(target_pose1);
+  //   move_group_interface.setGoalTolerance(0.01);
+  //   success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+  //   move_group_interface.execute(my_plan);
+  //   r.sleep();
+  // }
+
+  ps = move_group_interface.getCurrentPose();
+  target_pose1 = move_group_interface.getCurrentPose().pose;
+  target_pose1.orientation.z += 0.1;
+  move_group_interface.setPoseTarget(target_pose1);
+  move_group_interface.setGoalTolerance(0.01);
+  success = (move_group_interface.plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+  move_group_interface.execute(my_plan);
   
   // Now, we call the planner to compute the plan and visualize it.
   // Note that we are just planning, not asking move_group_interface
