@@ -44,12 +44,11 @@
 #include <moveit_msgs/CollisionObject.h>
 
 #include <moveit_visual_tools/moveit_visual_tools.h>
+#include <std_msgs/Bool.h>
 
-static const std::string PLANNING_GROUP = "stretch_arm";
+moveit::planning_interface::MoveGroupInterface *move_group_interface_arm, *move_group_interface_head;
 
-moveit::planning_interface::MoveGroupInterface *move_group_interface;
-
-void stretchCallback(const geometry_msgs::Pose target_pose1){
+void stretchArmCallback(const geometry_msgs::Pose target_pose1){
   // Start spinner to be able to access Current position
   ros::AsyncSpinner s(1);
   s.start();
@@ -69,11 +68,41 @@ void stretchCallback(const geometry_msgs::Pose target_pose1){
   //ROS_INFO("2a: %f, %f, %f, %f", target_pose2.orientation.x, target_pose2.orientation.y, target_pose2.orientation.z, target_pose2.orientation.w);
 
   // Setting pose
-  move_group_interface->setPoseTarget(target_pose1);
+  move_group_interface_arm->setPoseTarget(target_pose1);
   // Planning
-  bool success = (move_group_interface->plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+  bool success = (move_group_interface_arm->plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
   // Executing
-  move_group_interface->execute(my_plan);
+  move_group_interface_arm->execute(my_plan);
+  s.stop();
+}
+/*
+  *b  
+*/
+void stretchHeadCallback(const std_msgs::Bool *b){
+  // Start spinner to be able to access Current position
+  ros::AsyncSpinner s(1);
+  s.start();
+  // Get current pose
+  geometry_msgs::PoseStamped ps = move_group_interface_head->getCurrentPose();
+  geometry_msgs::Pose target_pose2 = ps.pose;
+  moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+
+  // Debug Print
+  //ROS_INFO("1: %f, %f, %f", target_pose1.position.x, target_pose1.position.y, target_pose1.position.z);
+  //ROS_INFO("2b: %f, %f, %f, %f", target_pose2.orientation.x, target_pose2.orientation.y, target_pose2.orientation.z, target_pose2.orientation.w);
+
+  //target_pose2.position.z = target_pose2.position.z + target_pose1.position.z;
+  //target_pose2.position.y = target_pose2.position.y - target_pose1.position.y;
+  //target_pose2.orientation = target_pose1.orientation;
+
+  //ROS_INFO("2a: %f, %f, %f, %f", target_pose2.orientation.x, target_pose2.orientation.y, target_pose2.orientation.z, target_pose2.orientation.w);
+
+  // Setting pose
+  move_group_interface_head->setPoseTarget(target_pose2);
+  // Planning
+  bool success = (move_group_interface_head->plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
+  // Executing
+  move_group_interface_head->execute(my_plan);
   s.stop();
 }
 
@@ -85,15 +114,21 @@ int main(int argc, char** argv)
   ros::init(argc, argv, "move_group_interface_tutorial");
   ros::NodeHandle node_handle;
   ros::AsyncSpinner spinner(1);
-
+  
   spinner.start();
 
-  moveit::planning_interface::MoveGroupInterface m(PLANNING_GROUP);
-  move_group_interface = &m;
-  move_group_interface->setGoalTolerance(0.01);
-  move_group_interface->setPlanningTime(20.0);
-  
-  ros::Subscriber sub = node_handle.subscribe("moveboi", 1000, stretchCallback);
+  moveit::planning_interface::MoveGroupInterface m_arm("stretch_arm");
+  move_group_interface_arm = &m_arm;
+  move_group_interface_arm->setGoalTolerance(0.01);
+  move_group_interface_arm->setPlanningTime(20.0);
+
+  moveit::planning_interface::MoveGroupInterface m_head("stretch_head");
+  move_group_interface_head = &m_head;
+  move_group_interface_head->setGoalTolerance(0.01);
+  move_group_interface_head->setPlanningTime(20.0);
+
+  ros::Subscriber armSub = node_handle.subscribe("move_arm", 1000, stretchArmCallback);
+  ros::Subscriber headSub = node_handle.subscribe("move_head", 1000, stretchHeadCallback);
   ros::waitForShutdown();
   return 0;
 }
