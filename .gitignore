@@ -20,10 +20,10 @@ stretch_funmap/src/stretch_funmap/cython_min_cost_path.c
 
 # vscode
 .vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
+.vscode/settings.json
+.vscode/tasks.json
+.vscode/launch.json
+.vscode/extensions.json
 *.code-workspace
 
 # Local History for Visual Studio Code
