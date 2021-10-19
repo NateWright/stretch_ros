@@ -48,6 +48,7 @@
 
 moveit::planning_interface::MoveGroupInterface *move_group_interface_arm, *move_group_interface_head;
 const std::string HEAD = "stretch_head", ARM = "stretch_arm";
+const double DEG5 = 0.0872665;
 
 void stretchArmCallback(const geometry_msgs::Pose target_pose1){
   // Start spinner to be able to access Current position
@@ -92,6 +93,8 @@ void stretchHeadCallback(const stretch_moveit_grasps::stretch_move_bool msg){
   std::vector<double> joint_group_positions;
   current_state->copyJointGroupPositions(joint_model_group, joint_group_positions);
 
+  double step = (msg.step == 0) ? DEG5 : msg.step * 0.01745;
+
   // Pan Head joint_group_positions.at(0) positive left | negative right
   // Tilt head joint_group_positions.at(1)  positive up | negative down
   if(joint_group_positions.size() == 2){
@@ -99,17 +102,16 @@ void stretchHeadCallback(const stretch_moveit_grasps::stretch_move_bool msg){
       joint_group_positions.at(0) = 0;
       joint_group_positions.at(1) = 0;
     }else{
-      const double deg5 = 0.0872665;
       if(msg.a){
-        joint_group_positions.at(0) += deg5;
+        joint_group_positions.at(0) += step;
       }else if(msg.b){
-        joint_group_positions.at(0) += -deg5;
+        joint_group_positions.at(0) -= step;
       }
 
       if(msg.c){
-        joint_group_positions.at(1) += deg5;
+        joint_group_positions.at(1) += step;
       }else if(msg.d){
-        joint_group_positions.at(1) += -deg5;
+        joint_group_positions.at(1) -= step;
       }
     }
   }
