@@ -44,9 +44,10 @@
 #include <moveit_msgs/CollisionObject.h>
 
 #include <moveit_visual_tools/moveit_visual_tools.h>
-#include <std_msgs/Bool.h>
+#include <stretch_moveit_grasps/stretch_move_bool.h>
 
 moveit::planning_interface::MoveGroupInterface *move_group_interface_arm, *move_group_interface_head;
+const std::string HEAD = "stretch_head", ARM = "stretch_arm";
 
 void stretchArmCallback(const geometry_msgs::Pose target_pose1){
   // Start spinner to be able to access Current position
@@ -78,27 +79,44 @@ void stretchArmCallback(const geometry_msgs::Pose target_pose1){
 /*
   *b  
 */
-void stretchHeadCallback(const std_msgs::Bool *b){
+void stretchHeadCallback(const stretch_moveit_grasps::stretch_move_bool msg){
   // Start spinner to be able to access Current position
   ros::AsyncSpinner s(1);
   s.start();
-  // Get current pose
-  geometry_msgs::PoseStamped ps = move_group_interface_head->getCurrentPose();
-  geometry_msgs::Pose target_pose2 = ps.pose;
+  // 
   moveit::planning_interface::MoveGroupInterface::Plan my_plan;
+  // Get current state
+  moveit::core::RobotStatePtr current_state = move_group_interface_head->getCurrentState();
+  // Get joint values for the group
+  const moveit::core::JointModelGroup* joint_model_group = move_group_interface_head->getCurrentState()->getJointModelGroup(HEAD);
+  std::vector<double> joint_group_positions;
+  current_state->copyJointGroupPositions(joint_model_group, joint_group_positions);
 
-  // Debug Print
-  //ROS_INFO("1: %f, %f, %f", target_pose1.position.x, target_pose1.position.y, target_pose1.position.z);
-  //ROS_INFO("2b: %f, %f, %f, %f", target_pose2.orientation.x, target_pose2.orientation.y, target_pose2.orientation.z, target_pose2.orientation.w);
+  // Pan Head joint_group_positions.at(0) positive left | negative right
+  // Tilt head joint_group_positions.at(1)  positive up | negative down
+  if(joint_group_positions.size() == 2){
+    if(msg.home){
+      joint_group_positions.at(0) = 0;
+      joint_group_positions.at(1) = 0;
+    }else{
+      const double deg5 = 0.0872665;
+      if(msg.a){
+        joint_group_positions.at(0) += deg5;
+      }else if(msg.b){
+        joint_group_positions.at(0) += -deg5;
+      }
 
-  //target_pose2.position.z = target_pose2.position.z + target_pose1.position.z;
-  //target_pose2.position.y = target_pose2.position.y - target_pose1.position.y;
-  //target_pose2.orientation = target_pose1.orientation;
-
-  //ROS_INFO("2a: %f, %f, %f, %f", target_pose2.orientation.x, target_pose2.orientation.y, target_pose2.orientation.z, target_pose2.orientation.w);
+      if(msg.c){
+        joint_group_positions.at(1) += deg5;
+      }else if(msg.d){
+        joint_group_positions.at(1) += -deg5;
+      }
+    }
+  }
+  
 
   // Setting pose
-  move_group_interface_head->setPoseTarget(target_pose2);
+  move_group_interface_head->setJointValueTarget(joint_group_positions);
   // Planning
   bool success = (move_group_interface_head->plan(my_plan) == moveit::planning_interface::MoveItErrorCode::SUCCESS);
   // Executing
@@ -117,12 +135,12 @@ int main(int argc, char** argv)
   
   spinner.start();
 
-  moveit::planning_interface::MoveGroupInterface m_arm("stretch_arm");
+  moveit::planning_interface::MoveGroupInterface m_arm(ARM);
   move_group_interface_arm = &m_arm;
   move_group_interface_arm->setGoalTolerance(0.01);
   move_group_interface_arm->setPlanningTime(20.0);
 
-  moveit::planning_interface::MoveGroupInterface m_head("stretch_head");
+  moveit::planning_interface::MoveGroupInterface m_head(HEAD);
   move_group_interface_head = &m_head;
   move_group_interface_head->setGoalTolerance(0.01);
   move_group_interface_head->setPlanningTime(20.0);
