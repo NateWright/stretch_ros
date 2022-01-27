@@ -1,5 +1,7 @@
 #! /usr/bin/env python3
 
+import importlib
+
 import rospy
 import actionlib
 from control_msgs.msg import FollowJointTrajectoryAction
@@ -9,7 +11,7 @@ from trajectory_msgs.msg import JointTrajectoryPoint
 
 from command_groups import HeadPanCommandGroup, HeadTiltCommandGroup, \
                            WristYawCommandGroup, GripperCommandGroup, \
-                           TelescopingCommandGroup, LiftCommandGroup, \
+                           ArmCommandGroup, LiftCommandGroup, \
                            MobileBaseCommandGroup
 
 
@@ -24,35 +26,27 @@ class JointTrajectoryAction:
         self.feedback = FollowJointTrajectoryFeedback()
         self.result = FollowJointTrajectoryResult()
 
-        r = self.node.robot
-        head_pan_range_ticks = r.head.motors['head_pan'].params['range_t']
-        head_pan_range_rad = (r.head.motors['head_pan'].ticks_to_world_rad(head_pan_range_ticks[1]),
-                              r.head.motors['head_pan'].ticks_to_world_rad(head_pan_range_ticks[0]))
-        head_tilt_range_ticks = r.head.motors['head_tilt'].params['range_t']
-        head_tilt_range_rad = (r.head.motors['head_tilt'].ticks_to_world_rad(head_tilt_range_ticks[1]),
-                               r.head.motors['head_tilt'].ticks_to_world_rad(head_tilt_range_ticks[0]))
-        wrist_yaw_range_ticks = r.end_of_arm.motors['wrist_yaw'].params['range_t']
-        wrist_yaw_range_rad = (r.end_of_arm.motors['wrist_yaw'].ticks_to_world_rad(wrist_yaw_range_ticks[1]),
-                               r.end_of_arm.motors['wrist_yaw'].ticks_to_world_rad(wrist_yaw_range_ticks[0]))
-        gripper_range_ticks = r.end_of_arm.motors['stretch_gripper'].params['range_t']
-        gripper_range_rad = (r.end_of_arm.motors['stretch_gripper'].ticks_to_world_rad(gripper_range_ticks[0]),
-                             r.end_of_arm.motors['stretch_gripper'].ticks_to_world_rad(gripper_range_ticks[1]))
-        gripper_range_robotis = (r.end_of_arm.motors['stretch_gripper'].world_rad_to_pct(gripper_range_rad[0]),
-                                 r.end_of_arm.motors['stretch_gripper'].world_rad_to_pct(gripper_range_rad[1]))
+        self.head_pan_cg = HeadPanCommandGroup(node=self.node) \
+            if 'head_pan' in self.node.robot.head.joints else None
+        self.head_tilt_cg = HeadTiltCommandGroup(node=self.node) \
+            if 'head_tilt' in self.node.robot.head.joints else None
+        self.wrist_yaw_cg = WristYawCommandGroup(node=self.node) \
+            if 'wrist_yaw' in self.node.robot.end_of_arm.joints else None
+        self.gripper_cg = GripperCommandGroup(node=self.node) \
+            if 'stretch_gripper' in self.node.robot.end_of_arm.joints else None
+        self.arm_cg = ArmCommandGroup(node=self.node)
+        self.lift_cg = LiftCommandGroup(node=self.node)
+        self.mobile_base_cg = MobileBaseCommandGroup(node=self.node)
+        self.command_groups = [self.arm_cg, self.lift_cg, self.mobile_base_cg, self.head_pan_cg,
+                               self.head_tilt_cg, self.wrist_yaw_cg, self.gripper_cg]
+        self.command_groups = [cg for cg in self.command_groups if cg is not None]
 
-        self.head_pan_cg = HeadPanCommandGroup(head_pan_range_rad,
-                                               self.node.head_pan_calibrated_offset_rad,
-                                               self.node.head_pan_calibrated_looked_left_offset_rad)
-        self.head_tilt_cg = HeadTiltCommandGroup(head_tilt_range_rad,
-                                                 self.node.head_tilt_calibrated_offset_rad,
-                                                 self.node.head_tilt_calibrated_looking_up_offset_rad,
-                                                 self.node.head_tilt_backlash_transition_angle_rad)
-        self.wrist_yaw_cg = WristYawCommandGroup(wrist_yaw_range_rad)
-        self.gripper_cg = GripperCommandGroup(gripper_range_robotis)
-        self.telescoping_cg = TelescopingCommandGroup(tuple(r.arm.params['range_m']),
-                                                      self.node.wrist_extension_calibrated_retracted_offset_m)
-        self.lift_cg = LiftCommandGroup(tuple(r.lift.params['range_m']))
-        self.mobile_base_cg = MobileBaseCommandGroup(virtual_range_m=(-0.5, 0.5))
+        for joint in self.node.robot.end_of_arm.joints:
+            module_name = self.node.robot.end_of_arm.params['devices'][joint].get('ros_py_module_name')
+            class_name = self.node.robot.end_of_arm.params['devices'][joint].get('ros_py_class_name')
+            if module_name and class_name:
+                endofarm_cg = getattr(importlib.import_module(module_name), class_name)(node=self.node)
+                self.command_groups.append(endofarm_cg)
 
     def execute_cb(self, goal):
         with self.node.robot_stop_lock:
@@ -67,11 +61,9 @@ class JointTrajectoryAction:
 
         ###################################################
         # Decide what to do based on the commanded joints.
-        command_groups = [self.telescoping_cg, self.lift_cg, self.mobile_base_cg, self.head_pan_cg,
-                          self.head_tilt_cg, self.wrist_yaw_cg, self.gripper_cg]
         updates = [c.update(commanded_joint_names, self.invalid_joints_callback,
                    robot_mode=self.node.robot_mode)
-                   for c in command_groups]
+                   for c in self.command_groups]
         if not all(updates):
             # The joint names violated at least one of the command
             # group's requirements. The command group should have
@@ -79,7 +71,7 @@ class JointTrajectoryAction:
             self.node.robot_mode_rwlock.release_read()
             return
 
-        num_valid_points = sum([c.get_num_valid_commands() for c in command_groups])
+        num_valid_points = sum([c.get_num_valid_commands() for c in self.command_groups])
         if num_valid_points <= 0:
             err_str = ("Received a command without any valid joint names."
                        "Received joint names = {0}").format(commanded_joint_names)
@@ -100,13 +92,8 @@ class JointTrajectoryAction:
             rospy.logdebug(("{0} joint_traj action: "
                             "target point #{1} = <{2}>").format(self.node.node_name, pointi, point))
 
-            #valid_goals = [c.set_goal(point, self.invalid_goal_callback, self.node.fail_out_of_range_goal,
-            #                          manipulation_origin=self.node.mobile_base_manipulation_origin)
-            #               for c in command_groups]
-
             valid_goals = [c.set_goal(point, self.invalid_goal_callback, self.node.fail_out_of_range_goal)
-                           for c in command_groups]
-            
+                           for c in self.command_groups]
             if not all(valid_goals):
                 # At least one of the goals violated the requirements
                 # of a command group. Any violations should have been
@@ -115,11 +102,11 @@ class JointTrajectoryAction:
                 return
 
             robot_status = self.node.robot.get_status() # uses lock held by robot
-            [c.init_execution(self.node.robot, robot_status, backlash_state=self.node.backlash_state)
-             for c in command_groups]
+            for c in self.command_groups:
+                c.init_execution(self.node.robot, robot_status)
             self.node.robot.push_command()
 
-            goals_reached = [c.goal_reached() for c in command_groups]
+            goals_reached = [c.goal_reached() for c in self.command_groups]
             update_rate = rospy.Rate(15.0)
             goal_start_time = rospy.Time.now()
 
@@ -143,9 +130,8 @@ class JointTrajectoryAction:
                         return
 
                 robot_status = self.node.robot.get_status()
-                named_errors = [c.update_execution(robot_status, success_callback=self.success_callback,
-                                                   backlash_state=self.node.backlash_state)
-                                for c in command_groups]
+                named_errors = [c.update_execution(robot_status, success_callback=self.success_callback)
+                                for c in self.command_groups]
                 # It's not clear how this could ever happen. The
                 # groups in command_groups.py seem to return
                 # (self.name, self.error) or None, rather than True.
@@ -154,7 +140,7 @@ class JointTrajectoryAction:
                     return
 
                 self.feedback_callback(commanded_joint_names, point, named_errors)
-                goals_reached = [c.goal_reached() for c in command_groups]
+                goals_reached = [c.goal_reached() for c in self.command_groups]
                 update_rate.sleep()
 
             rospy.logdebug("{0} joint_traj action: Achieved target point.".format(self.node.node_name))

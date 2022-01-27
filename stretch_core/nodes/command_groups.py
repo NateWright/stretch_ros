@@ -2,236 +2,120 @@
 
 import numpy as np
 import hello_helpers.hello_misc as hm
+from hello_helpers.simple_command_group import SimpleCommandGroup
 from hello_helpers.gripper_conversion import GripperConversion
 
 
-class SimpleCommandGroup:
-    def __init__(self, joint_name, joint_range, acceptable_joint_error=0.015):
-        """Simple command group to extend
-
-        Attributes
-        ----------
-        name: str
-            joint name
-        range: tuple(float)
-            acceptable joint bounds
-        active: bool
-            whether joint is active
-        index: int
-            index of joint's goal in point
-        goal: dict
-            components of the goal
-        error: float
-            the error between actual and desired
-        acceptable_joint_error: float
-            how close to zero the error must reach
-        """
-        self.name = joint_name
-        self.range = joint_range
-        self.active = False
-        self.index = None
-        self.goal = {"position": None}
-        self.error = None
-        self.acceptable_joint_error = acceptable_joint_error
-
-    def get_num_valid_commands(self):
-        """Returns number of active joints in the group
-
-        Returns
-        -------
-        int
-            the number of active joints within this group
-        """
-        if self.active:
-            return 1
-
-        return 0
-
-    def update(self, commanded_joint_names, invalid_joints_callback, **kwargs):
-        """Activates joints in the group
-
-        Checks commanded joints to activate the command
-        group and validates joints used correctly.
-
-        Parameters
-        ----------
-        commanded_joint_names: list(str)
-            list of commanded joints in the trajectory
-        invalid_joints_callback: func
-            error callback for misuse of joints in trajectory
-
-        Returns
-        -------
-        bool
-            False if commanded joints invalid, else True
-        """
-        self.active = False
-        self.index = None
-        if self.name in commanded_joint_names:
-            self.index = commanded_joint_names.index(self.name)
-            self.active = True
-
-        return True
-
-    def set_goal(self, point, invalid_goal_callback, fail_out_of_range_goal, **kwargs):
-        """Sets goal for the joint group
-
-        Sets and validates the goal point for the joints
-        in this command group.
-
-        Parameters
-        ----------
-        point: trajectory_msgs.JointTrajectoryPoint
-            the target point for all joints
-        invalid_goal_callback: func
-            error callback for invalid goal
-        fail_out_of_range_goal: bool
-            whether to bound out-of-range goals to range or fail
-
-        Returns
-        -------
-        bool
-            False if commanded goal invalid, else True
-        """
-        self.goal = {"position": None, "velocity": None, "acceleration": None, "contact_threshold": None}
-        if self.active:
-            goal_pos = point.positions[self.index] if len(point.positions) > self.index else None
-            if goal_pos is None:
-                err_str = ("Received goal point with positions array length={0}. "
-                           "This joint ({1})'s index is {2}. Length of array must cover all joints listed "
-                           "in commanded_joint_names.").format(len(point.positions), self.name, self.index)
-                invalid_goal_callback(err_str)
-                return False
-
-            self.goal['position'] = hm.bound_ros_command(self.range, goal_pos, fail_out_of_range_goal)
-            self.goal['velocity'] = point.velocities[self.index] if len(point.velocities) > self.index else None
-            self.goal['acceleration'] = point.accelerations[self.index] if len(point.accelerations) > self.index else None
-            self.goal['contact_threshold'] = point.effort[self.index] if len(point.effort) > self.index else None
-            if self.goal['position'] is None:
-                err_str = ("Received {0} goal point that is out of bounds. "
-                            "Range = {1}, but goal point = {2}.").format(self.name, self.range, goal_pos)
-                invalid_goal_callback(err_str)
-                return False
-
-        return True
-
-    def init_execution(self, robot, robot_status, **kwargs):
-        """Starts execution of the point
-
-        Uses Stretch's Python API to begin moving to the
-        target point.
-
-        Parameters
-        ----------
-        robot: stretch_body.robot.Robot
-            top-level interface to Python API
-        robot_status: dict
-            robot's current status
-        """
-        raise NotImplementedError
-
-    def update_execution(self, robot_status, **kwargs):
-        """Monitors progress of joint group
-
-        Checks against robot's status to track progress
-        towards the target point.
-
-        This method must set self.error.
-
-        Parameters
-        ----------
-        robot_status: dict
-            robot's current status
-
-        Returns
-        -------
-        float/None
-            error value if group active, else None
-        """
-        raise NotImplementedError
-
-    def goal_reached(self):
-        """Returns whether reached target point
-
-        Returns
-        -------
-        bool
-            if active, whether reached target point, else True
-        """
-        if self.active:
-            return (abs(self.error) < self.acceptable_joint_error)
-
-        return True
-
-
 class HeadPanCommandGroup(SimpleCommandGroup):
-    def __init__(self, range_rad, head_pan_calibrated_offset, head_pan_calibrated_looked_left_offset):
-        SimpleCommandGroup.__init__(self, 'joint_head_pan', range_rad, acceptable_joint_error=0.15)
-        self.head_pan_calibrated_offset = head_pan_calibrated_offset
-        self.head_pan_calibrated_looked_left_offset = head_pan_calibrated_looked_left_offset
+    def __init__(self, range_rad=None, calibrated_offset_rad=None, calibrated_looked_left_offset_rad=None, node=None):
+        SimpleCommandGroup.__init__(self, 'joint_head_pan', range_rad, acceptable_joint_error=0.15, node=node)
+        if calibrated_offset_rad is None:
+            calibrated_offset_rad = node.controller_parameters['pan_angle_offset']
+        self.calibrated_offset_rad = calibrated_offset_rad
+        if calibrated_looked_left_offset_rad is None:
+            calibrated_looked_left_offset_rad = node.controller_parameters['pan_looked_left_offset']
+        self.looked_left_offset_rad = calibrated_looked_left_offset_rad
+        self.looked_left = False
+
+    def update_joint_range(self, joint_range, node=None):
+        if joint_range is not None:
+            self.range = joint_range
+            return
+
+        if node is None:
+            return # cannot calculate range without Stretch Body handle
+        range_ticks = node.robot.head.motors['head_pan'].params['range_t']
+        range_rad = (node.robot.head.motors['head_pan'].ticks_to_world_rad(range_ticks[1]),
+                     node.robot.head.motors['head_pan'].ticks_to_world_rad(range_ticks[0]))
+        self.range = range_rad
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
-            _, pan_error = self.update_execution(robot_status, backlash_state=kwargs['backlash_state'])
+            _, pan_error = self.update_execution(robot_status)
             robot.head.move_by('head_pan', pan_error, v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
-            if pan_error > 0.0:
-                kwargs['backlash_state']['head_pan_looked_left'] = True
-            else:
-                kwargs['backlash_state']['head_pan_looked_left'] = False
+            self.looked_left = pan_error > 0.0
 
     def update_execution(self, robot_status, **kwargs):
         self.error = None
-        backlash_state = kwargs['backlash_state']
         if self.active:
-            if backlash_state['head_pan_looked_left']:
-                pan_backlash_correction = self.head_pan_calibrated_looked_left_offset
-            else:
-                pan_backlash_correction = 0.0
-            pan_current = robot_status['head']['head_pan']['pos'] + \
-                          self.head_pan_calibrated_offset + pan_backlash_correction
+            pan_backlash_correction = self.looked_left_offset_rad if self.looked_left else 0.0
+            pan_current = robot_status['head']['head_pan']['pos'] + self.calibrated_offset_rad + pan_backlash_correction
             self.error = self.goal['position'] - pan_current
             return self.name, self.error
 
         return None
 
+    def joint_state(self, robot_status, **kwargs):
+        pan_status = robot_status['head']['head_pan']
+        pan_backlash_correction = self.looked_left_offset_rad if self.looked_left else 0.0
+        pos = pan_status['pos'] + self.calibrated_offset_rad + pan_backlash_correction
+        return (pos, pan_status['vel'], pan_status['effort'])
+
 
 class HeadTiltCommandGroup(SimpleCommandGroup):
-    def __init__(self, range_rad, head_tilt_calibrated_offset,
-                 head_tilt_calibrated_looking_up_offset,
-                 head_tilt_backlash_transition_angle):
-        SimpleCommandGroup.__init__(self, 'joint_head_tilt', range_rad, acceptable_joint_error=0.52)
-        self.head_tilt_calibrated_offset = head_tilt_calibrated_offset
-        self.head_tilt_calibrated_looking_up_offset = head_tilt_calibrated_looking_up_offset
-        self.head_tilt_backlash_transition_angle = head_tilt_backlash_transition_angle
+    def __init__(self, range_rad=None, calibrated_offset_rad=None, calibrated_looking_up_offset_rad=None, backlash_transition_angle_rad=None, node=None):
+        SimpleCommandGroup.__init__(self, 'joint_head_tilt', range_rad, acceptable_joint_error=0.52, node=node)
+        if calibrated_offset_rad is None:
+            calibrated_offset_rad = node.controller_parameters['tilt_angle_offset']
+        self.calibrated_offset_rad = calibrated_offset_rad
+        if calibrated_looking_up_offset_rad is None:
+            calibrated_looking_up_offset_rad = node.controller_parameters['tilt_looking_up_offset']
+        self.looking_up_offset_rad = calibrated_looking_up_offset_rad
+        if backlash_transition_angle_rad is None:
+            backlash_transition_angle_rad = node.controller_parameters['tilt_angle_backlash_transition']
+        self.backlash_transition_angle_rad = backlash_transition_angle_rad
+        self.looking_up = False
+
+    def update_joint_range(self, joint_range, node=None):
+        if joint_range is not None:
+            self.range = joint_range
+            return
+
+        if node is None:
+            return # cannot calculate range without Stretch Body handle
+        range_ticks = node.robot.head.motors['head_tilt'].params['range_t']
+        range_rad = (node.robot.head.motors['head_tilt'].ticks_to_world_rad(range_ticks[1]),
+                     node.robot.head.motors['head_tilt'].ticks_to_world_rad(range_ticks[0]))
+        self.range = range_rad
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
-            _, tilt_error = self.update_execution(robot_status, backlash_state=kwargs['backlash_state'])
+            _, tilt_error = self.update_execution(robot_status)
             robot.head.move_by('head_tilt', tilt_error, v_r=self.goal['velocity'], a_r=self.goal['acceleration'])
-            if self.goal['position'] > (self.head_tilt_backlash_transition_angle + self.head_tilt_calibrated_offset):
-                kwargs['backlash_state']['head_tilt_looking_up'] = True
-            else:
-                kwargs['backlash_state']['head_tilt_looking_up'] = False
+            self.looking_up = self.goal['position'] > (self.backlash_transition_angle_rad + self.calibrated_offset_rad)
 
     def update_execution(self, robot_status, **kwargs):
         self.error = None
-        backlash_state = kwargs['backlash_state']
         if self.active:
-            if backlash_state['head_tilt_looking_up']:
-                tilt_backlash_correction = self.head_tilt_calibrated_looking_up_offset
-            else:
-                tilt_backlash_correction = 0.0
-            tilt_current = robot_status['head']['head_tilt']['pos'] + \
-                           self.head_tilt_calibrated_offset + tilt_backlash_correction
+            tilt_backlash_correction = self.looking_up_offset_rad if self.looking_up else 0.0
+            tilt_current = robot_status['head']['head_tilt']['pos'] + self.calibrated_offset_rad + tilt_backlash_correction
             self.error = self.goal['position'] - tilt_current
             return self.name, self.error
 
         return None
 
+    def joint_state(self, robot_status, **kwargs):
+        tilt_status = robot_status['head']['head_tilt']
+        tilt_backlash_correction = self.looking_up_offset_rad if self.looking_up else 0.0
+        pos = tilt_status['pos'] + self.calibrated_offset_rad + tilt_backlash_correction
+        return (pos, tilt_status['vel'], tilt_status['effort'])
+
 
 class WristYawCommandGroup(SimpleCommandGroup):
-    def __init__(self, range_rad):
-        SimpleCommandGroup.__init__(self, 'joint_wrist_yaw', range_rad)
+    def __init__(self, range_rad=None, node=None):
+        SimpleCommandGroup.__init__(self, 'joint_wrist_yaw', range_rad, node=node)
+
+    def update_joint_range(self, joint_range, node=None):
+        if joint_range is not None:
+            self.range = joint_range
+            return
+
+        if node is None:
+            return # cannot calculate range without Stretch Body handle
+        range_ticks = node.robot.end_of_arm.motors['wrist_yaw'].params['range_t']
+        range_rad = (node.robot.end_of_arm.motors['wrist_yaw'].ticks_to_world_rad(range_ticks[1]),
+                     node.robot.end_of_arm.motors['wrist_yaw'].ticks_to_world_rad(range_ticks[0]))
+        self.range = range_rad
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
@@ -248,12 +132,35 @@ class WristYawCommandGroup(SimpleCommandGroup):
 
         return None
 
+    def joint_state(self, robot_status, **kwargs):
+        yaw_status = robot_status['end_of_arm']['wrist_yaw']
+        return (yaw_status['pos'], yaw_status['vel'], yaw_status['effort'])
+
 
 class GripperCommandGroup(SimpleCommandGroup):
-    def __init__(self, range_robotis):
-        SimpleCommandGroup.__init__(self, None, None, acceptable_joint_error=1.0)
-        self.gripper_joint_names = ['joint_gripper_finger_left', 'joint_gripper_finger_right', 'gripper_aperture']
+    def __init__(self, range_robotis=None, node=None):
         self.gripper_conversion = GripperConversion()
+        SimpleCommandGroup.__init__(self, 'joint_gripper_finger_left', range_robotis, acceptable_joint_error=1.0, node=node)
+        self.gripper_joint_names = ['joint_gripper_finger_left', 'joint_gripper_finger_right', 'gripper_aperture']
+        self.update_joint_range(range_robotis)
+
+    def update_joint_range(self, joint_range, node=None):
+        if joint_range is not None:
+            self.range = joint_range
+            self.range_aperture_m = (self.gripper_conversion.robotis_to_aperture(joint_range[0]),
+                                    self.gripper_conversion.robotis_to_aperture(joint_range[1]))
+            self.range_finger_rad = (self.gripper_conversion.robotis_to_finger(joint_range[0]),
+                                    self.gripper_conversion.robotis_to_finger(joint_range[1]))
+            return
+
+        if node is None:
+            return # cannot calculate range without Stretch Body handle
+        range_ticks = node.robot.end_of_arm.motors['stretch_gripper'].params['range_t']
+        range_rad = (node.robot.end_of_arm.motors['stretch_gripper'].ticks_to_world_rad(range_ticks[0]),
+                     node.robot.end_of_arm.motors['stretch_gripper'].ticks_to_world_rad(range_ticks[1]))
+        range_robotis = (node.robot.end_of_arm.motors['stretch_gripper'].world_rad_to_pct(range_rad[0]),
+                         node.robot.end_of_arm.motors['stretch_gripper'].world_rad_to_pct(range_rad[1]))
+        self.range = range_robotis
         self.range_aperture_m = (self.gripper_conversion.robotis_to_aperture(range_robotis[0]),
                                  self.gripper_conversion.robotis_to_aperture(range_robotis[1]))
         self.range_finger_rad = (self.gripper_conversion.robotis_to_finger(range_robotis[0]),
@@ -328,13 +235,35 @@ class GripperCommandGroup(SimpleCommandGroup):
 
         return None
 
+    def joint_state(self, robot_status, **kwargs):
+        joint_name = kwargs['joint_name'] if 'joint_name' in kwargs.keys() else self.name
+        gripper_status = robot_status['end_of_arm']['stretch_gripper']
+        pos_aperture_m, pos_rad, effort, vel = self.gripper_conversion.status_to_all(gripper_status)
+        if (joint_name == 'gripper_aperture'):
+            return (pos_aperture_m, vel, effort)
+        elif (joint_name == 'joint_gripper_finger_left') or (joint_name == 'joint_gripper_finger_right'):
+            return (pos_rad, vel, effort)
 
-class TelescopingCommandGroup(SimpleCommandGroup):
-    def __init__(self, range_m, wrist_extension_calibrated_retracted_offset):
-        SimpleCommandGroup.__init__(self, 'wrist_extension', range_m, acceptable_joint_error=0.008)
-        self.wrist_extension_calibrated_retracted_offset = wrist_extension_calibrated_retracted_offset
+
+class ArmCommandGroup(SimpleCommandGroup):
+    def __init__(self, range_m=None, calibrated_retracted_offset_m=None, node=None):
+        SimpleCommandGroup.__init__(self, 'wrist_extension', range_m, acceptable_joint_error=0.008, node=node)
         self.telescoping_joints = ['joint_arm_l3', 'joint_arm_l2', 'joint_arm_l1', 'joint_arm_l0']
         self.is_telescoping = False
+        if calibrated_retracted_offset_m is None:
+            calibrated_retracted_offset_m = node.controller_parameters['arm_retracted_offset']
+        self.retracted_offset_m = calibrated_retracted_offset_m
+        self.retracted = False
+
+    def update_joint_range(self, joint_range, node=None):
+        if joint_range is not None:
+            self.range = joint_range
+            return
+
+        if node is None:
+            return # cannot calculate range without Stretch Body handle
+        range_m = tuple(node.robot.arm.params['range_m'])
+        self.range = range_m
 
     def get_num_valid_commands(self):
         if self.active and self.is_telescoping:
@@ -414,40 +343,49 @@ class TelescopingCommandGroup(SimpleCommandGroup):
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
-            _, extension_error_m = self.update_execution(robot_status, backlash_state=kwargs['backlash_state'])
+            _, extension_error_m = self.update_execution(robot_status)
             robot.arm.move_by(extension_error_m,
                               v_m=self.goal['velocity'],
                               a_m=self.goal['acceleration'],
                               contact_thresh_pos_N=self.goal['contact_threshold'],
                               contact_thresh_neg_N=-self.goal['contact_threshold'] \
                                                    if self.goal['contact_threshold'] is not None else None)
-            if extension_error_m < 0.0:
-                kwargs['backlash_state']['wrist_extension_retracted'] = True
-            else:
-                kwargs['backlash_state']['wrist_extension_retracted'] = False
+            self.retracted = extension_error_m < 0.0
 
     def update_execution(self, robot_status, **kwargs):
-        backlash_state = kwargs['backlash_state']
         success_callback = kwargs['success_callback'] if 'success_callback' in kwargs.keys() else None
         self.error = None
         if self.active:
             if success_callback and robot_status['arm']['motor']['in_guarded_event']:
                 success_callback("{0} contact detected.".format(self.name))
                 return True
-            if backlash_state['wrist_extension_retracted']:
-                arm_backlash_correction = self.wrist_extension_calibrated_retracted_offset
-            else:
-                arm_backlash_correction = 0.0
+            arm_backlash_correction = self.retracted_offset_m if self.retracted else 0.0
             extension_current = robot_status['arm']['pos'] + arm_backlash_correction
             self.error = self.goal['position'] - extension_current
             return (self.telescoping_joints, self.error) if self.is_telescoping else (self.name, self.error)
 
         return None
 
+    def joint_state(self, robot_status, **kwargs):
+        arm_status = robot_status['arm']
+        arm_backlash_correction = self.retracted_offset_m if self.retracted else 0.0
+        pos = arm_status['pos'] + arm_backlash_correction
+        return (pos, arm_status['vel'], arm_status['motor']['effort'])
+
 
 class LiftCommandGroup(SimpleCommandGroup):
-    def __init__(self, range_m):
-        SimpleCommandGroup.__init__(self, 'joint_lift', range_m)
+    def __init__(self, range_m=None, node=None):
+        SimpleCommandGroup.__init__(self, 'joint_lift', range_m, node=node)
+
+    def update_joint_range(self, joint_range, node=None):
+        if joint_range is not None:
+            self.range = joint_range
+            return
+
+        if node is None:
+            return # cannot calculate range without Stretch Body handle
+        range_m = tuple(node.robot.lift.params['range_m'])
+        self.range = range_m
 
     def init_execution(self, robot, robot_status, **kwargs):
         if self.active:
@@ -470,11 +408,15 @@ class LiftCommandGroup(SimpleCommandGroup):
 
         return None
 
+    def joint_state(self, robot_status, **kwargs):
+        lift_status = robot_status['lift']
+        return (lift_status['pos'], lift_status['vel'], lift_status['motor']['effort'])
+
 
 class MobileBaseCommandGroup(SimpleCommandGroup):
-    def __init__(self, virtual_range_m=(-0.5, 0.5)):
+    def __init__(self, virtual_range_m=(-0.5, 0.5), node=None):
         SimpleCommandGroup.__init__(self, 'joint_mobile_base_translation', virtual_range_m,
-                                    acceptable_joint_error=0.005)
+                                    acceptable_joint_error=0.005, node=node)
         self.incrementing_joint_names = ['translate_mobile_base', 'rotate_mobile_base']
         self.active_translate_mobile_base = False
         self.active_rotate_mobile_base = False
@@ -484,6 +426,14 @@ class MobileBaseCommandGroup(SimpleCommandGroup):
         self.excellent_mobile_base_error_rad = (np.pi/180.0) * 0.6
         self.min_m_per_s = 0.002
         self.min_rad_per_s = np.radians(1.0)
+
+    def update_joint_range(self, virtual_joint_range, node=None):
+        if virtual_joint_range is not None:
+            self.range = virtual_joint_range
+            return
+
+        virtual_range_m = (-0.5, 0.5)
+        self.range = virtual_range_m
 
     def get_num_valid_commands(self):
         if self.active:

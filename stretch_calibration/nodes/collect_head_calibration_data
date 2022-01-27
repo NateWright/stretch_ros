@@ -562,9 +562,8 @@ class CollectHeadCalibrationDataNode:
         else:
             filename = self.calibration_directory + 'head_calibration_data_' + capture_date + '.yaml'
         rospy.loginfo('Saving calibration_data to a YAML file named {0}'.format(filename))
-        fid = open(filename, 'w')
-        yaml.dump(calibration_data, fid)
-        fid.close()
+        with open (filename, 'w') as fid:
+            yaml.dump(calibration_data, fid)
         rospy.loginfo('')
         rospy.loginfo('*************************************')
         rospy.loginfo('')
@@ -575,12 +574,21 @@ class CollectHeadCalibrationDataNode:
     def move_to_initial_configuration(self):
         # The robot is commanded to move to this pose prior to
         # beginning to collect calibration data.
-        initial_pose = {'joint_wrist_yaw': 0.0,
-                        'wrist_extension': 0.0,
-                        'joint_lift': 0.3,
-                        'gripper_aperture': 0.0,
-                        'joint_head_pan': -1.6947147036864942,
-                        'joint_head_tilt': -0.4}
+        initial_pose_map = {
+            'joint_wrist_yaw': 0.0,
+            'joint_wrist_pitch': 0.0,
+            'joint_wrist_roll': 0.0,
+            'wrist_extension': 0.0,
+            'joint_lift': 0.3,
+            'gripper_aperture': 0.0,
+            'joint_head_pan': -1.6947147036864942,
+            'joint_head_tilt': -0.4
+        }
+
+        initial_pose = {}
+        for j in self.joint_state.name:
+            if j in initial_pose_map:
+                initial_pose[j] = initial_pose_map[j]
 
         rospy.loginfo('Move to the calibration start pose.')
         self.move_to_pose(initial_pose)
@@ -609,9 +617,8 @@ class CollectHeadCalibrationDataNode:
         filename = rospy.get_param('~controller_calibration_file')
 
         rospy.loginfo('Loading factory default tilt backlash transition angle from the YAML file named {0}'.format(filename))
-        fid = open(filename, 'r')
-        controller_parameters = yaml.load(fid)
-        fid.close()
+        with open(filename, 'r') as fid:
+            controller_parameters = yaml.load(fid, Loader=yaml.FullLoader)
         self.tilt_angle_backlash_transition_rad = controller_parameters['tilt_angle_backlash_transition']
         deg_per_rad = 180.0/math.pi
         rospy.loginfo('self.tilt_angle_backlash_transition_rad in degrees = {0}'.format(self.tilt_angle_backlash_transition_rad * deg_per_rad))
@@ -639,6 +646,9 @@ class CollectHeadCalibrationDataNode:
             rospy.signal_shutdown('Unable to connect to arm action server. Timeout exceeded.')
             sys.exit()
 
+        rate = rospy.Rate(self.rate)
+        while self.joint_state is None:
+            rate.sleep()
         self.move_to_initial_configuration()
 
         self.calibrate_pan_and_tilt(collect_check_data)
