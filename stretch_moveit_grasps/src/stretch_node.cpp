@@ -102,15 +102,15 @@ void stretchHeadCallback(const stretch_moveit_grasps::stretch_move_bool msg){
       joint_group_positions.at(0) = 0;
       joint_group_positions.at(1) = 0;
     }else{
-      if(msg.a){
+      if(msg.lookLeft){
         joint_group_positions.at(0) += step;
-      }else if(msg.b){
+      }else if(msg.lookRight){
         joint_group_positions.at(0) -= step;
       }
 
-      if(msg.c){
+      if(msg.lookUp){
         joint_group_positions.at(1) += step;
-      }else if(msg.d){
+      }else if(msg.lookDown){
         joint_group_positions.at(1) -= step;
       }
     }

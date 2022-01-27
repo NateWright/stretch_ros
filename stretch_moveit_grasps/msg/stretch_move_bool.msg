@@ -1,6 +1,6 @@
-bool a
-bool b
-bool c
-bool d
+bool lookLeft
+bool lookRight
+bool lookUp
+bool lookDown
 bool home
 int32 step
