@@ -6,7 +6,7 @@
 
 ## Setup
 
-Use `rosdep` to install the required packages.
+Clone and Install the required packages.
 
 ```bash
     cd ~/catkin_ws/src
