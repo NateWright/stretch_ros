@@ -245,11 +245,6 @@ include_directories(SYSTEM ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIR} ${EIGEN3_
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-add_executable(stretch src/stretch.cpp)
-target_link_libraries(stretch ${catkin_LIBRARIES} ${Boost_LIBRARIES})
-install(TARGETS stretch DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-
-install(DIRECTORY launch DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
 
 add_executable(stretch_node src/stretch_node.cpp)
 target_link_libraries(stretch_node ${catkin_LIBRARIES} ${Boost_LIBRARIES})
