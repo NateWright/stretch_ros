@@ -22,7 +22,8 @@ Use `rosdep` to install the required packages.
 ##### Start Demo
 
 ```bash
-    roslaunch stretch_moveit_config demo.launch
+    roslaunch stretch_gazebo gazebo.launch
+    roslaunch stretch_moveit_grasps move_group.launch
     roslaunch stretch_moveit_grasps stretch_node.launch
 ```
 
