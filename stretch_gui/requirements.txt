@@ -1,5 +1,0 @@
-opencv-python
-PyQt5
-sphinx
-sphinx_rtd_theme
-m2r2
