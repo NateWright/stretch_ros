@@ -28,3 +28,5 @@ stretch_funmap/src/stretch_funmap/cython_min_cost_path.c
 
 # Local History for Visual Studio Code
 .history/
+
+build-stretch_gui-Desktop-Debug/*

@@ -1,4 +1,0 @@
-/home/nwright/catkin_ws/src/stretch_ros/build-stretch_gui-Desktop-Debug/CMakeFiles/rebuild_cache.dir
-/home/nwright/catkin_ws/src/stretch_ros/build-stretch_gui-Desktop-Debug/CMakeFiles/edit_cache.dir
-/home/nwright/catkin_ws/src/stretch_ros/build-stretch_gui-Desktop-Debug/CMakeFiles/stretch_gui.dir
-/home/nwright/catkin_ws/src/stretch_ros/build-stretch_gui-Desktop-Debug/CMakeFiles/stretch_gui_autogen.dir
