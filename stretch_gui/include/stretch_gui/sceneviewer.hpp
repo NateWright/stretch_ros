@@ -1,5 +1,5 @@
-#ifndef MAPVIEWER_HPP
-#define MAPVIEWER_HPP
+#ifndef SCENEVIEWER_H
+#define SCENEVIEWER_H
 
 #include <QLabel>
 #include <QMouseEvent>
@@ -7,13 +7,13 @@
 #include <QWidget>
 #include <QDebug>
 
-class MapViewer : public QLabel {
+class SceneViewer : public QLabel {
     Q_OBJECT
    public:
-    MapViewer(QWidget* parent = 0) : QLabel(parent) {}
-    ~MapViewer() {}
+    SceneViewer(QWidget* parent = 0) : QLabel(parent) {}
+    ~SceneViewer() {}
    signals:
-    void mapClick(int x, int y, int width, int height);
+    void sceneClick(int x, int y, int width, int height);
    public slots:
     void setMap(const QPixmap&);
 
@@ -21,4 +21,4 @@ class MapViewer : public QLabel {
     virtual void mousePressEvent(QMouseEvent* event);
 };
 
-#endif  // MAPVIEWER_HPP
+#endif  // SCENEVIEWER_H
