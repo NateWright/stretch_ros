@@ -251,7 +251,7 @@
        <bool>false</bool>
       </property>
      </widget>
-     <widget class="MapViewer" name="DisplayMap">
+     <widget class="SceneViewer" name="DisplayMap">
       <property name="enabled">
        <bool>true</bool>
       </property>
@@ -279,7 +279,7 @@
      <widget class="QPushButton" name="NavigateMapButtonUp">
       <property name="geometry">
        <rect>
-        <x>1085</x>
+        <x>1080</x>
         <y>100</y>
         <width>80</width>
         <height>80</height>
@@ -361,7 +361,7 @@
      <widget class="QPushButton" name="NavigateMapButtonLeft">
       <property name="geometry">
        <rect>
-        <x>985</x>
+        <x>980</x>
         <y>200</y>
         <width>80</width>
         <height>80</height>
@@ -443,7 +443,7 @@
      <widget class="QPushButton" name="NavigateMapButtonDown">
       <property name="geometry">
        <rect>
-        <x>1085</x>
+        <x>1080</x>
         <y>300</y>
         <width>80</width>
         <height>80</height>
@@ -525,7 +525,7 @@
      <widget class="QPushButton" name="NavigateMapButtonRight">
       <property name="geometry">
        <rect>
-        <x>1185</x>
+        <x>1180</x>
         <y>200</y>
         <width>80</width>
         <height>80</height>
@@ -833,7 +833,7 @@
        <rect>
         <x>1012</x>
         <y>490</y>
-        <width>225</width>
+        <width>221</width>
         <height>150</height>
        </rect>
       </property>
@@ -1077,7 +1077,7 @@
      <property name="enabled">
       <bool>true</bool>
      </property>
-     <widget class="QLabel" name="DisplayCamera">
+     <widget class="SceneViewer" name="DisplayCamera">
       <property name="enabled">
        <bool>true</bool>
       </property>
@@ -1105,7 +1105,7 @@
      <widget class="QPushButton" name="CameraMoveButtonUp">
       <property name="geometry">
        <rect>
-        <x>1085</x>
+        <x>1080</x>
         <y>100</y>
         <width>80</width>
         <height>80</height>
@@ -1187,7 +1187,7 @@
      <widget class="QPushButton" name="CameraMoveButtonRight">
       <property name="geometry">
        <rect>
-        <x>1185</x>
+        <x>1180</x>
         <y>200</y>
         <width>80</width>
         <height>80</height>
@@ -1269,7 +1269,7 @@
      <widget class="QPushButton" name="CameraMoveButtonLeft">
       <property name="geometry">
        <rect>
-        <x>985</x>
+        <x>980</x>
         <y>200</y>
         <width>80</width>
         <height>80</height>
@@ -1351,7 +1351,7 @@
      <widget class="QPushButton" name="CameraMoveButtonDown">
       <property name="geometry">
        <rect>
-        <x>1085</x>
+        <x>1080</x>
         <y>300</y>
         <width>80</width>
         <height>80</height>
@@ -1884,9 +1884,9 @@
      <widget class="QPushButton" name="ButtonBack">
       <property name="geometry">
        <rect>
-        <x>1012</x>
+        <x>1010</x>
         <y>490</y>
-        <width>225</width>
+        <width>221</width>
         <height>150</height>
        </rect>
       </property>
@@ -2123,6 +2123,88 @@
       </property>
       <property name="text">
        <string>Back</string>
+      </property>
+     </widget>
+     <widget class="QPushButton" name="CameraMoveButtonHome">
+      <property name="geometry">
+       <rect>
+        <x>1080</x>
+        <y>200</y>
+        <width>80</width>
+        <height>80</height>
+       </rect>
+      </property>
+      <property name="palette">
+       <palette>
+        <active>
+         <colorrole role="Button">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>49</red>
+            <green>144</green>
+            <blue>203</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Dark">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </active>
+        <inactive>
+         <colorrole role="Button">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>49</red>
+            <green>144</green>
+            <blue>203</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Dark">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </inactive>
+        <disabled>
+         <colorrole role="Button">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>49</red>
+            <green>144</green>
+            <blue>203</blue>
+           </color>
+          </brush>
+         </colorrole>
+         <colorrole role="Dark">
+          <brush brushstyle="SolidPattern">
+           <color alpha="255">
+            <red>0</red>
+            <green>0</green>
+            <blue>0</blue>
+           </color>
+          </brush>
+         </colorrole>
+        </disabled>
+       </palette>
+      </property>
+      <property name="font">
+       <font>
+        <pointsize>20</pointsize>
+       </font>
+      </property>
+      <property name="text">
+       <string>Home</string>
       </property>
      </widget>
     </widget>
@@ -3106,9 +3188,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>MapViewer</class>
+   <class>SceneViewer</class>
    <extends>QLabel</extends>
-   <header>mapviewer.hpp</header>
+   <header>sceneviewer.hpp</header>
   </customwidget>
  </customwidgets>
  <resources/>
