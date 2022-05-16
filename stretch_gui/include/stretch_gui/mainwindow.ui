@@ -2212,7 +2212,7 @@
      <property name="enabled">
       <bool>true</bool>
      </property>
-     <widget class="QLabel" name="DisplayImage">
+     <widget class="SceneViewer" name="DisplayImage">
       <property name="enabled">
        <bool>true</bool>
       </property>
