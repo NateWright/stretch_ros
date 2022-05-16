@@ -1,18 +1,20 @@
 #include "mapsubscriber.hpp"
 
-mapsubscriber::mapsubscriber(ros::NodeHandle* nodeHandle) : nh_(nodeHandle), pos_(QPoint(0, 0)) {
-    mapSub_ = nh_->subscribe("/map", 30, &mapsubscriber::mapCallback, this);
-    posSub_ = nh_->subscribe("/stretch_diff_drive_controller/odom", 30, &mapsubscriber::posCallback, this);
-    movePub_ = nh_->advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 30);
+MapSubscriber::MapSubscriber(ros::NodeHandle* nodeHandle)
+    : nh_(nodeHandle), pos_(QPoint(0, 0)) {
+    mapSub_ = nh_->subscribe("/map", 30, &MapSubscriber::mapCallback, this);
+    posSub_ = nh_->subscribe("/stretch_diff_drive_controller/odom", 30,
+                             &MapSubscriber::posCallback, this);
+    movePub_ = nh_->advertise<geometry_msgs::PoseStamped>(
+        "/move_base_simple/goal", 30);
     tfListener = new tf2_ros::TransformListener(tfBuffer);
-    map_ = QImage(10,10, QImage::Format_RGB888);
+    map_ = QImage(10, 10, QImage::Format_RGB888);
 }
 
-void mapsubscriber::run() {
+void MapSubscriber::run() {
     ros::Rate loop_rate(20);
     while (ros::ok()) {
         ros::spinOnce();
-
 
         QPainter painter(&map_);
         painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
@@ -31,11 +33,12 @@ void mapsubscriber::run() {
     }
 }
 
-void mapsubscriber::mapCallback(const nav_msgs::OccupancyGrid msg) {
+void MapSubscriber::mapCallback(const nav_msgs::OccupancyGrid msg) {
     const int width = msg.info.width, height = msg.info.height;
     map_ = QImage(width, height, QImage::Format_RGB888);
     resolution_ = msg.info.resolution;
-    origin_ = QPoint(width + msg.info.origin.position.x / resolution_, -msg.info.origin.position.y / resolution_);
+    origin_ = QPoint(width + msg.info.origin.position.x / resolution_,
+                     -msg.info.origin.position.y / resolution_);
 
     int val = 0;
     int pos = 0;
@@ -54,23 +57,28 @@ void mapsubscriber::mapCallback(const nav_msgs::OccupancyGrid msg) {
     }
 }
 
-void mapsubscriber::posCallback(const nav_msgs::Odometry msg) {
+void MapSubscriber::posCallback(const nav_msgs::Odometry msg) {
     std::string source = "map";
     std::string destination = "base_link";
 
     try {
-        geometry_msgs::TransformStamped transBaseLinkToMap = tfBuffer.lookupTransform(source, destination, ros::Time(0));
+        geometry_msgs::TransformStamped transBaseLinkToMap =
+            tfBuffer.lookupTransform(source, destination, ros::Time(0));
 
-        //        ROS_INFO_STREAM("x " <<  transBaseLinkToMap.transform.translation.x);
-        //        ROS_INFO_STREAM("y " <<  transBaseLinkToMap.transform.translation.y);
+        //        ROS_INFO_STREAM("x " <<
+        //        transBaseLinkToMap.transform.translation.x);
+        //        ROS_INFO_STREAM("y " <<
+        //        transBaseLinkToMap.transform.translation.y);
 
-        pos_.setX(origin_.x() - transBaseLinkToMap.transform.translation.x / resolution_);
-        pos_.setY(origin_.y() + transBaseLinkToMap.transform.translation.y / resolution_);
+        pos_.setX(origin_.x() -
+                  transBaseLinkToMap.transform.translation.x / resolution_);
+        pos_.setY(origin_.y() +
+                  transBaseLinkToMap.transform.translation.y / resolution_);
     } catch (...) {
     }
 }
 
-void mapsubscriber::moveRobot(int x, int y, int width, int height) {
+void MapSubscriber::moveRobot(int x, int y, int width, int height) {
     geometry_msgs::PoseStamped pose;
 
     //  ROS_INFO_STREAM("x: " << x << " y: " << y);
@@ -78,7 +86,8 @@ void mapsubscriber::moveRobot(int x, int y, int width, int height) {
     x = (double)x * (double)map_.width() / (double)width;
     y = (double)y * (double)map_.height() / (double)height;
 
-    double locX = (origin_.x() - x) * resolution_, locY = (y - origin_.y()) * resolution_;
+    double locX = (origin_.x() - x) * resolution_,
+           locY = (y - origin_.y()) * resolution_;
 
     //  ROS_INFO_STREAM("x: " << locX << " y: " << locY);
     pose.header.frame_id = "map";
@@ -88,6 +97,4 @@ void mapsubscriber::moveRobot(int x, int y, int width, int height) {
     movePub_.publish(pose);
 }
 
-mapsubscriber::~mapsubscriber() {
-    delete tfListener;
-}
+MapSubscriber::~MapSubscriber() { delete tfListener; }

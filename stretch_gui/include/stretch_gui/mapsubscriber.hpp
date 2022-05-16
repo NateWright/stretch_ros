@@ -21,11 +21,11 @@
 using std::vector;
 
 
-class mapsubscriber : public QThread {
+class MapSubscriber : public QThread {
     Q_OBJECT
    public:
-    mapsubscriber(ros::NodeHandle *nodeHandle);
-    ~mapsubscriber();
+    MapSubscriber(ros::NodeHandle *nodeHandle);
+    ~MapSubscriber();
     void run() override;
 
    signals:
