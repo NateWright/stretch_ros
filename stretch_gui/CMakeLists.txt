@@ -37,6 +37,8 @@ set(ROS_DEPENDS
   roscpp
   std_msgs
   tf2_ros
+  pcl_ros
+  stretch_moveit_grasps
   )
 
 set(EXTERNAL_DEPENDS
