@@ -1,24 +1,25 @@
 #ifndef MAPSUBSCRIBER_H
 #define MAPSUBSCRIBER_H
 
+#include <geometry_msgs/PoseStamped.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_ros/transform_listener.h>
-#include <geometry_msgs/PoseStamped.h>
 
 #include <QByteArray>
 #include <QFile>
 #include <QGraphicsScene>
 #include <QImage>
 #include <QObject>
-#include <QPixmap>
-#include <QThread>
 #include <QPainter>
 #include <QPair>
+#include <QPixmap>
+#include <QThread>
 
 using std::vector;
+
 
 class mapsubscriber : public QThread {
     Q_OBJECT

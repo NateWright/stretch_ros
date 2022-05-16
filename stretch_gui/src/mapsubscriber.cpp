@@ -1,10 +1,11 @@
 #include "mapsubscriber.hpp"
 
-mapsubscriber::mapsubscriber(ros::NodeHandle* nodeHandle) : nh_(nodeHandle), pos_(QPoint(0,0)) {
+mapsubscriber::mapsubscriber(ros::NodeHandle* nodeHandle) : nh_(nodeHandle), pos_(QPoint(0, 0)) {
     mapSub_ = nh_->subscribe("/map", 30, &mapsubscriber::mapCallback, this);
     posSub_ = nh_->subscribe("/stretch_diff_drive_controller/odom", 30, &mapsubscriber::posCallback, this);
     movePub_ = nh_->advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 30);
     tfListener = new tf2_ros::TransformListener(tfBuffer);
+    map_ = QImage(10,10, QImage::Format_RGB888);
 }
 
 void mapsubscriber::run() {
@@ -12,14 +13,15 @@ void mapsubscriber::run() {
     while (ros::ok()) {
         ros::spinOnce();
 
+
         QPainter painter(&map_);
-        painter.setCompositionMode( QPainter::CompositionMode_SourceOver );
+        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
         painter.setBrush(QBrush(QColor(Qt::red), Qt::SolidPattern));
         painter.setPen(Qt::NoPen);
-        painter.drawEllipse( pos_, 5, 5 );
+        painter.drawEllipse(pos_, 5, 5);
         painter.setBrush(QBrush(QColor(Qt::green), Qt::SolidPattern));
         painter.drawEllipse(origin_, 5, 5);
-
+        painter.end();
 
         outputMap_ = QPixmap::fromImage(map_);
 
@@ -33,7 +35,7 @@ void mapsubscriber::mapCallback(const nav_msgs::OccupancyGrid msg) {
     const int width = msg.info.width, height = msg.info.height;
     map_ = QImage(width, height, QImage::Format_RGB888);
     resolution_ = msg.info.resolution;
-    origin_ = QPoint(width + msg.info.origin.position.x/resolution_, -msg.info.origin.position.y/resolution_);
+    origin_ = QPoint(width + msg.info.origin.position.x / resolution_, -msg.info.origin.position.y / resolution_);
 
     int val = 0;
     int pos = 0;
@@ -59,32 +61,31 @@ void mapsubscriber::posCallback(const nav_msgs::Odometry msg) {
     try {
         geometry_msgs::TransformStamped transBaseLinkToMap = tfBuffer.lookupTransform(source, destination, ros::Time(0));
 
-//        ROS_INFO_STREAM("x " <<  transBaseLinkToMap.transform.translation.x);
-//        ROS_INFO_STREAM("y " <<  transBaseLinkToMap.transform.translation.y);
+        //        ROS_INFO_STREAM("x " <<  transBaseLinkToMap.transform.translation.x);
+        //        ROS_INFO_STREAM("y " <<  transBaseLinkToMap.transform.translation.y);
 
-        pos_.setX(origin_.x() - transBaseLinkToMap.transform.translation.x/resolution_);
-        pos_.setY(origin_.y() + transBaseLinkToMap.transform.translation.y/resolution_);
+        pos_.setX(origin_.x() - transBaseLinkToMap.transform.translation.x / resolution_);
+        pos_.setY(origin_.y() + transBaseLinkToMap.transform.translation.y / resolution_);
     } catch (...) {
     }
 }
 
-void mapsubscriber::moveRobot(int x, int y, int width, int height){
-  geometry_msgs::PoseStamped pose;
+void mapsubscriber::moveRobot(int x, int y, int width, int height) {
+    geometry_msgs::PoseStamped pose;
 
-//  ROS_INFO_STREAM("x: " << x << " y: " << y);
+    //  ROS_INFO_STREAM("x: " << x << " y: " << y);
 
-  x = (double)x * (double)map_.width()/(double)width;
-  y = (double)y * (double)map_.height()/(double)height;
+    x = (double)x * (double)map_.width() / (double)width;
+    y = (double)y * (double)map_.height() / (double)height;
 
+    double locX = (origin_.x() - x) * resolution_, locY = (y - origin_.y()) * resolution_;
 
-  double locX = (origin_.x() - x) * resolution_, locY = (y - origin_.y()) * resolution_;
-
-//  ROS_INFO_STREAM("x: " << locX << " y: " << locY);
-  pose.header.frame_id = "map";
-  pose.pose.position.x = locX;
-  pose.pose.position.y = locY;
-  pose.pose.orientation.w = 1;
-  movePub_.publish(pose);
+    //  ROS_INFO_STREAM("x: " << locX << " y: " << locY);
+    pose.header.frame_id = "map";
+    pose.pose.position.x = locX;
+    pose.pose.position.y = locY;
+    pose.pose.orientation.w = 1;
+    movePub_.publish(pose);
 }
 
 mapsubscriber::~mapsubscriber() {
