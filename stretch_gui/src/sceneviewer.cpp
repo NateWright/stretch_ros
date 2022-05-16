@@ -7,5 +7,5 @@ void SceneViewer::mousePressEvent(QMouseEvent *event){
 }
 
 void SceneViewer::setMap(const QPixmap &map){
-  setPixmap(map.scaled(width(),height(), Qt::KeepAspectRatio));
+  setPixmap(map.scaled(size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
 }
