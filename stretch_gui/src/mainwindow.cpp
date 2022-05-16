@@ -15,6 +15,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     mapSub = new mapsubscriber(&nh_);
     connect(mapSub, &mapsubscriber::mapUpdate, ui->DisplayMap, &MapViewer::setPixmap);
+    connect(ui->DisplayMap, &MapViewer::mapClick, mapSub, &mapsubscriber::moveRobot);
 
     mapSub->start();
 }

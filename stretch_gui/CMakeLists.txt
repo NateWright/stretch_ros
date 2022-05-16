@@ -36,6 +36,7 @@ project(stretch_gui)  ## this package name is the name of the directory this cma
 set(ROS_DEPENDS
   roscpp
   std_msgs
+  tf2_ros
   )
 
 set(EXTERNAL_DEPENDS
