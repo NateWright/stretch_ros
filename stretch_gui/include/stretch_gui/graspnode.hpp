@@ -4,10 +4,12 @@
 #include <QThread>
 #include <QObject>
 #include <QWidget>
+#include <QPoint>
+#include <QPainter>
 
 #include <ros/ros.h>
 #include <std_msgs/Bool.h>
-#include <sensor_msgs/PointCloud2.h>
+#include <geometry_msgs/PointStamped.h>
 #include <pcl_ros/point_cloud.h>
 
 class GraspNode : public QThread
@@ -17,20 +19,26 @@ class GraspNode : public QThread
     explicit GraspNode(ros::NodeHandle *nh);
     ~GraspNode();
     void run() override;
+
+  protected:
+    int exec();
   private:
     ros::NodeHandle *nh_;
     ros::Publisher resetPub_;
-    ros::Subscriber itemSub_;
+    ros::Subscriber centerPointSub_;
 
-    QImage camera_;
-    QPixmap cameraOutput_;
+    QPoint item_;
+
+    QPixmap camera_;
     QPixmap cameraOutputRotated_;
 
-    void itemCloudCallback(const sensor_msgs::PointCloud2 input);
+    void centerPointCallback(const geometry_msgs::PointStamped input);
   signals:
     void imgUpdate(const QPixmap &);
   public slots:
+    void setImage(const QPixmap &);
     void reset();
+    void setPoint(QPoint);
 
 
 

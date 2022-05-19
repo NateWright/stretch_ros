@@ -1,11 +1,19 @@
 #include "sceneviewer.hpp"
 
 void SceneViewer::mousePressEvent(QMouseEvent *event){
-    const int x = event->x();
-    const int y = event->y();
-    emit sceneClick(x, y, width(), height());
+  press = event->pos();
+  setMouseTracking(true);
+  emit mousePressInitiated(press, frameSize());
 }
 
+void SceneViewer::mouseReleaseEvent(QMouseEvent* event){
+  release = event->pos();
+  setMouseTracking(false);
+  emit mouseClick(press, release, frameSize());
+}
+void SceneViewer::mouseMoveEvent(QMouseEvent *event){
+  emit mousePressCurrentLocation(event->pos(), frameSize());
+}
 void SceneViewer::setMap(const QPixmap &map){
   setPixmap(map.scaled(size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
 }

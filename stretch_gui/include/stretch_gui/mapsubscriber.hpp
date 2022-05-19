@@ -7,16 +7,18 @@
 #include <ros/ros.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_ros/transform_listener.h>
+#include <tf2/utils.h>
 
-#include <QByteArray>
-#include <QFile>
 #include <QGraphicsScene>
 #include <QImage>
 #include <QObject>
 #include <QPainter>
-#include <QPair>
+#include <QPen>
 #include <QPixmap>
 #include <QThread>
+#include <QPoint>
+#include <QSize>
+#include <QDebug>
 
 using std::vector;
 
@@ -32,7 +34,12 @@ class MapSubscriber : public QThread {
     void mapUpdate(const QPixmap &);
 
    public slots:
-    void moveRobot(int x, int y, int width, int height);
+    void moveRobot(QPoint press, QPoint release, QSize screen);
+    void mousePressInitiated(QPoint press, QSize screen);
+    void mousePressCurrentLocation(QPoint loc, QSize screen);
+
+  protected:
+    int exec();
 
    private:
     ros::NodeHandle *nh_;
@@ -41,12 +48,19 @@ class MapSubscriber : public QThread {
     ros::Publisher movePub_;
 
     QImage map_;
+    QImage mapCopy_;
     QPixmap outputMap_;
 
+    bool drawPos_;
     QPoint origin_;
-    QPoint pos_;
+    QPoint robotPos_;
+    double robotRot_;
 
     double resolution_;
+
+    bool drawMouseArrow_;
+    QPoint mousePressLocation_;
+    QPoint mousePressCurrentLocation_;
 
     tf2_ros::Buffer tfBuffer;
     tf2_ros::TransformListener *tfListener;
@@ -54,5 +68,7 @@ class MapSubscriber : public QThread {
     void mapCallback(const nav_msgs::OccupancyGrid msg);
     void posCallback(const nav_msgs::Odometry msg);
 };
+
+QPoint translateScreenToMap(QPoint p, QSize screen, QSize map);
 
 #endif  // MAPSUBSCRIBER_H

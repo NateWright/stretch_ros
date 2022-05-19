@@ -1,24 +1,27 @@
 #include "roscamera.hpp"
 
 RosCamera::RosCamera(ros::NodeHandle *nh) : nh_(nh) {
-    colorCameraSub_ = nh_->subscribe("/camera/depth/color/points", 30,
-                                     &RosCamera::cameraCallback, this);
-    cameraAdjustment_ =
-        nh_->advertise<stretch_moveit_grasps::stretch_move_bool>("/move_head",
-                                                                 30);
-    pointPick_ =
-        nh->advertise<geometry_msgs::PointStamped>("/clicked_point", 30);
+    colorCameraSub_ = nh_->subscribe("/camera/depth/color/points", 30, &RosCamera::cameraCallback, this);
+//    colorCameraSub_ = nh_->subscribe("/stretch_pc/pointcloud", 30, &RosCamera::cameraCallback, this);
+    cameraAdjustment_ = nh_->advertise<stretch_moveit_grasps::stretch_move_bool>("/move_head", 30);
+    pointPick_ = nh->advertise<geometry_msgs::PointStamped>("/clicked_point", 30);
+    centerPointSub_ = nh_->subscribe("/stretch_pc/centerPoint", 30, &RosCamera::centerPointCallback, this);
 }
 RosCamera::~RosCamera() {}
 
 void RosCamera::run() {
-    ros::Rate loop_rate(20);
-    while (ros::ok()) {
-        ros::spinOnce();
-        emit imgUpdate(cameraOutputRotated_);
+  exec();
+}
 
-        loop_rate.sleep();
-    }
+int RosCamera::exec(){
+  ros::Rate loop_rate(20);
+  while (ros::ok() && !isInterruptionRequested()) {
+      ros::spinOnce();
+      emit imgUpdate(cameraOutputRotated_);
+
+      loop_rate.sleep();
+  }
+  return 0;
 }
 
 void RosCamera::cameraCallback(const sensor_msgs::PointCloud2 pc) {
@@ -28,13 +31,13 @@ void RosCamera::cameraCallback(const sensor_msgs::PointCloud2 pc) {
     pcl::PCLPointCloud2 pcl_pc2;
     pcl_conversions::toPCL(pc, pcl_pc2);
 
-    cloud.reset(new pcl::PointCloud<pcl::PointXYZRGB>());
-    pcl::fromPCLPointCloud2(pcl_pc2, *cloud);
+    cloud_.reset(new pcl::PointCloud<pcl::PointXYZRGB>());
+    pcl::fromPCLPointCloud2(pcl_pc2, *cloud_);
 
     pcl::PointXYZRGB point;
     for (int y = 0; y < pc.height; y++) {
         for (int x = 0; x < pc.width; x++) {
-            point = cloud.get()->at(x, y);
+            point = cloud_.get()->at(x, y);
             camera_.setPixel(x, y, QColor(point.r, point.g, point.b).rgb());
         }
     }
@@ -70,18 +73,47 @@ void RosCamera::moveRight() { move(Right); }
 
 void RosCamera::moveHome() { move(Home); }
 
-void RosCamera::sceneClicked(int x, int y, int width, int height) {
-    int locX = (double)x * (double)camera_.width() / (double)width;
-    int locY = (double)x * (double)camera_.height() / (double)height;
+void RosCamera::sceneClicked(QPoint press, QPoint release, QSize screen) {
+  int locX = press.x();
+  int locY = press.y();
 
-    geometry_msgs::PointStamped point;
-    point.header.frame_id = frameId_;
+  geometry_msgs::PointStamped point;
+  point.header.frame_id = frameId_;
 
-    pcl::PointXYZRGB p = cloud.get()->at(locX, locY);
+  try{
+    pcl::PointXYZRGB p = cloud_.get()->at(locY, cloud_.get()->width - locX);
+
+    if(std::isnan(p.x) || std::isnan(p.y) || std::isnan(p.z)){
+      throw(std::runtime_error("Point contains NaN"));
+    }
 
     point.point.x = p.x;
     point.point.y = p.y;
     point.point.z = p.z;
 
     pointPick_.publish(point);
+    emit clickSuccess();
+  }catch(...){
+
+  }
+}
+
+void RosCamera::centerPointCallback(const geometry_msgs::PointStamped point){
+  pcl::PointXYZ p1, curr;
+  p1 = pcl::PointXYZ(point.point.x, point.point.y, point.point.z);
+  float smallest = pcl::euclideanDistance(p1, pcl::PointXYZ(cloud_.get()->at(0,0).x, cloud_.get()->at(0,0).y, 0));
+  float currDistance;
+  QPoint min(0,0);
+
+  for(int y = 0; y < cloud_.get()->height; y++){
+    for(int x = 1; x < cloud_.get()->width; x++){
+      curr = pcl::PointXYZ(cloud_.get()->at(x,y).x, cloud_.get()->at(x,y).y, 0);
+      currDistance = pcl::euclideanDistance(p1, curr);
+      if(currDistance < smallest){
+        min = QPoint(cloud_.get()->height - y,x);
+        smallest = currDistance;
+      }
+    }
+  }
+  emit objectCenterPixel(min);
 }

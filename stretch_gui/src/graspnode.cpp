@@ -2,49 +2,54 @@
 
 GraspNode::GraspNode(ros::NodeHandle *nh) : nh_(nh) {
     resetPub_ = nh_->advertise<std_msgs::Bool>("/stretch_pc/reset", 1);
-    itemSub_ = nh_->subscribe("/stretch_pc/pointcloud", 30,
-                              &GraspNode::itemCloudCallback, this);
+    centerPointSub_ = nh_->subscribe("/stretch_pc/centerPoint", 30, &GraspNode::centerPointCallback, this);
+    item_ = QPoint(0,0);
 }
 
 GraspNode::~GraspNode() {}
 
 void GraspNode::run() {
-    ros::Rate loop_rate(20);
-    while (ros::ok()) {
-        ros::spinOnce();
-        emit imgUpdate(cameraOutputRotated_);
-
-        loop_rate.sleep();
-    }
+  exec();
 }
 
-void GraspNode::itemCloudCallback(const sensor_msgs::PointCloud2 pc) {
-    camera_ = QImage(pc.width, pc.height, QImage::Format_RGB888);
+int GraspNode::exec(){
+  ros::Rate loop_rate(20);
+  while (ros::ok() && !isInterruptionRequested()) {
+      ros::spinOnce();
 
-    pcl::PCLPointCloud2 pcl_pc2;
-    pcl_conversions::toPCL(pc, pcl_pc2);
+      if(camera_.width() > 0){
+        QImage img = camera_.toImage();
+        QPainter painter(&img);
+        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+        painter.setBrush(QBrush(QColor(Qt::red), Qt::SolidPattern));
+        painter.setPen(Qt::NoPen);
+        painter.drawEllipse(item_, 20, 20);
+        painter.end();
 
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(
-        new pcl::PointCloud<pcl::PointXYZRGB>);
-    pcl::fromPCLPointCloud2(pcl_pc2, *cloud);
+        camera_ = QPixmap::fromImage(img);
 
-    pcl::PointXYZRGB point;
+        emit imgUpdate(camera_);
+      }
 
-    for (auto p = cloud.get()->begin(); p != cloud.get()->end(); p++) {
-        p->x
-    }
-    for (int y = 0; y < pc.height; y++) {
-        for (int x = 0; x < pc.width; x++) {
-            point = cloud.get()->at(x, y);
-            camera_.setPixel(x, y, QColor(point.r, point.g, point.b).rgb());
-        }
-    }
-    cameraOutput_ = QPixmap::fromImage(camera_);
-    cameraOutputRotated_ = cameraOutput_.transformed(QTransform().rotate(90));
+      loop_rate.sleep();
+  }
+  return 0;
+}
+
+void GraspNode::centerPointCallback(const geometry_msgs::PointStamped input) {
+
 }
 
 void GraspNode::reset() {
     std_msgs::Bool b;
     b.data = 1;
     resetPub_.publish(b);
+}
+
+void GraspNode::setImage(const QPixmap &input){
+  camera_ = input.copy();
+}
+
+void GraspNode::setPoint(QPoint input){
+  item_ = input;
 }
