@@ -5,58 +5,57 @@ MapSubscriber::MapSubscriber(ros::NodeHandle* nodeHandle)
     mapSub_ = nh_->subscribe("/map", 30, &MapSubscriber::mapCallback, this);
     posSub_ = nh_->subscribe("/stretch_diff_drive_controller/odom", 30, &MapSubscriber::posCallback, this);
     movePub_ = nh_->advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 30);
-//    movePub_ = nh_->advertise<geometry_msgs::PoseStamped>("/test/goal", 30);
     tfListener = new tf2_ros::TransformListener(tfBuffer);
     map_ = QImage(10, 10, QImage::Format_RGB888);
-
 }
 
 void MapSubscriber::run() {
-  exec();
+    exec();
 }
 
-int MapSubscriber::exec(){
-  ros::Rate loop_rate(20);
-  while (ros::ok()  && !isInterruptionRequested()) {
-      ros::spinOnce();
+int MapSubscriber::exec() {
+    ros::Rate loop_rate(20);
+    while (ros::ok() && !isInterruptionRequested()) {
+        ros::spinOnce();
 
-      mapCopy_ = map_.copy();
-      QPainter painter(&mapCopy_);
-      painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-      if(drawPos_){
-        painter.setPen(Qt::SolidLine);
-        painter.setPen(Qt::red);
-        painter.setBrush(QBrush(QColor(Qt::red), Qt::SolidPattern));
+        mapCopy_ = map_.copy();
+        QPainter painter(&mapCopy_);
+        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+        if (drawPos_) {
+            painter.setPen(Qt::SolidLine);
+            painter.setPen(Qt::red);
+            painter.setBrush(QBrush(QColor(Qt::red), Qt::SolidPattern));
 
-        int size = 5;
-        QPoint p1(robotPos_.x() + size * std::sin(robotRot_ - M_PI/2) , robotPos_.y() + size * std::cos(robotRot_ - M_PI/2));
-        QPoint p2(robotPos_.x() + size * std::sin(robotRot_ - M_PI) , robotPos_.y() + size * std::cos(robotRot_ - M_PI));
-        QPoint p3(robotPos_.x() + size * std::sin(robotRot_) , robotPos_.y() + size * std::cos(robotRot_));
+            int size = 5;
+            QPoint p1(robotPos_.x() + size * std::sin(robotRot_ - M_PI / 2), robotPos_.y() + size * std::cos(robotRot_ - M_PI / 2));
+            QPoint p2(robotPos_.x() + size * std::sin(robotRot_ - M_PI), robotPos_.y() + size * std::cos(robotRot_ - M_PI));
+            QPoint p3(robotPos_.x() + size * std::sin(robotRot_), robotPos_.y() + size * std::cos(robotRot_));
 
-        QPolygon triangle;
-        triangle.clear();
-        triangle << p1 << p2 << p3;
-        painter.drawPolygon(triangle);
-      }
-      if(drawMouseArrow_){
-        painter.setPen(Qt::SolidLine);
-        painter.setPen(Qt::magenta);
-        painter.setBrush(QBrush(QColor(Qt::magenta), Qt::SolidPattern));
-        painter.drawLine(mousePressLocation_, mousePressCurrentLocation_);
-        painter.drawEllipse(mousePressCurrentLocation_, 1, 1);
-      }
-//      painter.setPen(Qt::NoPen);
-//      painter.setBrush(QBrush(QColor(Qt::green), Qt::SolidPattern));
-//      painter.drawEllipse(origin_, 5, 5);
-      painter.end();
+            QPolygon triangle;
+            triangle.clear();
+            triangle << p1 << p2 << p3;
+            painter.drawPolygon(triangle);
+        }
+        if (drawMouseArrow_) {
+            painter.setPen(Qt::SolidLine);
+            painter.setPen(Qt::magenta);
+            painter.setBrush(QBrush(QColor(Qt::magenta), Qt::SolidPattern));
+            painter.drawLine(mousePressLocation_, mousePressCurrentLocation_);
+            painter.drawEllipse(mousePressCurrentLocation_, 1, 1);
+        }
+        // Paint origin
+        //      painter.setPen(Qt::NoPen);
+        //      painter.setBrush(QBrush(QColor(Qt::green), Qt::SolidPattern));
+        //      painter.drawEllipse(origin_, 5, 5);
+        painter.end();
 
-      outputMap_ = QPixmap::fromImage(mapCopy_);
+        outputMap_ = QPixmap::fromImage(mapCopy_);
 
-      emit mapUpdate(outputMap_);
+        emit mapUpdate(outputMap_);
 
-      loop_rate.sleep();
-  }
-  return 0;
+        loop_rate.sleep();
+    }
+    return 0;
 }
 
 void MapSubscriber::mapCallback(const nav_msgs::OccupancyGrid msg) {
@@ -131,17 +130,17 @@ void MapSubscriber::moveRobot(QPoint press, QPoint release, QSize screen) {
     movePub_.publish(pose);
 }
 
-void MapSubscriber::mousePressInitiated(QPoint press, QSize screen){
-  mousePressLocation_ = translateScreenToMap(press, screen, map_.size());
+void MapSubscriber::mousePressInitiated(QPoint press, QSize screen) {
+    mousePressLocation_ = translateScreenToMap(press, screen, map_.size());
 }
 
-void MapSubscriber::mousePressCurrentLocation(QPoint loc, QSize screen){
-  mousePressCurrentLocation_ = translateScreenToMap(loc, screen, map_.size());
-  drawMouseArrow_ = true;
+void MapSubscriber::mousePressCurrentLocation(QPoint loc, QSize screen) {
+    mousePressCurrentLocation_ = translateScreenToMap(loc, screen, map_.size());
+    drawMouseArrow_ = true;
 }
 
 MapSubscriber::~MapSubscriber() { delete tfListener; }
 
-QPoint translateScreenToMap(QPoint p, QSize screen, QSize map){
-  return QPoint((double)p.x() * (double)map.width() / (double)screen.width(), (double)p.y() * (double)map.height() / (double)screen.height());
+QPoint translateScreenToMap(QPoint p, QSize screen, QSize map) {
+    return QPoint((double)p.x() * (double)map.width() / (double)screen.width(), (double)p.y() * (double)map.height() / (double)screen.height());
 }

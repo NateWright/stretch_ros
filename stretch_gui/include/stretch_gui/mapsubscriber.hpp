@@ -1,27 +1,28 @@
 #ifndef MAPSUBSCRIBER_H
 #define MAPSUBSCRIBER_H
 
+#include <actionlib_msgs/GoalStatus.h>
+#include <actionlib_msgs/GoalStatusArray.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
+#include <tf2/utils.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_ros/transform_listener.h>
-#include <tf2/utils.h>
 
+#include <QDebug>
 #include <QGraphicsScene>
 #include <QImage>
 #include <QObject>
 #include <QPainter>
 #include <QPen>
 #include <QPixmap>
-#include <QThread>
 #include <QPoint>
 #include <QSize>
-#include <QDebug>
+#include <QThread>
 
 using std::vector;
-
 
 class MapSubscriber : public QThread {
     Q_OBJECT
@@ -38,7 +39,7 @@ class MapSubscriber : public QThread {
     void mousePressInitiated(QPoint press, QSize screen);
     void mousePressCurrentLocation(QPoint loc, QSize screen);
 
-  protected:
+   protected:
     int exec();
 
    private:
