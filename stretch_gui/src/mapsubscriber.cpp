@@ -58,20 +58,22 @@ int MapSubscriber::exec() {
     return 0;
 }
 
-void MapSubscriber::mapCallback(const nav_msgs::OccupancyGrid msg) {
-    const int width = msg.info.width, height = msg.info.height;
+void MapSubscriber::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
+    const int width = msg.get()->info.width,
+              height = msg.get()->info.height;
+
     map_ = QImage(width, height, QImage::Format_RGB888);
-    resolution_ = msg.info.resolution;
-    origin_ = QPoint(width + msg.info.origin.position.x / resolution_, -msg.info.origin.position.y / resolution_);
+    resolution_ = msg.get()->info.resolution;
+    origin_ = QPoint(width + msg.get()->info.origin.position.x / resolution_, -msg.get()->info.origin.position.y / resolution_);
 
     int val = 0;
     int pos = 0;
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-            pos = x + msg.info.width * y;
-            if (msg.data[pos] == -1) {
+            pos = x + width * y;
+            if (msg.get()->data[pos] == -1) {
                 val = 100;
-            } else if (msg.data[pos] == 100) {
+            } else if (msg.get()->data[pos] == 100) {
                 val = 0;
             } else {
                 val = 255;
@@ -81,7 +83,7 @@ void MapSubscriber::mapCallback(const nav_msgs::OccupancyGrid msg) {
     }
 }
 
-void MapSubscriber::posCallback(const nav_msgs::Odometry msg) {
+void MapSubscriber::posCallback(const nav_msgs::Odometry::ConstPtr& msg) {
     std::string source = "map";
     std::string destination = "base_link";
 

@@ -47,8 +47,8 @@ class RosCamera : public QThread {
     QPixmap cameraOutput_;
     QPixmap cameraOutputRotated_;
 
-    void cameraCallback(const sensor_msgs::PointCloud2 pc);
-    void centerPointCallback(geometry_msgs::PointStamped point);
+    void cameraCallback(const sensor_msgs::PointCloud2::ConstPtr& pc);
+    void centerPointCallback(const geometry_msgs::PointStamped::ConstPtr& point);
     void move(direction d);
 
    signals:

@@ -37,7 +37,7 @@ int GraspNode::exec(){
   return 0;
 }
 
-void GraspNode::centerPointCallback(const geometry_msgs::PointStamped input) {
+void GraspNode::centerPointCallback(const geometry_msgs::PointStamped::ConstPtr& input) {
 
 }
 

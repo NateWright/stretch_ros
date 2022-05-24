@@ -66,8 +66,8 @@ class MapSubscriber : public QThread {
     tf2_ros::Buffer tfBuffer;
     tf2_ros::TransformListener *tfListener;
 
-    void mapCallback(const nav_msgs::OccupancyGrid msg);
-    void posCallback(const nav_msgs::Odometry msg);
+    void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg);
+    void posCallback(const nav_msgs::Odometry::ConstPtr& msg);
 };
 
 QPoint translateScreenToMap(QPoint p, QSize screen, QSize map);

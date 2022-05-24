@@ -34,7 +34,7 @@ class GraspNode : public QThread {
     QPixmap camera_;
     QPixmap cameraOutputRotated_;
 
-    void centerPointCallback(const geometry_msgs::PointStamped input);
+    void centerPointCallback(const geometry_msgs::PointStamped::ConstPtr& input);
    signals:
     void imgUpdate(const QPixmap &);
     void pointReceived(bool);
