@@ -55,6 +55,7 @@ class RosCamera : public QThread {
     void imgUpdate(const QPixmap &);
     void objectCenterPixel(const QPoint);
     void clickSuccess();
+    void clickFailure(bool);
    public slots:
     void moveUp();
     void moveDown();

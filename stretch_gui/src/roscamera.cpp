@@ -81,9 +81,10 @@ void RosCamera::sceneClicked(QPoint press, QPoint release, QSize screen) {
   point.header.frame_id = frameId_;
 
   try{
-    pcl::PointXYZRGB p = cloud_.get()->at(locY, cloud_.get()->width - locX);
+    pcl::PointXYZRGB p = cloud_.get()->at(locY, cloud_.get()->height - locX);
 
     if(std::isnan(p.x) || std::isnan(p.y) || std::isnan(p.z)){
+      emit clickFailure(true);
       throw(std::runtime_error("Point contains NaN"));
     }
 
@@ -92,6 +93,7 @@ void RosCamera::sceneClicked(QPoint press, QPoint release, QSize screen) {
     point.point.z = p.z;
 
     pointPick_.publish(point);
+    emit clickFailure(false);
     emit clickSuccess();
   }catch(...){
 
@@ -100,15 +102,20 @@ void RosCamera::sceneClicked(QPoint press, QPoint release, QSize screen) {
 
 void RosCamera::centerPointCallback(const geometry_msgs::PointStamped point){
   pcl::PointXYZ p1, curr;
-  p1 = pcl::PointXYZ(point.point.x, point.point.y, point.point.z);
+  p1 = pcl::PointXYZ(point.point.x, point.point.y, 0);
   float smallest = pcl::euclideanDistance(p1, pcl::PointXYZ(cloud_.get()->at(0,0).x, cloud_.get()->at(0,0).y, 0));
   float currDistance;
-  QPoint min(0,0);
+  QPoint min(cloud_.get()->height,0);
 
   for(int y = 0; y < cloud_.get()->height; y++){
-    for(int x = 1; x < cloud_.get()->width; x++){
+    for(int x = 0; x < cloud_.get()->width; x++){
       curr = pcl::PointXYZ(cloud_.get()->at(x,y).x, cloud_.get()->at(x,y).y, 0);
       currDistance = pcl::euclideanDistance(p1, curr);
+      if(std::isnan(smallest)){
+        min = QPoint(cloud_.get()->height - y,x);
+        smallest = currDistance;
+        continue;
+      }
       if(currDistance < smallest){
         min = QPoint(cloud_.get()->height - y,x);
         smallest = currDistance;
