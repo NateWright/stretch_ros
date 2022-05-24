@@ -12,6 +12,7 @@
 #include "sceneviewer.hpp"
 #include "roscamera.hpp"
 #include "graspnode.hpp"
+#include "movebasestatus.hpp"
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -30,6 +31,7 @@ class MainWindow : public QMainWindow {
     Ui::MainWindow *ui;
     ros::NodeHandle nh_;
     MapSubscriber *mapSub_;
+    MoveBaseStatus *moveBaseStatusNode_;
     RosCamera *cameraSub_;
     GraspNode *graspNode_;
 

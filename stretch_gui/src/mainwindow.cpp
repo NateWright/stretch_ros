@@ -8,8 +8,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     nh_ = ros::NodeHandle("stretch_gui");
 
-    connect(ui->ButtonGrasp, SIGNAL(clicked()), this, SLOT(changeToPage2()));
     connect(ui->ButtonBack, SIGNAL(clicked()), this, SLOT(changeToPage1()));
+
+    // Page 1
+
+    connect(ui->ButtonGrasp, SIGNAL(clicked()), this, SLOT(changeToPage2()));
 
     mapSub_ = new MapSubscriber(&nh_);
     connect(mapSub_, &MapSubscriber::mapUpdate, ui->DisplayMap, &SceneViewer::setPixmap);
@@ -17,6 +20,13 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->DisplayMap, &SceneViewer::mousePressInitiated, mapSub_, &MapSubscriber::mousePressInitiated);
     connect(ui->DisplayMap, &SceneViewer::mousePressCurrentLocation, mapSub_, &MapSubscriber::mousePressCurrentLocation);
     mapSub_->start();
+
+    moveBaseStatusNode_ = new MoveBaseStatus(&nh_);
+    connect(moveBaseStatusNode_, &MoveBaseStatus::robotMoving, ui->PleaseWait, &QTextBrowser::setVisible);
+    connect(ui->ButtonStop, &QPushButton::clicked, moveBaseStatusNode_, &MoveBaseStatus::stopRobot);
+    mapSub_->start();
+
+    // Page 2
 
     ui->DisplayCamera->setScaledContents(false);
 
@@ -29,7 +39,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->CameraMoveButtonLeft, &QPushButton::clicked, cameraSub_, &RosCamera::moveLeft);
     connect(ui->CameraMoveButtonRight, &QPushButton::clicked, cameraSub_, &RosCamera::moveRight);
     connect(ui->CameraMoveButtonHome, &QPushButton::clicked, cameraSub_, &RosCamera::moveHome);
+    connect(cameraSub_, &RosCamera::clickFailure, ui->CameraError, &QTextBrowser::setVisible);
     cameraSub_->start();
+
+    // Page 3
 
     ui->DisplayImage->setScaledContents(false);
 
@@ -39,6 +52,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->ConfirmButtonNo, &QPushButton::clicked, graspNode_, &GraspNode::reset);
     connect(cameraSub_, &RosCamera::imgUpdate, graspNode_, &GraspNode::setImage);
     connect(cameraSub_, &RosCamera::objectCenterPixel, graspNode_, &GraspNode::setPoint);
+    connect(graspNode_, &GraspNode::pointReceived, ui->ConfirmPleaseWait, &QTextBrowser::setVisible);
     graspNode_->start();
 
 
@@ -46,28 +60,33 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow() {
     mapSub_->requestInterruption();
+    moveBaseStatusNode_->requestInterruption();
     cameraSub_->requestInterruption();
     graspNode_->requestInterruption();
     mapSub_->wait();
+    moveBaseStatusNode_->wait();
     cameraSub_->wait();
     graspNode_->wait();
 
     delete ui;
     delete mapSub_;
+    delete moveBaseStatusNode_;
     delete cameraSub_;
     delete graspNode_;
 }
 
-void MainWindow::changeToPage2() {
-    ui->PagesStackedWidget->setCurrentWidget(ui->page_2);
+void MainWindow::changeToPage1() {
+  ui->PagesStackedWidget->setCurrentWidget(ui->page_1);
+  cameraSub_->moveHome();
 }
 
-void MainWindow::changeToPage1() {
-    ui->PagesStackedWidget->setCurrentWidget(ui->page_1);
-    cameraSub_->moveHome();
+void MainWindow::changeToPage2() {
+  ui->CameraError->setVisible(false);
+  ui->PagesStackedWidget->setCurrentWidget(ui->page_2);
 }
 
 void MainWindow::changeToPage3(){
+  ui->ConfirmPleaseWait->setVisible(true);
   ui->PagesStackedWidget->setCurrentWidget(ui->page_3);
 }
 
