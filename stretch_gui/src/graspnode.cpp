@@ -19,13 +19,14 @@ int GraspNode::exec(){
 
       if(camera_.width() > 0){
         QImage img = camera_.toImage();
-        QPainter painter(&img);
-        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-        painter.setBrush(QBrush(QColor(Qt::red), Qt::SolidPattern));
-        painter.setPen(Qt::NoPen);
-        painter.drawEllipse(item_, 20, 20);
-        painter.end();
-
+        if(showPoint_){
+          QPainter painter(&img);
+          painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+          painter.setBrush(QBrush(QColor(Qt::red), Qt::SolidPattern));
+          painter.setPen(Qt::NoPen);
+          painter.drawEllipse(item_, 20, 20);
+          painter.end();
+        }
         camera_ = QPixmap::fromImage(img);
 
         emit imgUpdate(camera_);
@@ -41,9 +42,7 @@ void GraspNode::centerPointCallback(const geometry_msgs::PointStamped input) {
 }
 
 void GraspNode::reset() {
-    std_msgs::Bool b;
-    b.data = 1;
-    resetPub_.publish(b);
+  showPoint_ = false;
 }
 
 void GraspNode::setImage(const QPixmap &input){
@@ -52,4 +51,6 @@ void GraspNode::setImage(const QPixmap &input){
 
 void GraspNode::setPoint(QPoint input){
   item_ = input;
+  emit pointReceived(false);
+  showPoint_ = true;
 }
