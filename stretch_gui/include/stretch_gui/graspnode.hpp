@@ -26,7 +26,10 @@ class GraspNode : public QThread {
    private:
     ros::NodeHandle *nh_;
     ros::Publisher resetPub_;
+    ros::Publisher lineUpPub_;
     ros::Subscriber centerPointSub_;
+
+    geometry_msgs::PointStamped::ConstPtr point_;
 
     bool showPoint_;
     QPoint item_;
@@ -37,11 +40,14 @@ class GraspNode : public QThread {
     void centerPointCallback(const geometry_msgs::PointStamped::ConstPtr& input);
    signals:
     void imgUpdate(const QPixmap &);
-    void pointReceived(bool);
+    void displayWaitMessage(bool);
+    void navigateToPoint(const geometry_msgs::PointStamped::ConstPtr& input);
    public slots:
     void setImage(const QPixmap &);
     void reset();
     void setPoint(QPoint);
+    void navigate();
+    void lineUp();
 };
 
 #endif  // GRASPNODE_HPP
