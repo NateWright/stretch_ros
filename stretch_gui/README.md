@@ -13,7 +13,7 @@ cd ~/catkin_ws/src
 git clone https://github.com/NateWright/stretch_ros.git
 git clone https://github.com/pal-robotics/realsense_gazebo_plugin
 git clone https://github.com/NateWright/stretch_lineup.git
-git clone https://github.com/NateWright/stretch_pc
+git clone https://github.com/NateWright/stretch_pc.git
 cd ~/catkin_ws
 rosdep install --from-paths src --ignore-src -r -y
 catkin build
