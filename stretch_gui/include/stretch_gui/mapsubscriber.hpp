@@ -21,6 +21,7 @@
 #include <QPoint>
 #include <QSize>
 #include <QThread>
+#include <cmath>
 
 using std::vector;
 
@@ -38,6 +39,7 @@ class MapSubscriber : public QThread {
     void moveRobot(QPoint press, QPoint release, QSize screen);
     void mousePressInitiated(QPoint press, QSize screen);
     void mousePressCurrentLocation(QPoint loc, QSize screen);
+    void navigateToPoint(const geometry_msgs::PointStamped::ConstPtr& input);
 
    protected:
     int exec();
@@ -47,6 +49,9 @@ class MapSubscriber : public QThread {
     ros::Subscriber mapSub_;
     ros::Subscriber posSub_;
     ros::Publisher movePub_;
+
+    tf2_ros::Buffer tfBuffer;
+    tf2_ros::TransformListener *tfListener;
 
     QImage map_;
     QImage mapCopy_;
@@ -63,8 +68,6 @@ class MapSubscriber : public QThread {
     QPoint mousePressLocation_;
     QPoint mousePressCurrentLocation_;
 
-    tf2_ros::Buffer tfBuffer;
-    tf2_ros::TransformListener *tfListener;
 
     void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg);
     void posCallback(const nav_msgs::Odometry::ConstPtr& msg);
