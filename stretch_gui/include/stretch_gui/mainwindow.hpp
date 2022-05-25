@@ -39,6 +39,7 @@ class MainWindow : public QMainWindow {
     void changeToPage2();
     void changeToPage1();
     void changeToPage3();
+    void changeToPage4();
 
 };
 #endif  // MAINWINDOW_H

@@ -5,57 +5,80 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
+    ui->PagesStackedWidget->setCurrentWidget(ui->page_1);
+
+    // Initialize all Nodes
 
     nh_ = ros::NodeHandle("stretch_gui");
-
-    connect(ui->ButtonBack, SIGNAL(clicked()), this, SLOT(changeToPage1()));
+    mapSub_ = new MapSubscriber(&nh_);
+    moveBaseStatusNode_ = new MoveBaseStatus(&nh_);
+    cameraSub_ = new RosCamera(&nh_);
+    graspNode_ = new GraspNode(&nh_);
 
     // Page 1
 
-    connect(ui->ButtonGrasp, SIGNAL(clicked()), this, SLOT(changeToPage2()));
+    connect(ui->ButtonGrasp, &QPushButton::clicked, this, &MainWindow::changeToPage2);
+    connect(ui->ButtonStop, &QPushButton::clicked, moveBaseStatusNode_, &MoveBaseStatus::stopRobot);
 
-    mapSub_ = new MapSubscriber(&nh_);
-    connect(mapSub_, &MapSubscriber::mapUpdate, ui->DisplayMap, &SceneViewer::setPixmap);
     connect(ui->DisplayMap, &SceneViewer::mouseClick, mapSub_, &MapSubscriber::moveRobot);
     connect(ui->DisplayMap, &SceneViewer::mousePressInitiated, mapSub_, &MapSubscriber::mousePressInitiated);
     connect(ui->DisplayMap, &SceneViewer::mousePressCurrentLocation, mapSub_, &MapSubscriber::mousePressCurrentLocation);
-    mapSub_->start();
 
-    moveBaseStatusNode_ = new MoveBaseStatus(&nh_);
+    connect(mapSub_, &MapSubscriber::mapUpdate, ui->DisplayMap, &SceneViewer::setPixmap);
+
     connect(moveBaseStatusNode_, &MoveBaseStatus::robotMoving, ui->PleaseWait, &QTextBrowser::setVisible);
-    connect(ui->ButtonStop, &QPushButton::clicked, moveBaseStatusNode_, &MoveBaseStatus::stopRobot);
-    mapSub_->start();
 
     // Page 2
 
     ui->DisplayCamera->setScaledContents(false);
 
-    cameraSub_ = new RosCamera(&nh_);
-    connect(cameraSub_, &RosCamera::imgUpdate, ui->DisplayCamera, &SceneViewer::setPixmap);
-    connect(ui->DisplayCamera, &SceneViewer::mouseClick, cameraSub_, &RosCamera::sceneClicked);
-    connect(cameraSub_, &RosCamera::clickSuccess, this, &MainWindow::changeToPage3);
+    connect(ui->ButtonBack, &QPushButton::clicked, this, &MainWindow::changeToPage1);
+
     connect(ui->CameraMoveButtonUp, &QPushButton::clicked, cameraSub_, &RosCamera::moveUp);
     connect(ui->CameraMoveButtonDown, &QPushButton::clicked, cameraSub_, &RosCamera::moveDown);
     connect(ui->CameraMoveButtonLeft, &QPushButton::clicked, cameraSub_, &RosCamera::moveLeft);
     connect(ui->CameraMoveButtonRight, &QPushButton::clicked, cameraSub_, &RosCamera::moveRight);
     connect(ui->CameraMoveButtonHome, &QPushButton::clicked, cameraSub_, &RosCamera::moveHome);
+
+    connect(ui->DisplayCamera, &SceneViewer::mouseClick, cameraSub_, &RosCamera::sceneClicked);
+
+    connect(cameraSub_, &RosCamera::imgUpdate, ui->DisplayCamera, &SceneViewer::setPixmap);
+    connect(cameraSub_, &RosCamera::clickSuccess, this, &MainWindow::changeToPage3);
     connect(cameraSub_, &RosCamera::clickFailure, ui->CameraError, &QTextBrowser::setVisible);
-    cameraSub_->start();
 
     // Page 3
 
     ui->DisplayImage->setScaledContents(false);
 
-    graspNode_ = new GraspNode(&nh_);
-    connect(graspNode_, &GraspNode::imgUpdate, ui->DisplayImage, &SceneViewer::setPixmap);
     connect(ui->ConfirmButtonNo, &QPushButton::clicked, this, &MainWindow::changeToPage2);
     connect(ui->ConfirmButtonNo, &QPushButton::clicked, graspNode_, &GraspNode::reset);
+    connect(ui->ConfirmButtonYes, &QPushButton::clicked, this, &MainWindow::changeToPage4);
+
     connect(cameraSub_, &RosCamera::imgUpdate, graspNode_, &GraspNode::setImage);
     connect(cameraSub_, &RosCamera::objectCenterPixel, graspNode_, &GraspNode::setPoint);
-    connect(graspNode_, &GraspNode::pointReceived, ui->ConfirmPleaseWait, &QTextBrowser::setVisible);
+
+    connect(graspNode_, &GraspNode::displayWaitMessage, ui->ConfirmPleaseWait, &QTextBrowser::setVisible);
+    connect(graspNode_, &GraspNode::imgUpdate, ui->DisplayImage, &SceneViewer::setPixmap);
+
+    // Page 4
+
+    ui->DisplayGrasp->setScaledContents(false);
+
+    connect(ui->ButtonMoveStretch, &QPushButton::clicked, graspNode_, &GraspNode::navigate);
+    connect(ui->ButtonLineUp, &QPushButton::clicked, graspNode_, &GraspNode::lineUp);
+
+    connect(mapSub_, &MapSubscriber::mapUpdate, ui->DisplayMap_2, &SceneViewer::setPixmap);
+
+    connect(graspNode_, &GraspNode::imgUpdate, ui->DisplayGrasp, &SceneViewer::setPixmap);
+    connect(graspNode_, &GraspNode::navigateToPoint, mapSub_, &MapSubscriber::navigateToPoint);
+
+
+    // Start Threads
+
+    mapSub_->start();
+    moveBaseStatusNode_->start();
+    cameraSub_->start();
     graspNode_->start();
-
-
 }
 
 MainWindow::~MainWindow() {
@@ -88,5 +111,9 @@ void MainWindow::changeToPage2() {
 void MainWindow::changeToPage3(){
   ui->ConfirmPleaseWait->setVisible(true);
   ui->PagesStackedWidget->setCurrentWidget(ui->page_3);
+}
+
+void MainWindow::changeToPage4(){
+  ui->PagesStackedWidget->setCurrentWidget(ui->page_4);
 }
 
