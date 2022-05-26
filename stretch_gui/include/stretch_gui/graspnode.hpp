@@ -38,15 +38,19 @@ class GraspNode : public QThread {
     QPixmap cameraOutputRotated_;
 
     void centerPointCallback(const geometry_msgs::PointStamped::ConstPtr& input);
+
    signals:
     void imgUpdate(const QPixmap &);
     void displayWaitMessage(bool);
     void navigateToPoint(const geometry_msgs::PointStamped::ConstPtr& input);
+    void checkPointInRange(const geometry_msgs::PointStamped::ConstPtr& input);
+    void validPoint();
+    void invalidPoint();
    public slots:
     void setImage(const QPixmap &);
     void reset();
-    void setPoint(QPoint);
-    void navigate();
+    void setPoint(const QPoint);
+    void checkPointReturn(bool b);
     void lineUp();
 };
 

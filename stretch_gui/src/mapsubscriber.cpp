@@ -187,6 +187,29 @@ void MapSubscriber::navigateToPoint(const geometry_msgs::PointStamped::ConstPtr&
     }
 }
 
+void MapSubscriber::checkPointInRange(const geometry_msgs::PointStamped::ConstPtr& input){
+  const double minDistance = 1.00;
+  std::string source = "map";
+  std::string destination = "base_link";
+  try{
+      geometry_msgs::PointStamped point = tfBuffer.transform(*input.get(), "map");
+      geometry_msgs::TransformStamped transBaseLinkToMap = tfBuffer.lookupTransform(source, destination, ros::Time(0));
+
+      const double x = point.point.x - transBaseLinkToMap.transform.translation.x,
+                   y = point.point.y - transBaseLinkToMap.transform.translation.y;
+
+      qDebug() << x * x + y * y;
+
+      if(x * x + y * y < minDistance * minDistance){
+        emit pointInRange(true);
+        return;
+      }
+  }catch(...){
+      qDebug() << "failed";
+  }
+  emit pointInRange(false);
+}
+
 MapSubscriber::~MapSubscriber() { delete tfListener; }
 
 QPoint translateScreenToMap(QPoint p, QSize screen, QSize map) {

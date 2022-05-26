@@ -34,12 +34,14 @@ class MapSubscriber : public QThread {
 
    signals:
     void mapUpdate(const QPixmap &);
+    void pointInRange(bool);
 
    public slots:
     void moveRobot(QPoint press, QPoint release, QSize screen);
     void mousePressInitiated(QPoint press, QSize screen);
     void mousePressCurrentLocation(QPoint loc, QSize screen);
     void navigateToPoint(const geometry_msgs::PointStamped::ConstPtr& input);
+    void checkPointInRange(const geometry_msgs::PointStamped::ConstPtr& input);
 
    protected:
     int exec();

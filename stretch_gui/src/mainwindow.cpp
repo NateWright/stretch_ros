@@ -40,11 +40,29 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->CameraMoveButtonRight, &QPushButton::clicked, cameraSub_, &RosCamera::moveRight);
     connect(ui->CameraMoveButtonHome, &QPushButton::clicked, cameraSub_, &RosCamera::moveHome);
 
+    // Find point in Camera
     connect(ui->DisplayCamera, &SceneViewer::mouseClick, cameraSub_, &RosCamera::sceneClicked);
+    connect(ui->DisplayCamera, &SceneViewer::mouseClick, ui->PointPleaseWait, &QTextBrowser::show);
+    connect(ui->DisplayCamera, &SceneViewer::mouseClick, ui->ErrorNanPoint, &QTextBrowser::hide);
+    connect(ui->DisplayCamera, &SceneViewer::mouseClick, ui->ErrorOutOfRange, &QTextBrowser::hide);
 
+    // Camera feed
     connect(cameraSub_, &RosCamera::imgUpdate, ui->DisplayCamera, &SceneViewer::setPixmap);
-    connect(cameraSub_, &RosCamera::clickSuccess, this, &MainWindow::changeToPage3);
-    connect(cameraSub_, &RosCamera::clickFailure, ui->CameraError, &QTextBrowser::setVisible);
+    // Error: Displays if NaN point was selected
+    connect(cameraSub_, &RosCamera::clickFailure, ui->ErrorNanPoint, &QTextBrowser::show);
+    connect(cameraSub_, &RosCamera::clickFailure, ui->PointPleaseWait, &QTextBrowser::hide);
+    // Sends center point to grasp node
+    connect(cameraSub_, &RosCamera::objectCenterPixel, graspNode_, &GraspNode::setPoint);
+    connect(graspNode_, &GraspNode::checkPointInRange, mapSub_, &MapSubscriber::checkPointInRange);
+
+    // Returns true if point is valid
+    connect(mapSub_, &MapSubscriber::pointInRange, graspNode_, &GraspNode::checkPointReturn);
+    connect(graspNode_, &GraspNode::validPoint, ui->PointPleaseWait, &QTextBrowser::hide);
+    connect(graspNode_, &GraspNode::invalidPoint, ui->PointPleaseWait, &QTextBrowser::hide);
+    // True
+    connect(graspNode_, &GraspNode::validPoint, this, &MainWindow::changeToPage3);
+    // False
+    connect(graspNode_, &GraspNode::invalidPoint, ui->ErrorOutOfRange, &QTextBrowser::show);
 
     // Page 3
 
@@ -53,24 +71,22 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->ConfirmButtonNo, &QPushButton::clicked, this, &MainWindow::changeToPage2);
     connect(ui->ConfirmButtonNo, &QPushButton::clicked, graspNode_, &GraspNode::reset);
     connect(ui->ConfirmButtonYes, &QPushButton::clicked, this, &MainWindow::changeToPage4);
+//    connect(ui->ConfirmButtonYes, &QPushButton::clicked, graspNode_, &GraspNode::lineUp);
+    connect(ui->ConfirmButtonYes, &QPushButton::clicked, cameraSub_, &RosCamera::lookAtArm);
+
 
     connect(cameraSub_, &RosCamera::imgUpdate, graspNode_, &GraspNode::setImage);
-    connect(cameraSub_, &RosCamera::objectCenterPixel, graspNode_, &GraspNode::setPoint);
 
-    connect(graspNode_, &GraspNode::displayWaitMessage, ui->ConfirmPleaseWait, &QTextBrowser::setVisible);
     connect(graspNode_, &GraspNode::imgUpdate, ui->DisplayImage, &SceneViewer::setPixmap);
 
     // Page 4
 
     ui->DisplayGrasp->setScaledContents(false);
 
-    connect(ui->ButtonMoveStretch, &QPushButton::clicked, graspNode_, &GraspNode::navigate);
-    connect(ui->ButtonLineUp, &QPushButton::clicked, graspNode_, &GraspNode::lineUp);
-
-    connect(mapSub_, &MapSubscriber::mapUpdate, ui->DisplayMap_2, &SceneViewer::setPixmap);
+    connect(ui->ButtonBack_2, &QPushButton::clicked, cameraSub_, &RosCamera::moveHome);
+    connect(ui->ButtonBack_2, &QPushButton::clicked, this, &MainWindow::changeToPage3);
 
     connect(graspNode_, &GraspNode::imgUpdate, ui->DisplayGrasp, &SceneViewer::setPixmap);
-    connect(graspNode_, &GraspNode::navigateToPoint, mapSub_, &MapSubscriber::navigateToPoint);
 
 
     // Start Threads
@@ -104,16 +120,16 @@ void MainWindow::changeToPage1() {
 }
 
 void MainWindow::changeToPage2() {
-  ui->CameraError->setVisible(false);
+  ui->ErrorNanPoint->setVisible(false);
+  ui->ErrorOutOfRange->setVisible(false);
+  ui->PointPleaseWait->setVisible(false);
   ui->PagesStackedWidget->setCurrentWidget(ui->page_2);
 }
 
 void MainWindow::changeToPage3(){
-  ui->ConfirmPleaseWait->setVisible(true);
   ui->PagesStackedWidget->setCurrentWidget(ui->page_3);
 }
 
 void MainWindow::changeToPage4(){
   ui->PagesStackedWidget->setCurrentWidget(ui->page_4);
 }
-

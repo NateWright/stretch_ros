@@ -104,6 +104,14 @@ void RosCamera::moveRight() { move(Right); }
 
 void RosCamera::moveHome() { move(Home); }
 
+void RosCamera::lookAtArm() {
+  qDebug() << "looking at arm";
+  stretch_moveit_grasps::stretch_move_bool robot;
+  robot.lookRight = true;
+  robot.step = 90;
+  cameraAdjustment_.publish(robot);
+}
+
 void RosCamera::sceneClicked(QPoint press, QPoint release, QSize screen) {
   int locX = press.x();
   int locY = press.y();
@@ -115,7 +123,8 @@ void RosCamera::sceneClicked(QPoint press, QPoint release, QSize screen) {
     pcl::PointXYZRGB p = cloud_.get()->at(locY, cloud_.get()->height - locX);
 
     if(std::isnan(p.x) || std::isnan(p.y) || std::isnan(p.z)){
-      emit clickFailure(true);
+      qDebug() << "click fail";
+      emit clickFailure();
       throw(std::runtime_error("Point contains NaN"));
     }
 
@@ -124,7 +133,6 @@ void RosCamera::sceneClicked(QPoint press, QPoint release, QSize screen) {
     point.point.z = p.z;
 
     pointPick_.publish(point);
-    emit clickFailure(false);
     emit clickSuccess();
   }catch(...){
 

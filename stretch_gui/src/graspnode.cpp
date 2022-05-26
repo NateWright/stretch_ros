@@ -1,6 +1,6 @@
 #include "graspnode.hpp"
 
-GraspNode::GraspNode(ros::NodeHandle *nh) : nh_(nh){
+GraspNode::GraspNode(ros::NodeHandle *nh) : nh_(nh), showPoint_(false){
     resetPub_ = nh_->advertise<std_msgs::Bool>("/stretch_pc/reset", 30);
     lineUpPub_ = nh_->advertise<geometry_msgs::PointStamped>("/stretch_gui/lineUpPoint", 30);
     centerPointSub_ = nh_->subscribe("/stretch_pc/centerPoint", 30, &GraspNode::centerPointCallback, this);
@@ -44,23 +44,29 @@ void GraspNode::centerPointCallback(const geometry_msgs::PointStamped::ConstPtr&
 }
 
 void GraspNode::reset() {
-  showPoint_ = false;
 }
 
 void GraspNode::setImage(const QPixmap &input){
   camera_ = input.copy();
 }
 
-void GraspNode::setPoint(QPoint input){
-  item_ = input;
-  emit displayWaitMessage(false);
-  showPoint_ = true;
+void GraspNode::setPoint(const QPoint pixel){
+  item_ = pixel;
+  emit checkPointInRange(point_);
 }
 
-void GraspNode::navigate(){
-  emit navigateToPoint(point_);
+void GraspNode::checkPointReturn(bool b){
+  if(b){
+    showPoint_ = true;
+    emit validPoint();
+  } else{
+    emit invalidPoint();
+  }
+
+  emit displayWaitMessage(false);
 }
 
 void GraspNode::lineUp(){
+  showPoint_ = false;
   lineUpPub_.publish(point_);
 }
