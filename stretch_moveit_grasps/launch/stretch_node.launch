@@ -1,6 +1,6 @@
 <launch>
 
-  <node name="move_group_interface_stretch_node" pkg="stretch_moveit_grasps" type="stretch_node" respawn="false" output="screen">
-  </node>
+  <include file="$(find stretch_moveit_grasps)/launch/move_group.launch"/>
+  <node name="move_group_interface_stretch_node" pkg="stretch_moveit_grasps" type="stretch_node" respawn="false" output="screen"></node>
 
 </launch>
