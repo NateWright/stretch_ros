@@ -129,6 +129,7 @@ catkin_package(
 )
 catkin_package(
   LIBRARIES
+    ${PROJECT_NAME}
   INCLUDE_DIRS
   CATKIN_DEPENDS
     moveit_core
@@ -153,12 +154,12 @@ catkin_package(
 #   # $ENV{EIGEN3_INCLUDE_DIR}
 # )
 # include_directories(${THIS_PACKAGE_INCLUDE_DIRS})
-include_directories(SYSTEM ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIRS})
+include_directories(include/${PROJECT_NAME} SYSTEM ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIRS})
 
 ## Declare a C++ library
-# add_library(${PROJECT_NAME}
-#   src/${PROJECT_NAME}/stretch_moveit_grasps.cpp
-# )
+add_library(${PROJECT_NAME}
+  src/stretch_moveit_interface.cpp
+)
 
 ## Add cmake target dependencies of the library
 ## as an example, code may need to be generated before libraries
@@ -246,8 +247,11 @@ include_directories(SYSTEM ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIR} ${EIGEN3_
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
 
-add_executable(stretch_node src/stretch_node.cpp)
-target_link_libraries(stretch_node ${catkin_LIBRARIES} ${Boost_LIBRARIES})
-install(TARGETS stretch_node DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
+add_executable(stretch_node nodes/stretch_node.cpp)
+target_link_libraries(stretch_node ${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
+install(TARGETS stretch_node ${PROJECT_NAME} DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
 
-install(DIRECTORY launch DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+install(DIRECTORY launch include/${PROJECT_NAME}/ DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
+install(DIRECTORY include/${PROJECT_NAME}/
+        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+        PATTERN ".svn" EXCLUDE)
