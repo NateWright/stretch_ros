@@ -3,7 +3,7 @@
 RosCamera::RosCamera(ros::NodeHandle *nh) : nh_(nh) {
     colorCameraSub_ = nh_->subscribe("/camera/depth/color/points", 30, &RosCamera::cameraCallback, this);
 //    colorCameraSub_ = nh_->subscribe("/stretch_pc/pointcloud", 30, &RosCamera::cameraCallback, this);
-    cameraAdjustment_ = nh_->advertise<stretch_moveit_grasps::stretch_move_bool>("/move_head", 30);
+    cameraAdjustment_ = nh_->advertise<stretch_moveit_grasps::stretch_move_bool>("/stretch_moveit_grasps/head", 30);
     pointPick_ = nh->advertise<geometry_msgs::PointStamped>("/clicked_point", 30);
     centerPointSub_ = nh_->subscribe("/stretch_pc/centerPoint", 30, &RosCamera::centerPointCallback, this);
 }

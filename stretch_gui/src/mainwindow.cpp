@@ -69,9 +69,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->DisplayImage->setScaledContents(false);
 
     connect(ui->ConfirmButtonNo, &QPushButton::clicked, this, &MainWindow::changeToPage2);
-    connect(ui->ConfirmButtonNo, &QPushButton::clicked, graspNode_, &GraspNode::reset);
+    connect(ui->ConfirmButtonNo, &QPushButton::clicked, graspNode_, &GraspNode::disablePoint);
     connect(ui->ConfirmButtonYes, &QPushButton::clicked, this, &MainWindow::changeToPage4);
-//    connect(ui->ConfirmButtonYes, &QPushButton::clicked, graspNode_, &GraspNode::lineUp);
+    connect(ui->ConfirmButtonYes, &QPushButton::clicked, graspNode_, &GraspNode::disablePoint);
+    connect(ui->ConfirmButtonYes, &QPushButton::clicked, graspNode_, &GraspNode::lineUp);
     connect(ui->ConfirmButtonYes, &QPushButton::clicked, cameraSub_, &RosCamera::lookAtArm);
 
 
@@ -85,6 +86,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->ButtonBack_2, &QPushButton::clicked, cameraSub_, &RosCamera::moveHome);
     connect(ui->ButtonBack_2, &QPushButton::clicked, this, &MainWindow::changeToPage3);
+    connect(ui->ButtonBack_2, &QPushButton::clicked, graspNode_, &GraspNode::enablePoint);
 
     connect(graspNode_, &GraspNode::imgUpdate, ui->DisplayGrasp, &SceneViewer::setPixmap);
 

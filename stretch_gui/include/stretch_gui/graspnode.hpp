@@ -2,9 +2,12 @@
 #define GRASPNODE_HPP
 
 #include <geometry_msgs/PointStamped.h>
+#include <geometry_msgs/Twist.h>
 #include <pcl_ros/point_cloud.h>
 #include <ros/ros.h>
 #include <std_msgs/Bool.h>
+#include <tf2_ros/transform_listener.h>
+#include <tf2/utils.h>
 
 #include <QDebug>
 #include <QObject>
@@ -26,8 +29,12 @@ class GraspNode : public QThread {
    private:
     ros::NodeHandle *nh_;
     ros::Publisher resetPub_;
-    ros::Publisher lineUpPub_;
+    ros::Publisher cmdVelPub_;
+    ros::Publisher cmdArmPub_;
     ros::Subscriber centerPointSub_;
+
+    tf2_ros::Buffer tfBuffer_;
+    tf2_ros::TransformListener* tfListener_;
 
     geometry_msgs::PointStamped::ConstPtr point_;
 
@@ -47,8 +54,9 @@ class GraspNode : public QThread {
     void validPoint();
     void invalidPoint();
    public slots:
+    void enablePoint();
+    void disablePoint();
     void setImage(const QPixmap &);
-    void reset();
     void setPoint(const QPoint);
     void checkPointReturn(bool b);
     void lineUp();
