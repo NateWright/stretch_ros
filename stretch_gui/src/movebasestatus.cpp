@@ -3,23 +3,22 @@
 MoveBaseStatus::MoveBaseStatus(ros::NodeHandle *nodeHandle) : nh_(nodeHandle) {
     moveBaseStatusSub_ = nh_->subscribe("/move_base/status", 1000, &MoveBaseStatus::moveBaseStatusCallback, this);
     moveBaseStopPub_ = nh_->advertise<actionlib_msgs::GoalID>("/move_base/cancel", 30);
+    moveToThread(this);
 }
 
 MoveBaseStatus::~MoveBaseStatus() {
 }
 
 void MoveBaseStatus::run() {
-    exec();
+  QTimer *timer = new QTimer();
+  connect(timer, &QTimer::timeout, this, &MoveBaseStatus::loop);
+  timer->start();
+  exec();
+  delete timer;
 }
 
-int MoveBaseStatus::exec() {
-    ros::Rate loop_rate(120);
-    while (ros::ok() && !isInterruptionRequested()) {
-        ros::spinOnce();
-
-        loop_rate.sleep();
-    }
-    return 0;
+void MoveBaseStatus::loop() {
+  ros::spinOnce();
 }
 
 void MoveBaseStatus::moveBaseStatusCallback(const actionlib_msgs::GoalStatusArray::ConstPtr &msg) {

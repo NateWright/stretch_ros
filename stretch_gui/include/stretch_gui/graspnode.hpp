@@ -11,6 +11,7 @@
 
 #include <QDebug>
 #include <QThread>
+#include <QTimer>
 #include <QWidget>
 #include <atomic>
 
@@ -22,9 +23,6 @@ class GraspNode : public QThread {
     explicit GraspNode(ros::NodeHandle *nh);
     ~GraspNode();
     void run() override;
-
-   protected:
-    int exec();
 
    private:
     ros::NodeHandle *nh_;
@@ -43,6 +41,7 @@ class GraspNode : public QThread {
     void centerPointCallback(const geometry_msgs::PointStamped::ConstPtr &input);
     void lineUp();
     void homeRobot();
+    void loop();
 
    signals:
     //    void navigateToPoint(const geometry_msgs::PointStamped::ConstPtr& input);

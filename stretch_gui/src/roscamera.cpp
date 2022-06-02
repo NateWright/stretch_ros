@@ -5,34 +5,33 @@ RosCamera::RosCamera(ros::NodeHandle *nh) : nh_(nh), showCenterPoint_(false) {
 //    colorCameraSub_ = nh_->subscribe("/stretch_pc/pointcloud", 30, &RosCamera::cameraCallback, this);
     pointPick_ = nh->advertise<geometry_msgs::PointStamped>("/clicked_point", 30);
     centerPointSub_ = nh_->subscribe("/stretch_pc/centerPoint", 30, &RosCamera::centerPointCallback, this);
+    moveToThread(this);
 }
 RosCamera::~RosCamera() {}
 
 void RosCamera::run() {
+  QTimer *timer = new QTimer();
+  connect(timer, &QTimer::timeout, this, &RosCamera::loop);
+  timer->start();
   exec();
+  delete timer;
 }
 
-int RosCamera::exec(){
-  ros::Rate loop_rate(60);
-  while (ros::ok() && !isInterruptionRequested()) {
-      ros::spinOnce();
+void RosCamera::loop(){
+  ros::spinOnce();
 
-      QImage img = cameraOutputRotated_.toImage();
-      if (showCenterPoint_) {
-          QPainter painter(&img);
-          painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-          painter.setBrush(QBrush(QColor(Qt::red), Qt::SolidPattern));
-          painter.setPen(Qt::NoPen);
-          painter.drawEllipse(centerPoint_, 20, 20);
-          painter.end();
-      }
-      cameraOutputRotatedWithPoint_ = QPixmap::fromImage(img);
-      emit imgUpdateWithPoint(cameraOutputRotatedWithPoint_);
-      emit imgUpdate(cameraOutputRotated_);
-
-      loop_rate.sleep();
+  QImage img = cameraOutputRotated_.toImage();
+  if (showCenterPoint_) {
+      QPainter painter(&img);
+      painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+      painter.setBrush(QBrush(QColor(Qt::red), Qt::SolidPattern));
+      painter.setPen(Qt::NoPen);
+      painter.drawEllipse(centerPoint_, 20, 20);
+      painter.end();
   }
-  return 0;
+  cameraOutputRotatedWithPoint_ = QPixmap::fromImage(img);
+  emit imgUpdateWithPoint(cameraOutputRotatedWithPoint_);
+  emit imgUpdate(cameraOutputRotated_);
 }
 
 void RosCamera::cameraCallback(const sensor_msgs::PointCloud2::ConstPtr& pc) {

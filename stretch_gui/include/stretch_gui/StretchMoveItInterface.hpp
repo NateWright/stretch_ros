@@ -7,6 +7,8 @@
 
 #include <QObject>
 #include <QThread>
+#include <QDebug>
+#include <QTimer>
 
 enum direction { Up, Down, Left, Right, Home };
 
@@ -19,9 +21,6 @@ class StretchMoveItInterface : public QThread {
     explicit StretchMoveItInterface(ros::NodeHandle *nh);
     ~StretchMoveItInterface();
     void run() override;
-
-   protected:
-    int exec();
 
    private:
     ros::NodeHandle *nh_;
@@ -37,6 +36,7 @@ class StretchMoveItInterface : public QThread {
 
     void stretchArmCallback(const geometry_msgs::Pose::ConstPtr &target_pose1);
     void stretchHeadCallback(const stretch_moveit_grasps::stretch_move_bool msg);
+    void loop();
 
    public slots:
     void headSetRotation(double degPan = 0, double degTilt = 0);

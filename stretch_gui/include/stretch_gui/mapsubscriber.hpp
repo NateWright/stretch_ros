@@ -12,6 +12,7 @@
 #include <tf2_ros/transform_listener.h>
 
 #include <QDebug>
+#include <QTimer>
 #include <QGraphicsScene>
 #include <QImage>
 #include <QObject>
@@ -44,9 +45,6 @@ class MapSubscriber : public QThread {
     void navigateToPoint(const geometry_msgs::PointStamped::ConstPtr& input);
     void checkPointInRange(const geometry_msgs::PointStamped::ConstPtr& input);
 
-   protected:
-    int exec();
-
    private:
     ros::NodeHandle *nh_;
     ros::Subscriber mapSub_;
@@ -74,6 +72,7 @@ class MapSubscriber : public QThread {
 
     void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg);
     void posCallback(const nav_msgs::Odometry::ConstPtr& msg);
+    void loop();
 };
 
 QPoint translateScreenToMap(QPoint p, QSize screen, QSize map);

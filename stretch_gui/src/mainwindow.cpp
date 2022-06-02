@@ -103,11 +103,11 @@ MainWindow::MainWindow(QWidget *parent)
 }
 
 MainWindow::~MainWindow() {
-    mapSub_->requestInterruption();
-    moveBaseStatusNode_->requestInterruption();
-    cameraSub_->requestInterruption();
-    graspNode_->requestInterruption();
-    moveItNode_->requestInterruption();
+    mapSub_->quit();
+    moveBaseStatusNode_->quit();
+    cameraSub_->quit();
+    graspNode_->quit();
+    moveItNode_->quit();
     mapSub_->wait();
     moveBaseStatusNode_->wait();
     cameraSub_->wait();

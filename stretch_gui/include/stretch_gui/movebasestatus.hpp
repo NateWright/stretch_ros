@@ -9,6 +9,7 @@
 #include <QThread>
 #include <QWidget>
 #include <QDebug>
+#include <QTimer>
 
 class MoveBaseStatus : public QThread {
     Q_OBJECT
@@ -23,15 +24,13 @@ class MoveBaseStatus : public QThread {
    public slots:
     void stopRobot();
 
-   protected:
-    int exec();
-
    private:
     ros::NodeHandle *nh_;
     ros::Subscriber moveBaseStatusSub_;
     ros::Publisher moveBaseStopPub_;
 
     void moveBaseStatusCallback(const actionlib_msgs::GoalStatusArray::ConstPtr &msg);
+    void loop();
 };
 
 #endif  // MOVEBASESTATUS_HPP

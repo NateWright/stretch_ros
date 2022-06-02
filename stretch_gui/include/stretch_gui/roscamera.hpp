@@ -20,6 +20,7 @@
 #include <QSize>
 #include <QDebug>
 #include <cmath>
+#include <QTimer>
 
 class RosCamera : public QThread {
     Q_OBJECT
@@ -27,9 +28,6 @@ class RosCamera : public QThread {
     explicit RosCamera(ros::NodeHandle *nh);
     ~RosCamera();
     void run() override;
-
-   protected:
-    int exec();
 
    private:
     ros::NodeHandle *nh_;
@@ -51,6 +49,7 @@ class RosCamera : public QThread {
 
     void cameraCallback(const sensor_msgs::PointCloud2::ConstPtr& pc);
     void centerPointCallback(const geometry_msgs::PointStamped::ConstPtr& point);
+    void loop();
 
    signals:
     void imgUpdate(const QPixmap &);

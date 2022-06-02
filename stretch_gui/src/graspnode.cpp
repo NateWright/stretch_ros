@@ -8,6 +8,7 @@ GraspNode::GraspNode(ros::NodeHandle* nh) : nh_(nh), stage_(HOLD) {
 
     tfListener_ = new tf2_ros::TransformListener(tfBuffer_);
     point_.reset(new geometry_msgs::PointStamped());
+    moveToThread(this);
 }
 
 GraspNode::~GraspNode() {
@@ -15,28 +16,14 @@ GraspNode::~GraspNode() {
 }
 
 void GraspNode::run() {
-    exec();
+  QTimer *timer = new QTimer();
+  connect(timer, &QTimer::timeout, this, &GraspNode::loop);
+  timer->start();
+  exec();
+  delete timer;
 }
-
-int GraspNode::exec() {
-    ros::Rate loop_rate(60);
-    while (ros::ok() && !isInterruptionRequested()) {
-        ros::spinOnce();
-
-        switch(stage_){
-        case HOME:
-          homeRobot();
-          stage_ = HOLD;
-        break;
-          case GRASP:
-            lineUp();
-            stage_ = HOLD;
-          break;
-        }
-
-        loop_rate.sleep();
-    }
-    return 0;
+void GraspNode::loop(){
+  ros::spinOnce();
 }
 
 void GraspNode::centerPointCallback(const geometry_msgs::PointStamped::ConstPtr& input) {
@@ -46,6 +33,7 @@ void GraspNode::centerPointCallback(const geometry_msgs::PointStamped::ConstPtr&
 }
 
 void GraspNode::doLineUp(){
+  lineUp();
   stage_ = GRASP;
 }
 void GraspNode::lineUp() {
@@ -93,6 +81,7 @@ void GraspNode::lineUp() {
 }
 
 void GraspNode::doHomeRobot(){
+  homeRobot();
   stage_ = HOME;
 }
 void GraspNode::homeRobot() {

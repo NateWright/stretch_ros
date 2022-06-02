@@ -21,6 +21,7 @@ StretchMoveItInterface::StretchMoveItInterface(ros::NodeHandle* nh) :
     armSub_ = nh_->subscribe("/stretch_moveit_grasps/arm", 1000, &StretchMoveItInterface::stretchArmCallback, this);
     headSub_ = nh_->subscribe("/stretch_moveit_grasps/head", 1000, &StretchMoveItInterface::stretchHeadCallback, this);
     cameraAdjustment_ = nh_->advertise<stretch_moveit_grasps::stretch_move_bool>("/stretch_moveit_grasps/head", 30);
+    moveToThread(this);
 }
 
 StretchMoveItInterface::~StretchMoveItInterface() {
@@ -30,16 +31,15 @@ StretchMoveItInterface::~StretchMoveItInterface() {
 }
 
 void StretchMoveItInterface::run() {
-    exec();
+  QTimer *timer = new QTimer();
+  connect(timer, &QTimer::timeout, this, &StretchMoveItInterface::loop);
+  timer->start();
+  exec();
+  delete timer;
 }
 
-int StretchMoveItInterface::exec() {
-    ros::Rate loop_rate(60);
-    while (ros::ok() && !isInterruptionRequested()) {
-        ros::spinOnce();
-        loop_rate.sleep();
-    }
-    return 0;
+void StretchMoveItInterface::loop() {
+  ros::spinOnce();
 }
 void StretchMoveItInterface::stretchArmCallback(const geometry_msgs::Pose::ConstPtr& target_pose1) {
     // Start spinner to be able to access Current position
