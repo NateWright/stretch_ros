@@ -34,7 +34,8 @@ class MapSubscriber : public QThread {
 
    signals:
     void mapUpdate(const QPixmap &);
-    void pointInRange(bool);
+    void validPoint();
+    void invalidPoint();
 
    public slots:
     void moveRobot(QPoint press, QPoint release, QSize screen);

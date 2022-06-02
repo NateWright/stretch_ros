@@ -201,13 +201,13 @@ void MapSubscriber::checkPointInRange(const geometry_msgs::PointStamped::ConstPt
       qDebug() << x * x + y * y;
 
       if(x * x + y * y < minDistance * minDistance){
-        emit pointInRange(true);
+        emit validPoint();
         return;
       }
   }catch(...){
       qDebug() << "failed";
   }
-  emit pointInRange(false);
+  emit invalidPoint();
 }
 
 MapSubscriber::~MapSubscriber() { delete tfListener; }

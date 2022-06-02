@@ -1,9 +1,8 @@
 #include "roscamera.hpp"
 
-RosCamera::RosCamera(ros::NodeHandle *nh) : nh_(nh) {
+RosCamera::RosCamera(ros::NodeHandle *nh) : nh_(nh), showCenterPoint_(false) {
     colorCameraSub_ = nh_->subscribe("/camera/depth/color/points", 30, &RosCamera::cameraCallback, this);
 //    colorCameraSub_ = nh_->subscribe("/stretch_pc/pointcloud", 30, &RosCamera::cameraCallback, this);
-    cameraAdjustment_ = nh_->advertise<stretch_moveit_grasps::stretch_move_bool>("/stretch_moveit_grasps/head", 30);
     pointPick_ = nh->advertise<geometry_msgs::PointStamped>("/clicked_point", 30);
     centerPointSub_ = nh_->subscribe("/stretch_pc/centerPoint", 30, &RosCamera::centerPointCallback, this);
 }
@@ -14,9 +13,21 @@ void RosCamera::run() {
 }
 
 int RosCamera::exec(){
-  ros::Rate loop_rate(20);
+  ros::Rate loop_rate(60);
   while (ros::ok() && !isInterruptionRequested()) {
       ros::spinOnce();
+
+      QImage img = cameraOutputRotated_.toImage();
+      if (showCenterPoint_) {
+          QPainter painter(&img);
+          painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+          painter.setBrush(QBrush(QColor(Qt::red), Qt::SolidPattern));
+          painter.setPen(Qt::NoPen);
+          painter.drawEllipse(centerPoint_, 20, 20);
+          painter.end();
+      }
+      cameraOutputRotatedWithPoint_ = QPixmap::fromImage(img);
+      emit imgUpdateWithPoint(cameraOutputRotatedWithPoint_);
       emit imgUpdate(cameraOutputRotated_);
 
       loop_rate.sleep();
@@ -73,43 +84,8 @@ void RosCamera::centerPointCallback(const geometry_msgs::PointStamped::ConstPtr&
       }
     }
   }
-  emit objectCenterPixel(min);
-}
-
-void RosCamera::move(direction d) {
-    stretch_moveit_grasps::stretch_move_bool robot;
-    switch (d) {
-        case Up:
-            robot.lookUp = true;
-            break;
-        case Down:
-            robot.lookDown = true;
-            break;
-        case Left:
-            robot.lookLeft = true;
-            break;
-        case Right:
-            robot.lookRight = true;
-        case Home:
-            robot.home = true;
-    }
-    robot.step = 5;
-    cameraAdjustment_.publish(robot);
-}
-
-void RosCamera::moveUp() { move(Up); }
-void RosCamera::moveDown() { move(Down); }
-void RosCamera::moveLeft() { move(Left); }
-void RosCamera::moveRight() { move(Right); }
-
-void RosCamera::moveHome() { move(Home); }
-
-void RosCamera::lookAtArm() {
-  qDebug() << "looking at arm";
-  stretch_moveit_grasps::stretch_move_bool robot;
-  robot.lookRight = true;
-  robot.step = 90;
-  cameraAdjustment_.publish(robot);
+  centerPoint_ = min;
+  emit checkPointInRange(point);
 }
 
 void RosCamera::sceneClicked(QPoint press, QPoint release, QSize screen) {
@@ -137,4 +113,10 @@ void RosCamera::sceneClicked(QPoint press, QPoint release, QSize screen) {
   }catch(...){
 
   }
+}
+void RosCamera::showCenterPoint(){
+  showCenterPoint_ = true;
+}
+void RosCamera::hideCenterPoint(){
+  showCenterPoint_ = false;
 }

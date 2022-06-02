@@ -6,15 +6,15 @@
 #include <pcl_ros/point_cloud.h>
 #include <ros/ros.h>
 #include <std_msgs/Bool.h>
-#include <tf2_ros/transform_listener.h>
 #include <tf2/utils.h>
+#include <tf2_ros/transform_listener.h>
 
 #include <QDebug>
-#include <QObject>
-#include <QPainter>
-#include <QPoint>
 #include <QThread>
 #include <QWidget>
+#include <atomic>
+
+enum Stage{HOLD, HOME, GRASP, NEXT};
 
 class GraspNode : public QThread {
     Q_OBJECT
@@ -34,32 +34,28 @@ class GraspNode : public QThread {
     ros::Subscriber centerPointSub_;
 
     tf2_ros::Buffer tfBuffer_;
-    tf2_ros::TransformListener* tfListener_;
+    tf2_ros::TransformListener *tfListener_;
 
-    geometry_msgs::PointStamped::ConstPtr point_;
+    geometry_msgs::PointStamped::Ptr point_;
 
-    bool showPoint_;
-    QPoint item_;
+    std::atomic<Stage> stage_;
 
-    QPixmap camera_;
-    QPixmap cameraOutputRotated_;
-
-    void centerPointCallback(const geometry_msgs::PointStamped::ConstPtr& input);
+    void centerPointCallback(const geometry_msgs::PointStamped::ConstPtr &input);
+    void lineUp();
+    void homeRobot();
 
    signals:
-    void imgUpdate(const QPixmap &);
-    void displayWaitMessage(bool);
-    void navigateToPoint(const geometry_msgs::PointStamped::ConstPtr& input);
-    void checkPointInRange(const geometry_msgs::PointStamped::ConstPtr& input);
-    void validPoint();
-    void invalidPoint();
+    //    void navigateToPoint(const geometry_msgs::PointStamped::ConstPtr& input);
+    void headSetRotation(double degPan = 0, double degTilt = 0);
+    void headSetPan(double degPan = 0);
+    void headSetTilt(double degTilt = 0);
+    void armSetHeight(double meters = 0.2);
+    void armSetReach(double meters = 0);
+    void gripperSetRotate(double deg = 180);
+    void gripperSetGrip(double deg = 0);
    public slots:
-    void enablePoint();
-    void disablePoint();
-    void setImage(const QPixmap &);
-    void setPoint(const QPoint);
-    void checkPointReturn(bool b);
-    void lineUp();
+    void doLineUp();
+    void doHomeRobot();
 };
 
 #endif  // GRASPNODE_HPP

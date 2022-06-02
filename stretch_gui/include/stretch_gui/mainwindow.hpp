@@ -13,6 +13,9 @@
 #include "roscamera.hpp"
 #include "graspnode.hpp"
 #include "movebasestatus.hpp"
+#include "StretchMoveItInterface.hpp"
+
+Q_DECLARE_METATYPE(geometry_msgs::PointStamped::ConstPtr);
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -34,6 +37,7 @@ class MainWindow : public QMainWindow {
     MoveBaseStatus *moveBaseStatusNode_;
     RosCamera *cameraSub_;
     GraspNode *graspNode_;
+    StretchMoveItInterface *moveItNode_;
 
    private slots:
     void changeToPage2();

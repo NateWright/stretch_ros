@@ -13,14 +13,13 @@
 #include <QImage>
 #include <QObject>
 #include <QPixmap>
+#include <QPainter>
 #include <QThread>
 #include <QWidget>
 #include <QPoint>
 #include <QSize>
 #include <QDebug>
 #include <cmath>
-
-enum direction { Up, Down, Left, Right, Home };
 
 class RosCamera : public QThread {
     Q_OBJECT
@@ -37,7 +36,6 @@ class RosCamera : public QThread {
     ros::Subscriber colorCameraSub_;
     ros::Subscriber segmentedCameraSub_;
     ros::Subscriber centerPointSub_;
-    ros::Publisher cameraAdjustment_;
     ros::Publisher pointPick_;
 
     std::string frameId_;
@@ -46,24 +44,24 @@ class RosCamera : public QThread {
     QImage camera_;
     QPixmap cameraOutput_;
     QPixmap cameraOutputRotated_;
+    QPixmap cameraOutputRotatedWithPoint_;
+
+    QPoint centerPoint_;
+    bool showCenterPoint_;
 
     void cameraCallback(const sensor_msgs::PointCloud2::ConstPtr& pc);
     void centerPointCallback(const geometry_msgs::PointStamped::ConstPtr& point);
-    void move(direction d);
 
    signals:
     void imgUpdate(const QPixmap &);
-    void objectCenterPixel(const QPoint);
+    void imgUpdateWithPoint(const QPixmap &);
+    void checkPointInRange(const geometry_msgs::PointStamped::ConstPtr &output);
     void clickSuccess();
     void clickFailure();
    public slots:
-    void moveUp();
-    void moveDown();
-    void moveLeft();
-    void moveRight();
-    void moveHome();
-    void lookAtArm();
     void sceneClicked(QPoint press, QPoint release, QSize screen);
+    void showCenterPoint();
+    void hideCenterPoint();
 };
 
 #endif  // ROSCAMERA_HPP
