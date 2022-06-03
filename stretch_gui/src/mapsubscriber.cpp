@@ -5,10 +5,12 @@ MapSubscriber::MapSubscriber(ros::NodeHandle* nodeHandle)
     mapSub_ = nh_->subscribe("/map", 30, &MapSubscriber::mapCallback, this);
     posSub_ = nh_->subscribe("/stretch_diff_drive_controller/odom", 30, &MapSubscriber::posCallback, this);
     movePub_ = nh_->advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 30);
-    tfListener = new tf2_ros::TransformListener(tfBuffer);
+    tfListener_ = new tf2_ros::TransformListener(tfBuffer_);
     map_ = QImage(10, 10, QImage::Format_RGB888);
     moveToThread(this);
 }
+
+MapSubscriber::~MapSubscriber() { delete tfListener_; }
 
 void MapSubscriber::run() {
     QTimer *timer = new QTimer();
@@ -87,7 +89,7 @@ void MapSubscriber::posCallback(const nav_msgs::Odometry::ConstPtr& msg) {
     std::string destination = "base_link";
 
     try {
-        geometry_msgs::TransformStamped transBaseLinkToMap = tfBuffer.lookupTransform(source, destination, ros::Time(0));
+        geometry_msgs::TransformStamped transBaseLinkToMap = tfBuffer_.lookupTransform(source, destination, ros::Time(0));
 
         robotRot_ = tf2::getYaw(transBaseLinkToMap.transform.rotation);
 
@@ -131,6 +133,10 @@ void MapSubscriber::moveRobot(QPoint press, QPoint release, QSize screen) {
     movePub_.publish(pose);
 }
 
+void MapSubscriber::moveRobotLoc(const geometry_msgs::PoseStamped::Ptr pose){
+  movePub_.publish(pose);
+}
+
 void MapSubscriber::mousePressInitiated(QPoint press, QSize screen) {
     mousePressLocation_ = translateScreenToMap(press, screen, map_.size());
 }
@@ -147,8 +153,8 @@ void MapSubscriber::navigateToPoint(const geometry_msgs::PointStamped::ConstPtr&
     try{
 //        qDebug() << "point x: " << input.get()->point.x;
 //        qDebug() << "point y: " << input.get()->point.y;
-        geometry_msgs::PointStamped point = tfBuffer.transform(*input.get(), "map");
-        geometry_msgs::TransformStamped transBaseLinkToMap = tfBuffer.lookupTransform(source, destination, ros::Time(0));
+        geometry_msgs::PointStamped point = tfBuffer_.transform(*input.get(), "map");
+        geometry_msgs::TransformStamped transBaseLinkToMap = tfBuffer_.lookupTransform(source, destination, ros::Time(0));
 
 //        qDebug() << "point x: " << point.point.x;
 //        qDebug() << "point y: " << point.point.y;
@@ -191,8 +197,8 @@ void MapSubscriber::checkPointInRange(const geometry_msgs::PointStamped::ConstPt
   std::string source = "map";
   std::string destination = "base_link";
   try{
-      geometry_msgs::PointStamped point = tfBuffer.transform(*input.get(), "map");
-      geometry_msgs::TransformStamped transBaseLinkToMap = tfBuffer.lookupTransform(source, destination, ros::Time(0));
+      geometry_msgs::PointStamped point = tfBuffer_.transform(*input.get(), "map");
+      geometry_msgs::TransformStamped transBaseLinkToMap = tfBuffer_.lookupTransform(source, destination, ros::Time(0));
 
       const double x = point.point.x - transBaseLinkToMap.transform.translation.x,
                    y = point.point.y - transBaseLinkToMap.transform.translation.y;
@@ -209,7 +215,21 @@ void MapSubscriber::checkPointInRange(const geometry_msgs::PointStamped::ConstPt
   emit invalidPoint();
 }
 
-MapSubscriber::~MapSubscriber() { delete tfListener; }
+void MapSubscriber::setHome(){
+  std::string source = "map",
+              destination = "base_link";
+  geometry_msgs::TransformStamped transBaseLinkToMap = tfBuffer_.lookupTransform(source, destination, ros::Time(0));
+
+  robotHome_.header.frame_id = transBaseLinkToMap.header.frame_id;
+  robotHome_.pose.orientation = transBaseLinkToMap.transform.rotation;
+  robotHome_.pose.position.x = transBaseLinkToMap.transform.translation.x;
+  robotHome_.pose.position.y = transBaseLinkToMap.transform.translation.y;
+  robotHome_.pose.position.z = transBaseLinkToMap.transform.translation.z;
+}
+
+void MapSubscriber::navigateHome(){
+  movePub_.publish(robotHome_);
+}
 
 QPoint translateScreenToMap(QPoint p, QSize screen, QSize map) {
     return QPoint((double)p.x() * (double)map.width() / (double)screen.width(), (double)p.y() * (double)map.height() / (double)screen.height());

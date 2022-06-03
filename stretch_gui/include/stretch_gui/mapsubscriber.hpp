@@ -29,7 +29,7 @@ using std::vector;
 class MapSubscriber : public QThread {
     Q_OBJECT
    public:
-    MapSubscriber(ros::NodeHandle *nodeHandle);
+    explicit MapSubscriber(ros::NodeHandle *nodeHandle);
     ~MapSubscriber();
     void run() override;
 
@@ -40,10 +40,13 @@ class MapSubscriber : public QThread {
 
    public slots:
     void moveRobot(QPoint press, QPoint release, QSize screen);
+    void moveRobotLoc(const geometry_msgs::PoseStamped::Ptr pose);
     void mousePressInitiated(QPoint press, QSize screen);
     void mousePressCurrentLocation(QPoint loc, QSize screen);
     void navigateToPoint(const geometry_msgs::PointStamped::ConstPtr& input);
     void checkPointInRange(const geometry_msgs::PointStamped::ConstPtr& input);
+    void setHome();
+    void navigateHome();
 
    private:
     ros::NodeHandle *nh_;
@@ -51,8 +54,8 @@ class MapSubscriber : public QThread {
     ros::Subscriber posSub_;
     ros::Publisher movePub_;
 
-    tf2_ros::Buffer tfBuffer;
-    tf2_ros::TransformListener *tfListener;
+    tf2_ros::Buffer tfBuffer_;
+    tf2_ros::TransformListener *tfListener_;
 
     QImage map_;
     QImage mapCopy_;
@@ -68,6 +71,8 @@ class MapSubscriber : public QThread {
     bool drawMouseArrow_;
     QPoint mousePressLocation_;
     QPoint mousePressCurrentLocation_;
+
+    geometry_msgs::PoseStamped robotHome_;
 
 
     void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg);
