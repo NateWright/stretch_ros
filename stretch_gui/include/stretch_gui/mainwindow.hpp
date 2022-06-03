@@ -16,6 +16,7 @@
 #include "StretchMoveItInterface.hpp"
 
 Q_DECLARE_METATYPE(geometry_msgs::PointStamped::ConstPtr);
+Q_DECLARE_METATYPE(geometry_msgs::PoseStamped::Ptr);
 
 QT_BEGIN_NAMESPACE
 namespace Ui {
@@ -44,6 +45,7 @@ class MainWindow : public QMainWindow {
     void changeToPage1();
     void changeToPage3();
     void changeToPage4();
+    void showButtonNavigateHome();
 
 };
 #endif  // MAINWINDOW_H
