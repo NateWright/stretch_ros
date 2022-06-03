@@ -2,6 +2,7 @@
 #define GRASPNODE_HPP
 
 #include <geometry_msgs/PointStamped.h>
+#include <geometry_msgs/PoseStamped.h>
 #include <geometry_msgs/Twist.h>
 #include <pcl_ros/point_cloud.h>
 #include <ros/ros.h>
@@ -36,11 +37,11 @@ class GraspNode : public QThread {
 
     geometry_msgs::PointStamped::Ptr point_;
 
+    geometry_msgs::PoseStamped::Ptr homePose_;
+
     std::atomic<Stage> stage_;
 
     void centerPointCallback(const geometry_msgs::PointStamped::ConstPtr &input);
-    void lineUp();
-    void homeRobot();
     void loop();
 
    signals:
@@ -52,9 +53,10 @@ class GraspNode : public QThread {
     void armSetReach(double meters = 0);
     void gripperSetRotate(double deg = 180);
     void gripperSetGrip(double deg = 0);
+    void navigate(const geometry_msgs::PoseStamped::Ptr pose);
    public slots:
-    void doLineUp();
-    void doHomeRobot();
+    void lineUp();
+    void homeRobot();
 };
 
 #endif  // GRASPNODE_HPP

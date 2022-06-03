@@ -31,30 +31,45 @@ void GraspNode::centerPointCallback(const geometry_msgs::PointStamped::ConstPtr&
     point_.reset(new geometry_msgs::PointStamped());
     *point_.get() = point;
 }
-
-void GraspNode::doLineUp(){
-  lineUp();
-  stage_ = GRASP;
-}
 void GraspNode::lineUp() {
     std::string targetFrame = "map",
                 sourceFrame = "base_link";
 
     geometry_msgs::TransformStamped transBaseToMap = tfBuffer_.lookupTransform(targetFrame, sourceFrame, ros::Time(0));
-      double x = point_.get()->point.x - transBaseToMap.transform.translation.x,
-             y = point_.get()->point.y - transBaseToMap.transform.translation.y;
+    homePose_.reset(new geometry_msgs::PoseStamped());
+    homePose_.get()->header.frame_id = "map";
+    homePose_.get()->pose.position.x = transBaseToMap.transform.translation.x;
+    homePose_.get()->pose.position.y = transBaseToMap.transform.translation.y;
+    homePose_.get()->pose.position.z = transBaseToMap.transform.translation.z;
+    homePose_.get()->pose.orientation = transBaseToMap.transform.rotation;
 
-    ros::AsyncSpinner s(1);
+    double x = point_.get()->point.x - transBaseToMap.transform.translation.x,
+           y = point_.get()->point.y - transBaseToMap.transform.translation.y;
 
-    s.start();
+    geometry_msgs::PoseStamped::Ptr pose(new geometry_msgs::PoseStamped());
+
+    pose.get()->header.frame_id = "map";
+    pose.get()->pose.position.x = transBaseToMap.transform.translation.x;
+    pose.get()->pose.position.y = transBaseToMap.transform.translation.y;
+    pose.get()->pose.position.z = transBaseToMap.transform.translation.z;
+
+    tf2::Quaternion q;
+    q.setRPY(0,0, atan(y/x) + M_PI/2);
+    pose.get()->pose.orientation = tf2::toMsg(q);
+
+    emit navigate(pose);
+
+//    ros::AsyncSpinner s(1);
+
+//    s.start();
 
     emit headSetPan(-90);
-    emit armSetHeight(point_.get()->point.z);
-    emit gripperSetRotate(0);
-    emit gripperSetGrip(30);
-    emit armSetReach(sqrt(x*x + y*y));
+//    emit armSetHeight(point_.get()->point.z);
+//    emit gripperSetRotate(0);
+//    emit gripperSetGrip(30);
+//    emit armSetReach(sqrt(x*x + y*y));
 
-    s.stop();
+//    s.stop();
 
     //  const double offset = -M_PI/2;
     //  geometry_msgs::PointStamped point = tfBuffer_.transform(*point_.get(), targetFrame);
@@ -80,10 +95,6 @@ void GraspNode::lineUp() {
     //  }
 }
 
-void GraspNode::doHomeRobot(){
-  homeRobot();
-  stage_ = HOME;
-}
 void GraspNode::homeRobot() {
     ros::AsyncSpinner s(1);
 
@@ -96,4 +107,6 @@ void GraspNode::homeRobot() {
     emit armSetReach();
 
     s.stop();
+
+    emit navigate(homePose_);
 }
