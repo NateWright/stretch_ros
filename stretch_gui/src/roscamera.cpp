@@ -61,8 +61,8 @@ void RosCamera::cameraCallback(const sensor_msgs::PointCloud2::ConstPtr& pc) {
 void RosCamera::centerPointCallback(const geometry_msgs::PointStamped::ConstPtr& point){
   pcl::PointXYZ p1, curr;
   p1 = pcl::PointXYZ(point.get()->point.x, point.get()->point.y, 0);
-  float smallest = pcl::euclideanDistance(p1, pcl::PointXYZ(cloud_.get()->at(0,0).x, cloud_.get()->at(0,0).y, 0));
-  float currDistance;
+  float smallest = NAN;
+  float currDistance = 0;
 
   const int width = cloud_.get()->width,
             height = cloud_.get()->height;
