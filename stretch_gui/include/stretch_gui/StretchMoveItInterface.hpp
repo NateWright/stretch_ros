@@ -46,6 +46,7 @@ class StretchMoveItInterface : public QThread {
     void armSetReach(double meters = 0);
     void gripperSetRotate(double deg = 180);
     void gripperSetGrip(double deg = 0);
+    void homeRobot();
     void headUp();
     void headDown();
     void headLeft();

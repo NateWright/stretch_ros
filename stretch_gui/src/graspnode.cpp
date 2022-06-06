@@ -32,6 +32,7 @@ void GraspNode::centerPointCallback(const geometry_msgs::PointStamped::ConstPtr&
     *point_.get() = point;
 }
 void GraspNode::lineUp() {
+    emit disableMapping();
     std::string targetFrame = "map",
                 sourceFrame = "base_link";
 
@@ -59,54 +60,30 @@ void GraspNode::lineUp() {
 
     emit navigate(pose);
 
-//    ros::AsyncSpinner s(1);
-
-//    s.start();
-
     emit headSetPan(-90);
-//    emit armSetHeight(point_.get()->point.z);
-//    emit gripperSetRotate(0);
-//    emit gripperSetGrip(30);
+    emit armSetHeight(point_.get()->point.z);
+    emit gripperSetRotate(0);
+    emit gripperSetGrip(30);
 //    emit armSetReach(sqrt(x*x + y*y));
-
-//    s.stop();
-
-    //  const double offset = -M_PI/2;
-    //  geometry_msgs::PointStamped point = tfBuffer_.transform(*point_.get(), targetFrame);
-    //  double angle = atan2(y, x);
-
-    //  double yaw = tf2::getYaw(transBaseLinkToMap.transform.rotation) + offset;
-
-    //  geometry_msgs::Twist rotate;
-    //  rotate.angular.z = 0.5;
-    //  ros::Rate loop_rate(10);
-
-    //  while (ros::ok() && fabs(angle - yaw) > 0.10) {
-    //      transBaseLinkToMap = tfBuffer_.lookupTransform(targetFrame, sourceFrame, ros::Time(0));
-    //      yaw = tf2::getYaw(transBaseLinkToMap.transform.rotation) + offset;
-
-    //      if (yaw - angle < 0) {
-    //          rotate.angular.z = 0.5;
-    //      } else {
-    //          rotate.angular.z = -0.5;
-    //      }
-    //      cmdVelPub_.publish(rotate);
-    //      loop_rate.sleep();
-    //  }
+    emit graspDone(true);
 }
 
-void GraspNode::homeRobot() {
-    ros::AsyncSpinner s(1);
+void GraspNode::returnObject(){
+  emit headSetTilt();
+  emit headSetPan();
+  emit gripperSetRotate(90);
+  emit armSetReach();
+  emit armSetHeight();
+  emit enableMapping();
+  emit navigateHome();
+}
 
-    s.start();
-
-    emit headSetPan();
-    emit gripperSetGrip();
-    emit gripperSetRotate();
-    emit armSetHeight();
-    emit armSetReach();
-
-    s.stop();
-
-    emit navigate(homePose_);
+void GraspNode::home() {
+  emit headSetPan();
+  emit gripperSetGrip();
+  emit gripperSetRotate();
+  emit armSetReach();
+  emit armSetHeight();
+  emit enableMapping();
+  emit navigate(homePose_);
 }

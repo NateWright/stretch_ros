@@ -95,6 +95,10 @@ void RosCamera::sceneClicked(QPoint press, QPoint release, QSize screen) {
   point.header.frame_id = frameId_;
 
   try{
+    if(locY > cloud_.get()->width || locX > cloud_.get()->height){
+      throw(std::runtime_error("Not in range"));
+    }
+    emit clickInitiated();
     pcl::PointXYZRGB p = cloud_.get()->at(locY, cloud_.get()->height - locX);
 
     if(std::isnan(p.x) || std::isnan(p.y) || std::isnan(p.z)){

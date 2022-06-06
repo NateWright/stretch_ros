@@ -57,6 +57,7 @@ class RosCamera : public QThread {
     void checkPointInRange(const geometry_msgs::PointStamped::ConstPtr &output);
     void clickSuccess();
     void clickFailure();
+    void clickInitiated();
    public slots:
     void sceneClicked(QPoint press, QPoint release, QSize screen);
     void showCenterPoint();

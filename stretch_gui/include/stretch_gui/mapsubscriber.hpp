@@ -4,6 +4,7 @@
 #include <actionlib_msgs/GoalStatus.h>
 #include <actionlib_msgs/GoalStatusArray.h>
 #include <geometry_msgs/PoseStamped.h>
+#include <std_srvs/Empty.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
@@ -32,21 +33,6 @@ class MapSubscriber : public QThread {
     explicit MapSubscriber(ros::NodeHandle *nodeHandle);
     ~MapSubscriber();
     void run() override;
-
-   signals:
-    void mapUpdate(const QPixmap &);
-    void validPoint();
-    void invalidPoint();
-
-   public slots:
-    void moveRobot(QPoint press, QPoint release, QSize screen);
-    void moveRobotLoc(const geometry_msgs::PoseStamped::Ptr pose);
-    void mousePressInitiated(QPoint press, QSize screen);
-    void mousePressCurrentLocation(QPoint loc, QSize screen);
-    void navigateToPoint(const geometry_msgs::PointStamped::ConstPtr& input);
-    void checkPointInRange(const geometry_msgs::PointStamped::ConstPtr& input);
-    void setHome();
-    void navigateHome();
 
    private:
     ros::NodeHandle *nh_;
@@ -78,6 +64,24 @@ class MapSubscriber : public QThread {
     void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg);
     void posCallback(const nav_msgs::Odometry::ConstPtr& msg);
     void loop();
+ signals:
+   void mapUpdate(const QPixmap &);
+   void validPoint();
+   void invalidPoint();
+   void homeSet(bool);
+
+ public slots:
+   void moveRobot(QPoint press, QPoint release, QSize screen);
+   void moveRobotLoc(const geometry_msgs::PoseStamped::Ptr pose);
+   void mousePressInitiated(QPoint press, QSize screen);
+   void mousePressCurrentLocation(QPoint loc, QSize screen);
+   void navigateToPoint(const geometry_msgs::PointStamped::ConstPtr& input);
+   void checkPointInRange(const geometry_msgs::PointStamped::ConstPtr& input);
+   void setHome();
+   void setHomeIfNone();
+   void navigateHome();
+   void enableMapping();
+   void disableMapping();
 };
 
 QPoint translateScreenToMap(QPoint p, QSize screen, QSize map);

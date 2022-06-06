@@ -53,10 +53,16 @@ class GraspNode : public QThread {
     void armSetReach(double meters = 0);
     void gripperSetRotate(double deg = 180);
     void gripperSetGrip(double deg = 0);
+    void homeRobot();
+    void navigateHome();
     void navigate(const geometry_msgs::PoseStamped::Ptr pose);
+    void graspDone(bool);
+    void enableMapping();
+    void disableMapping();
    public slots:
     void lineUp();
-    void homeRobot();
+    void returnObject();
+    void home();
 };
 
 #endif  // GRASPNODE_HPP

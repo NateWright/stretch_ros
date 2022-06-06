@@ -242,6 +242,14 @@ void StretchMoveItInterface::gripperSetGrip(double deg) {
     // Executing
     move_group_interface_gripper_->execute(my_plan);
 }
+void StretchMoveItInterface::homeRobot(){
+  headSetTilt();
+  headSetPan();
+  gripperSetGrip();
+  gripperSetRotate();
+  armSetHeight();
+  armSetReach();
+}
 
 void StretchMoveItInterface::move(direction d) {
     stretch_moveit_grasps::stretch_move_bool robot;

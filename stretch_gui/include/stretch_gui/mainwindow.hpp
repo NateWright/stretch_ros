@@ -46,6 +46,11 @@ class MainWindow : public QMainWindow {
     void changeToPage3();
     void changeToPage4();
     void showButtonNavigateHome();
+  signals:
+    void homeRobot();
+    void cameraSetTilt(int);
+    void enableMapping();
+    void disableMapping();
 
 };
 #endif  // MAINWINDOW_H

@@ -102,6 +102,9 @@ void MapSubscriber::posCallback(const nav_msgs::Odometry::ConstPtr& msg) {
 }
 
 void MapSubscriber::moveRobot(QPoint press, QPoint release, QSize screen) {
+    if(press == release){
+      return;
+    }
     drawMouseArrow_ = false;
     geometry_msgs::PoseStamped pose;
 
@@ -225,10 +228,26 @@ void MapSubscriber::setHome(){
   robotHome_.pose.position.x = transBaseLinkToMap.transform.translation.x;
   robotHome_.pose.position.y = transBaseLinkToMap.transform.translation.y;
   robotHome_.pose.position.z = transBaseLinkToMap.transform.translation.z;
+  emit homeSet(true);
+}
+
+void MapSubscriber::setHomeIfNone(){
+  std::string s = robotHome_.header.frame_id;
+  if(s.length() == 0){
+    setHome();
+  }
 }
 
 void MapSubscriber::navigateHome(){
   movePub_.publish(robotHome_);
+}
+void MapSubscriber::disableMapping(){
+  std_srvs::Empty msg;
+  ros::service::call("/rtabmap/pause", msg);
+}
+void MapSubscriber::enableMapping(){
+  std_srvs::Empty msg;
+  ros::service::call("/rtabmap/resume", msg);
 }
 
 QPoint translateScreenToMap(QPoint p, QSize screen, QSize map) {
