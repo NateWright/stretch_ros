@@ -4,10 +4,13 @@
 #include <geometry_msgs/PointStamped.h>
 #include <pcl_ros/point_cloud.h>
 #include <pcl/common/distances.h>
+#include <pcl/search/kdtree.h>
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
+#include <sensor_msgs/Image.h>
 #include <stretch_moveit_grasps/stretch_move_bool.h>
 #include <geometry_msgs/PointStamped.h>
+//#include <Eigen>
 
 #include <QColor>
 #include <QImage>
@@ -37,7 +40,7 @@ class RosCamera : public QThread {
     ros::Publisher pointPick_;
 
     std::string frameId_;
-    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_;
+    pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud_;
 
     QImage camera_;
     QPixmap cameraOutput_;
@@ -47,7 +50,7 @@ class RosCamera : public QThread {
     QPoint centerPoint_;
     bool showCenterPoint_;
 
-    void cameraCallback(const sensor_msgs::PointCloud2::ConstPtr& pc);
+    void cameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& pc);
     void centerPointCallback(const geometry_msgs::PointStamped::ConstPtr& point);
     void loop();
 

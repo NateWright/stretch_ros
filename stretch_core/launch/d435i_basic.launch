@@ -4,7 +4,7 @@
   <node name="d435i_accel_correction" pkg="stretch_core" type="d435i_accel_correction" output="screen" />
 
   <!-- REALSENSE D435i -->
-  <include file="$(find realsense2_camera)/launch/rs_camera.launch">
+  <include file="$(find realsense2_camera)/launch/rs_rgbd.launch">
     <!-- "The D435i depth camera generates and transmits the gyro and
          accelerometer samples independently, as the inertial sensors
          exhibit different FPS rates (200/400Hz for gyro, 63/250Hz for
@@ -50,7 +50,7 @@
          view associated with the narrower RGB camera. Note that
          points out of the RGB camera's field of view will have their
          colors set to 0,0,0. -->
-    <arg name="allow_no_texture_points" value="true"/>
+    <!-- <arg name="allow_no_texture_points" value="true"/> -->
 
     <!-- "initial_reset: On occasions the device was not closed
          properly and due to firmware issues needs to reset. If set to

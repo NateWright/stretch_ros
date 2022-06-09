@@ -98,6 +98,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->ButtonBack_2, &QPushButton::clicked, this, &MainWindow::changeToPage3);
     connect(ui->ButtonBack_2, &QPushButton::clicked, cameraSub_, &RosCamera::showCenterPoint);
     connect(ui->ButtonReturnObject, &QPushButton::clicked, graspNode_, &GraspNode::returnObject);
+    connect(ui->ButtonRelease, &QPushButton::clicked, graspNode_, &GraspNode::releaseObject);
 
     connect(cameraSub_, &RosCamera::imgUpdate, ui->DisplayGrasp, &SceneViewer::setPixmap);
 

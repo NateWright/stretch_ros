@@ -63,6 +63,7 @@ class GraspNode : public QThread {
     void lineUp();
     void returnObject();
     void home();
+    void releaseObject();
 };
 
 #endif  // GRASPNODE_HPP

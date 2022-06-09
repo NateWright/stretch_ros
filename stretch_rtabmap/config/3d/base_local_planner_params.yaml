@@ -14,7 +14,7 @@ TrajectoryPlannerROS:
   holonomic_robot: false
   # base vel/accel profile is in robot folders
   # tolerances (defaults)
-  yaw_goal_tolerance: 0.1
+  yaw_goal_tolerance: 0.05
   xy_goal_tolerance: 0.1
   latch_xy_goal_tolerance: true
   # forward simulation
@@ -67,7 +67,7 @@ DWAPlannerROS:
   forward_point_distance: 0.3
 
   #higher goal tolerance
-  yaw_goal_tolerance: 0.1
+  yaw_goal_tolerance: 0.05
   xy_goal_tolerance: 0.2
   latch_xy_goal_tolerance: true
 

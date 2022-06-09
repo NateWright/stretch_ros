@@ -11,6 +11,7 @@ MoveBaseStatus::~MoveBaseStatus() {
 
 void MoveBaseStatus::run() {
   QTimer *timer = new QTimer();
+  timer->setInterval(15);
   connect(timer, &QTimer::timeout, this, &MoveBaseStatus::loop);
   timer->start();
   exec();

@@ -1,7 +1,8 @@
 #include "roscamera.hpp"
 
 RosCamera::RosCamera(ros::NodeHandle *nh) : nh_(nh), showCenterPoint_(false) {
-    colorCameraSub_ = nh_->subscribe("/camera/depth/color/points", 30, &RosCamera::cameraCallback, this);
+//     colorCameraSub_ = nh_->subscribe("/camera/depth/color/points", 30, &RosCamera::cameraCallback, this);
+     colorCameraSub_ = nh_->subscribe("/camera/depth_registered/points", 30, &RosCamera::cameraCallback, this);
 //    colorCameraSub_ = nh_->subscribe("/stretch_pc/pointcloud", 30, &RosCamera::cameraCallback, this);
     pointPick_ = nh->advertise<geometry_msgs::PointStamped>("/clicked_point", 30);
     centerPointSub_ = nh_->subscribe("/stretch_pc/centerPoint", 30, &RosCamera::centerPointCallback, this);
@@ -11,6 +12,7 @@ RosCamera::~RosCamera() {}
 
 void RosCamera::run() {
   QTimer *timer = new QTimer();
+  timer->setInterval(15);
   connect(timer, &QTimer::timeout, this, &RosCamera::loop);
   timer->start();
   exec();
@@ -34,28 +36,22 @@ void RosCamera::loop(){
   emit imgUpdate(cameraOutputRotated_);
 }
 
-void RosCamera::cameraCallback(const sensor_msgs::PointCloud2::ConstPtr& pc) {
-    frameId_ = pc.get()->header.frame_id;
+void RosCamera::cameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& pc) {
+    cloud_ = pc;
 
-    const int width = pc.get()->width,
-              height = pc.get()->height;
-    camera_ = QImage(width, height, QImage::Format_RGB888);
-
-    pcl::PCLPointCloud2 pcl_pc2;
-    pcl_conversions::toPCL(*pc.get(), pcl_pc2);
-
-    cloud_.reset(new pcl::PointCloud<pcl::PointXYZRGB>());
-    pcl::fromPCLPointCloud2(pcl_pc2, *cloud_);
+    const int width = pc->width,
+              height = pc->height;
+    camera_ = QImage(height, width, QImage::Format_RGB888);
 
     pcl::PointXYZRGB point;
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-            point = cloud_.get()->at(x, y);
-            camera_.setPixel(x, y, QColor(point.r, point.g, point.b).rgb());
+            point = pc.get()->at(x, y);
+            camera_.setPixel(height - 1 - y, x, QColor(point.r, point.g, point.b).rgb());
         }
     }
-    cameraOutput_ = QPixmap::fromImage(camera_);
-    cameraOutputRotated_ = cameraOutput_.transformed(QTransform().rotate(90));
+    cameraOutputRotated_ = QPixmap::fromImage(camera_);
+//    cameraOutputRotated_ = cameraOutput_.transformed(QTransform().rotate(90));
 }
 
 void RosCamera::centerPointCallback(const geometry_msgs::PointStamped::ConstPtr& point){
@@ -88,11 +84,13 @@ void RosCamera::centerPointCallback(const geometry_msgs::PointStamped::ConstPtr&
 }
 
 void RosCamera::sceneClicked(QPoint press, QPoint release, QSize screen) {
-  int locX = press.x();
-  int locY = press.y();
+//  int locX = press.x() * (cloud_.get()->width / screen.width());
+//  int locY = press.y() * (cloud_.get()->height / screen.height());
+  int locX = press.x(),
+      locY = press.y();
 
   geometry_msgs::PointStamped point;
-  point.header.frame_id = frameId_;
+  point.header.frame_id = cloud_.get()->header.frame_id;
 
   try{
     if(locY > cloud_.get()->width || locX > cloud_.get()->height){

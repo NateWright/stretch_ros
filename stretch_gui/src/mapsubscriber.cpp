@@ -3,7 +3,8 @@
 MapSubscriber::MapSubscriber(ros::NodeHandle* nodeHandle)
     : nh_(nodeHandle), robotPos_(QPoint(0, 0)), drawPos_(false), drawMouseArrow_(false) {
     mapSub_ = nh_->subscribe("/map", 30, &MapSubscriber::mapCallback, this);
-    posSub_ = nh_->subscribe("/stretch_diff_drive_controller/odom", 30, &MapSubscriber::posCallback, this);
+//    posSub_ = nh_->subscribe("/stretch_diff_drive_controller/odom", 30, &MapSubscriber::posCallback, this);
+    posSub_ = nh_->subscribe("/odom", 30, &MapSubscriber::posCallback, this);
     movePub_ = nh_->advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 30);
     tfListener_ = new tf2_ros::TransformListener(tfBuffer_);
     map_ = QImage(10, 10, QImage::Format_RGB888);
@@ -14,6 +15,7 @@ MapSubscriber::~MapSubscriber() { delete tfListener_; }
 
 void MapSubscriber::run() {
     QTimer *timer = new QTimer();
+    timer->setInterval(15);
     connect(timer, &QTimer::timeout, this, &MapSubscriber::loop);
     timer->start();
     exec();
@@ -207,6 +209,9 @@ void MapSubscriber::checkPointInRange(const geometry_msgs::PointStamped::ConstPt
                    y = point.point.y - transBaseLinkToMap.transform.translation.y;
 
       qDebug() << x * x + y * y;
+//      qDebug() << "x: " << point.point.x;
+//      qDebug() << "y: " << point.point.y;
+//      qDebug() << "z: " << point.point.z;
 
       if(x * x + y * y < minDistance * minDistance){
         emit validPoint();
