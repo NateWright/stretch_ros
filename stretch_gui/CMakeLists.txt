@@ -35,6 +35,7 @@ project(stretch_gui)  ## this package name is the name of the directory this cma
 
 set(ROS_DEPENDS
   roscpp
+  rospy
   std_msgs
   tf2_ros
   pcl_ros
@@ -92,6 +93,7 @@ catkin_package(
   DEPENDS
     ${EXTERNAL_DEPENDS}
 )
+catkin_python_setup()
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
@@ -172,4 +174,3 @@ install(TARGETS ${NODE_LIST}
 install(DIRECTORY launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
   )
-
