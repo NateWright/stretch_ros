@@ -7,8 +7,8 @@
     <arg name="color_height" value="480"/>
   </include>
   <node name="d435i_configure" pkg="stretch_core" type="d435i_configure" output="screen">
-    <!-- <param name="initial_mode" type="string" value="Default"/> -->
-    <param name="initial_mode" type="string" value="Medium Density"/>
+    <param name="initial_mode" type="string" value="Default"/>
+    <!-- <param name="initial_mode" type="string" value="Medium Density"/> -->
     <!-- <param name="initial_mode" type="string" value="High Accuracy"/> -->
   </node>
   <!-- -->
