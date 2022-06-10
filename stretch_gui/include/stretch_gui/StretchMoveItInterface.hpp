@@ -9,7 +9,7 @@
 #include <QThread>
 #include <QTimer>
 
-const double toRadians = M_PI/180;
+const double toRadians = M_PI / 180;
 
 class StretchMoveItInterface : public QThread {
     Q_OBJECT
@@ -27,16 +27,19 @@ class StretchMoveItInterface : public QThread {
     ros::Publisher gipperYaw_;
     ros::Publisher gripperAperature_;
 
+    int tiltAngle_;
+    int panAngle_;
+
     void loop();
 
    public slots:
-    void headSetRotation(double degPan = 0, double degTilt = 0);
-    void headSetPan(double degPan = 0);
-    void headSetTilt(double degTilt = 0);
-    void armSetHeight(double metersHeight = 0.2);
-    void armSetReach(double metersReach = 0);
-    void gripperSetRotate(double deg = 180);
-    void gripperSetGrip(double deg = 0);
+    void headSetRotation(const double degPan = 0, const double degTilt = 0);
+    void headSetPan(const double degPan = 0);
+    void headSetTilt(const double degTilt = 0);
+    void armSetHeight(const double metersHeight = 0.2);
+    void armSetReach(const double metersReach = 0);
+    void gripperSetRotate(const double deg = 180);
+    void gripperSetGrip(const double deg = 0);
     void homeRobot();
     void headUp();
     void headDown();
