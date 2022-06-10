@@ -59,40 +59,18 @@ void GraspNode::lineUp() {
     pose->pose.position.z = transBaseToMap.transform.translation.z;
 
     tf2::Quaternion q;
-    qDebug() << "angle " << atan(y/x);
-    q.setRPY(0,0, atan(y/x) + M_PI/2);
+    q.setRPY(0,0, atan(y/x) - (85 * M_PI/180));
     pose->pose.orientation = tf2::toMsg(q);
 
+    emit navigate(pose);
 
     ros::Duration d(0.5);
-    emit navigate(pose);
 
     d.sleep();
     emit headSetPan(-90);
-    geometry_msgs::PointStamped p = tfBuffer_.transform(*point_.get(), "camera_color_optical_frame");
-    qDebug() << p.point.x;
-    double currAngle = atan(y/x) + M_PI/2;
-    while(abs(p.point.y) > 0.1){
-      qDebug() << p.point.y;
-      tf2::Quaternion q1;
-      if(p.point.x < 0){
-        currAngle -= 5*M_PI/180;
-      }else{
-        currAngle += 5*M_PI/180;
-      }
-      q1.setRPY(0,0, currAngle);
-      pose->pose.orientation = tf2::toMsg(q1);
-      emit navigate(pose);
-      d.sleep();
-      try{
-        p = tfBuffer_.transform(*point_.get(), "camera_color_optical_frame");
-      } catch(...){
-        qDebug() << "fail";
-      }
-    }
     qDebug() << "head set";
     d.sleep();
-    emit armSetHeight(point_->point.z);
+    emit armSetHeight(point_->point.z + 0.05);
     qDebug() << "arm height set";
     d.sleep();
     emit gripperSetRotate(0);
@@ -101,8 +79,9 @@ void GraspNode::lineUp() {
     emit gripperSetGrip(30);
     qDebug() << "gripper width set";
     d.sleep();
-    qDebug() << "distance " << sqrt(x*x + y*y) - 0.55;
-    emit armSetReach(sqrt(x*x + y*y) - 0.40);
+    emit armSetHeight(point_->point.z);
+    d.sleep();
+    emit armSetReach(sqrt(x*x + y*y) - 0.35);
     emit graspDone(true);
 }
 
@@ -113,6 +92,8 @@ void GraspNode::releaseObject(){
 void GraspNode::returnObject(){
   ros::Duration d(1.0);
   emit gripperSetGrip();
+  d.sleep();
+  emit armSetHeight(point_->point.z + 0.05);
   d.sleep();
   emit gripperSetRotate(90);
   d.sleep();
