@@ -81,7 +81,7 @@ void GraspNode::lineUp() {
     d.sleep();
     emit armSetHeight(point_->point.z);
     d.sleep();
-    emit armSetReach(sqrt(x*x + y*y) - 0.35);
+    emit armSetReach(sqrt(x*x + y*y) - 0.38);
     emit graspDone(true);
 }
 
@@ -112,6 +112,8 @@ void GraspNode::returnObject(){
 
 void GraspNode::home() {
   ros::Duration d(0.25);
+  emit armSetHeight(1.05);
+  d.sleep();
   emit armSetReach();
   d.sleep();
   emit headSetPan();
