@@ -17,6 +17,7 @@ GraspNode::~GraspNode() {
 
 void GraspNode::run() {
   QTimer *timer = new QTimer();
+  timer->setInterval(15);
   connect(timer, &QTimer::timeout, this, &GraspNode::loop);
   timer->start();
   exec();

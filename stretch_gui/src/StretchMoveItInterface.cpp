@@ -32,6 +32,7 @@ StretchMoveItInterface::~StretchMoveItInterface() {
 
 void StretchMoveItInterface::run() {
   QTimer *timer = new QTimer();
+  timer->setInterval(15);
   connect(timer, &QTimer::timeout, this, &StretchMoveItInterface::loop);
   timer->start();
   exec();

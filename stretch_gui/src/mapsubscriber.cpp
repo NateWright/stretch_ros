@@ -14,6 +14,7 @@ MapSubscriber::~MapSubscriber() { delete tfListener_; }
 
 void MapSubscriber::run() {
     QTimer *timer = new QTimer();
+    timer->setInterval(15);
     connect(timer, &QTimer::timeout, this, &MapSubscriber::loop);
     timer->start();
     exec();
