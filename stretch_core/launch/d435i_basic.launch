@@ -4,7 +4,7 @@
   <node name="d435i_accel_correction" pkg="stretch_core" type="d435i_accel_correction" output="screen" />
 
   <!-- REALSENSE D435i -->
-  <include file="$(find realsense2_camera)/launch/rs_rgbd.launch">
+  <include file="$(find realsense2_camera)/launch/rs_camera.launch">
     <!-- "The D435i depth camera generates and transmits the gyro and
          accelerometer samples independently, as the inertial sensors
          exhibit different FPS rates (200/400Hz for gyro, 63/250Hz for
