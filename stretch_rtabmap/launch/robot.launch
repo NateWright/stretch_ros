@@ -1,6 +1,6 @@
 <launch>
     <!-- REALSENSE D435i -->
-  <include file="$(find stretch_core)/launch/d435i_basic.launch" pass_all_args="true">
+  <include file="$(find stretch_rtabmap)/launch/robot/d435i_basic.launch" pass_all_args="true">
     <arg name="depth_width" value="640"/>
     <arg name="depth_height" value="480"/>
     <arg name="color_width" value="640"/>
