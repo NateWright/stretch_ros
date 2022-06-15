@@ -35,6 +35,7 @@ void GraspNode::centerPointCallback(const geometry_msgs::PointStamped::ConstPtr&
 void GraspNode::lineUp() {
     ros::AsyncSpinner s(1);
     s.start();
+    ros::Duration d(0.5);
     emit disableMapping();
     std::string targetFrame = "map",
                 sourceFrame = "base_link";
@@ -59,12 +60,10 @@ void GraspNode::lineUp() {
     pose->pose.position.z = transBaseToMap.transform.translation.z;
 
     tf2::Quaternion q;
-    q.setRPY(0,0, atan(y/x) - (85 * M_PI/180));
+    q.setRPY(0,0, atan(y/x) + (85 * M_PI/180));
     pose->pose.orientation = tf2::toMsg(q);
-
     emit navigate(pose);
-
-    ros::Duration d(0.5);
+    d.sleep();
 
     d.sleep();
     emit headSetPan(-90);
@@ -112,7 +111,7 @@ void GraspNode::returnObject(){
 
 void GraspNode::home() {
   ros::Duration d(0.25);
-  emit armSetHeight(1.05);
+//  emit armSetHeight(1.05);
   d.sleep();
   emit armSetReach();
   d.sleep();

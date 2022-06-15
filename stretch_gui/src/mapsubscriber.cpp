@@ -208,7 +208,7 @@ void MapSubscriber::checkPointInRange(const geometry_msgs::PointStamped::ConstPt
       const double x = point.point.x - transBaseLinkToMap.transform.translation.x,
                    y = point.point.y - transBaseLinkToMap.transform.translation.y;
 
-      qDebug() << x * x + y * y;
+//      qDebug() << x * x + y * y;
 //      qDebug() << "x: " << point.point.x;
 //      qDebug() << "y: " << point.point.y;
 //      qDebug() << "z: " << point.point.z;

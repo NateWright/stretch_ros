@@ -3,13 +3,11 @@
 
 #include <geometry_msgs/PointStamped.h>
 #include <pcl/common/distances.h>
-#include <pcl/search/kdtree.h>
+#include <pcl/kdtree/kdtree_flann.h>
 #include <pcl_ros/point_cloud.h>
 #include <ros/ros.h>
-#include <sensor_msgs/Image.h>
 #include <sensor_msgs/PointCloud2.h>
 #include <stretch_moveit_grasps/stretch_move_bool.h>
-//#include <Eigen>
 
 #include <QColor>
 #include <QDebug>
@@ -18,11 +16,10 @@
 #include <QPainter>
 #include <QPixmap>
 #include <QPoint>
+#include <QRgb>
 #include <QSize>
 #include <QThread>
 #include <QTimer>
-#include <QWidget>
-#include <cmath>
 
 class RosCamera : public QThread {
     Q_OBJECT
@@ -41,14 +38,16 @@ class RosCamera : public QThread {
     pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud_;
 
     QImage camera_;
+    QImage objectImage_;
     QPixmap cameraOutput_;
     QPixmap cameraOutputRotated_;
     QPixmap cameraOutputRotatedWithPoint_;
 
-    QPoint centerPoint_;
-    bool showCenterPoint_;
+//    QPoint centerPoint_;
+//    bool showCenterPoint_;
 
     void cameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr &pc);
+    void segmentedCameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr &pc);
     void centerPointCallback(const geometry_msgs::PointStamped::ConstPtr &point);
     void loop();
 
@@ -61,8 +60,8 @@ class RosCamera : public QThread {
     void clickInitiated();
    public slots:
     void sceneClicked(QPoint press, QPoint release, QSize screen);
-    void showCenterPoint();
-    void hideCenterPoint();
+//    void showCenterPoint();
+//    void hideCenterPoint();
 };
 
 #endif  // ROSCAMERA_HPP

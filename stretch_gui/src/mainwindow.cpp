@@ -58,7 +58,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Find point in Camera
     connect(ui->DisplayCamera, &SceneViewer::mouseClick, cameraSub_, &RosCamera::sceneClicked);
-    //    connect(ui->DisplayCamera, &SceneViewer::mouseClick, ui->PointPleaseWait, &QTextBrowser::show);
     connect(ui->DisplayCamera, &SceneViewer::mouseClick, ui->ErrorNanPoint, &QTextBrowser::hide);
     connect(ui->DisplayCamera, &SceneViewer::mouseClick, ui->ErrorOutOfRange, &QTextBrowser::hide);
 
@@ -83,9 +82,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->DisplayImage->setScaledContents(false);
 
     connect(ui->ConfirmButtonNo, &QPushButton::clicked, this, &MainWindow::changeToPage2);
-    connect(ui->ConfirmButtonNo, &QPushButton::clicked, cameraSub_, &RosCamera::hideCenterPoint);
     connect(ui->ConfirmButtonYes, &QPushButton::clicked, this, &MainWindow::changeToPage4);
-    connect(ui->ConfirmButtonYes, &QPushButton::clicked, cameraSub_, &RosCamera::hideCenterPoint);
     connect(ui->ConfirmButtonYes, &QPushButton::clicked, graspNode_, &GraspNode::lineUp);
 
     connect(cameraSub_, &RosCamera::imgUpdateWithPoint, ui->DisplayImage, &SceneViewer::setPixmap);
@@ -96,7 +93,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->ButtonBack_2, &QPushButton::clicked, graspNode_, &GraspNode::home);
     connect(ui->ButtonBack_2, &QPushButton::clicked, this, &MainWindow::changeToPage3);
-    connect(ui->ButtonBack_2, &QPushButton::clicked, cameraSub_, &RosCamera::showCenterPoint);
     connect(ui->ButtonReturnObject, &QPushButton::clicked, graspNode_, &GraspNode::returnObject);
     connect(ui->ButtonRelease, &QPushButton::clicked, graspNode_, &GraspNode::releaseObject);
 
@@ -161,7 +157,6 @@ void MainWindow::changeToPage2() {
 }
 
 void MainWindow::changeToPage3() {
-    cameraSub_->showCenterPoint();
     ui->PagesStackedWidget->setCurrentWidget(ui->page_3);
 }
 

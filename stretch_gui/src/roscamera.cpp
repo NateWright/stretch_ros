@@ -1,9 +1,9 @@
 #include "roscamera.hpp"
 
-RosCamera::RosCamera(ros::NodeHandle* nh) : nh_(nh), showCenterPoint_(false) {
+RosCamera::RosCamera(ros::NodeHandle* nh) : nh_(nh) {
     //     colorCameraSub_ = nh_->subscribe("/camera/depth/color/points", 30, &RosCamera::cameraCallback, this);
     colorCameraSub_ = nh_->subscribe("/camera/depth_registered/points", 30, &RosCamera::cameraCallback, this);
-    //    colorCameraSub_ = nh_->subscribe("/stretch_pc/pointcloud", 30, &RosCamera::cameraCallback, this);
+    segmentedCameraSub_ = nh_->subscribe("/stretch_pc/cluster", 30, &RosCamera::segmentedCameraCallback, this);
     pointPick_ = nh->advertise<geometry_msgs::PointStamped>("/clicked_point", 30);
     centerPointSub_ = nh_->subscribe("/stretch_pc/centerPoint", 30, &RosCamera::centerPointCallback, this);
     moveToThread(this);
@@ -21,19 +21,6 @@ void RosCamera::run() {
 
 void RosCamera::loop() {
     ros::spinOnce();
-
-    QImage img = cameraOutputRotated_.toImage();
-    if (showCenterPoint_) {
-        QPainter painter(&img);
-        painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-        painter.setBrush(QBrush(QColor(Qt::red), Qt::SolidPattern));
-        painter.setPen(Qt::NoPen);
-        painter.drawEllipse(centerPoint_, 20, 20);
-        painter.end();
-    }
-    cameraOutputRotatedWithPoint_ = QPixmap::fromImage(img);
-    emit imgUpdateWithPoint(cameraOutputRotatedWithPoint_);
-    emit imgUpdate(cameraOutputRotated_);
 }
 
 void RosCamera::cameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& pc) {
@@ -51,46 +38,43 @@ void RosCamera::cameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr
         }
     }
     cameraOutputRotated_ = QPixmap::fromImage(camera_);
-    //    cameraOutputRotated_ = cameraOutput_.transformed(QTransform().rotate(90));
+    emit imgUpdate(cameraOutputRotated_);
+}
+
+void RosCamera::segmentedCameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& pc) {
+    const int width = cloud_->width,
+              height = cloud_->height;
+    QImage img = cameraOutputRotated_.toImage();
+
+    pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
+    kdtree.setInputCloud(cloud_);
+    std::vector<int> pointIdxNKNSearch(1);
+    std::vector<float> pointNKNSquaredDistance(1);
+
+    QRgb red = QColor(Qt::red).rgb();
+    for (pcl::PointXYZRGB p : *pc) {
+        kdtree.nearestKSearch(p, 1, pointIdxNKNSearch, pointNKNSquaredDistance);
+        int pos = pointIdxNKNSearch[0];
+        img.setPixel(height - 1 - pos / width, pos % width, red);
+    }
+    cameraOutputRotatedWithPoint_ = QPixmap::fromImage(img);
+    emit imgUpdateWithPoint(cameraOutputRotatedWithPoint_);
 }
 
 void RosCamera::centerPointCallback(const geometry_msgs::PointStamped::ConstPtr& point) {
-    pcl::PointXYZ p1, curr;
-    p1 = pcl::PointXYZ(point->point.x, point->point.y, 0);
-    float smallest = NAN;
-    float currDistance = 0;
-
-    const int width = cloud_->width,
-              height = cloud_->height;
-    QPoint min(height, 0);
-
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            curr = pcl::PointXYZ(cloud_->at(x, y).x, cloud_->at(x, y).y, 0);
-            currDistance = pcl::euclideanDistance(p1, curr);
-            if (std::isnan(smallest)) {
-                min = QPoint(height - y, x);
-                smallest = currDistance;
-                continue;
-            }
-            if (currDistance < smallest) {
-                min = QPoint(height - y, x);
-                smallest = currDistance;
-            }
-        }
-    }
-    centerPoint_ = min;
     emit checkPointInRange(point);
+    return;
 }
 
 void RosCamera::sceneClicked(QPoint press, QPoint release, QSize screen) {
     //  int locX = press.x() * (cloud_->width / screen.width());
     //  int locY = press.y() * (cloud_->height / screen.height());
+    qDebug() << "screen height:" << screen.height();
+    qDebug() << "cloud height:" << cloud_->width;
     int locX = press.x(),
-        locY = press.y();
+        locY = static_cast<double>(press.y()) * static_cast<double>(cloud_->width) / static_cast<double>(screen.height());
 
-    geometry_msgs::PointStamped point;
-    point.header.frame_id = cloud_->header.frame_id;
+    qDebug() << "locY: " << locY;
 
     try {
         if (locY > cloud_->width || locX > cloud_->height) {
@@ -101,9 +85,11 @@ void RosCamera::sceneClicked(QPoint press, QPoint release, QSize screen) {
 
         if (std::isnan(p.x) || std::isnan(p.y) || std::isnan(p.z)) {
             qDebug() << "click fail";
-            emit clickFailure();
             throw(std::runtime_error("Point contains NaN"));
         }
+
+        geometry_msgs::PointStamped point;
+        point.header.frame_id = cloud_->header.frame_id;
 
         point.point.x = p.x;
         point.point.y = p.y;
@@ -112,11 +98,7 @@ void RosCamera::sceneClicked(QPoint press, QPoint release, QSize screen) {
         pointPick_.publish(point);
         emit clickSuccess();
     } catch (...) {
+      emit clickFailure();
+      return;
     }
-}
-void RosCamera::showCenterPoint() {
-    showCenterPoint_ = true;
-}
-void RosCamera::hideCenterPoint() {
-    showCenterPoint_ = false;
 }
