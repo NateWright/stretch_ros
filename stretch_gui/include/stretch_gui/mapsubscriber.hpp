@@ -82,6 +82,10 @@ class MapSubscriber : public QThread {
    void navigateHome();
    void enableMapping();
    void disableMapping();
+   void rotate(int degrees);
+   void rotateLeft(int degrees = 5);
+   void rotateRight(int degrees = 5);
+   void drive(double metere);
 };
 
 QPoint translateScreenToMap(QPoint p, QSize screen, QSize map);

@@ -45,6 +45,8 @@ class MainWindow : public QMainWindow {
     void changeToPage1();
     void changeToPage3();
     void changeToPage4();
+    void changeToPage5();
+    void changeToPage6();
     void showButtonNavigateHome();
   signals:
     void homeRobot();

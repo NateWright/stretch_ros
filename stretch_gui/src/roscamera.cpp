@@ -70,9 +70,13 @@ void RosCamera::sceneClicked(QPoint press, QPoint release, QSize screen) {
     //  int locX = press.x() * (cloud_->width / screen.width());
     //  int locY = press.y() * (cloud_->height / screen.height());
     qDebug() << "screen height:" << screen.height();
+    qDebug() << "screen width:" << screen.width();
     qDebug() << "cloud height:" << cloud_->width;
+    qDebug() << "cloud width:" << cloud_->height;
+//    int locX = press.x(),
+//        locY = static_cast<double>(press.y()) * static_cast<double>(cloud_->width) / static_cast<double>(screen.height());
     int locX = press.x(),
-        locY = static_cast<double>(press.y()) * static_cast<double>(cloud_->width) / static_cast<double>(screen.height());
+        locY = press.y();
 
     qDebug() << "locY: " << locY;
 
@@ -101,4 +105,13 @@ void RosCamera::sceneClicked(QPoint press, QPoint release, QSize screen) {
       emit clickFailure();
       return;
     }
+
+//    QImage img = cameraOutputRotated_.toImage();
+//    QPainter p(&img);
+//    p.setPen(Qt::blue);
+//    p.setCompositionMode(QPainter::CompositionMode_SourceOver);
+//    p.setBrush(Qt::blue);
+//    p.drawEllipse(locX, locY, 4, 4);
+//    cameraOutputRotatedWithPoint_ = QPixmap::fromImage(img);
+//    emit imgUpdateWithPoint(cameraOutputRotatedWithPoint_);
 }

@@ -23,6 +23,7 @@ class SceneViewer : public QLabel {
     void mousePressCurrentLocation(QPoint loc, QSize screen);
    public slots:
     void setMap(const QPixmap&);
+    void setCamera(const QPixmap&);
 
    protected:
     virtual void mousePressEvent(QMouseEvent* event);

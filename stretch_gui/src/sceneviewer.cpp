@@ -17,3 +17,8 @@ void SceneViewer::mouseMoveEvent(QMouseEvent *event){
 void SceneViewer::setMap(const QPixmap &map){
   setPixmap(map.scaled(size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
 }
+
+void SceneViewer::setCamera(const QPixmap& pix){
+  resize(pix.width(), pix.height());
+  setPixmap(pix);
+}

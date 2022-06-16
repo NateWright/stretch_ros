@@ -255,6 +255,30 @@ void MapSubscriber::enableMapping(){
   ros::service::call("/rtabmap/resume", msg);
 }
 
+void MapSubscriber::rotate(int degrees){
+  geometry_msgs::PoseStamped pose;
+  pose.header.frame_id = "base_link";
+  tf2::Quaternion q;
+  q.setRPY(0, 0, degrees * M_PI/180);
+  pose.pose.orientation = tf2::toMsg(q);
+  movePub_.publish(pose);
+}
+
+void MapSubscriber::rotateLeft(int degrees){
+  rotate(degrees);
+}
+void MapSubscriber::rotateRight(int degrees){
+  rotate(-degrees);
+}
+
+void MapSubscriber::drive(double meters){
+  geometry_msgs::PoseStamped pose;
+  pose.header.frame_id = "base_link";
+  pose.pose.position.x = meters;
+  pose.pose.orientation.w = 1;
+  movePub_.publish(pose);
+}
+
 QPoint translateScreenToMap(QPoint p, QSize screen, QSize map) {
     return QPoint((double)p.x() * (double)map.width() / (double)screen.width(), (double)p.y() * (double)map.height() / (double)screen.height());
 }
