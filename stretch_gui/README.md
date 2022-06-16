@@ -28,7 +28,7 @@ roslaunch stretch_rtabmap start_rtab.launch sim:=false localization:=false move_
 
 # Shell 2
 
-roslaunch stretch_pc stretch_pc.launch.
+roslaunch stretch_pc stretch_pc.launch
 
 # Shell 3
 
