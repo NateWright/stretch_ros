@@ -1,15 +1,15 @@
 #ifndef MOVEBASESTATUS_HPP
 #define MOVEBASESTATUS_HPP
 
-#include <actionlib_msgs/GoalStatusArray.h>
 #include <actionlib_msgs/GoalID.h>
+#include <actionlib_msgs/GoalStatusArray.h>
 #include <ros/ros.h>
 
+#include <QDebug>
 #include <QObject>
 #include <QThread>
-#include <QWidget>
-#include <QDebug>
 #include <QTimer>
+#include <QWidget>
 
 class MoveBaseStatus : public QThread {
     Q_OBJECT

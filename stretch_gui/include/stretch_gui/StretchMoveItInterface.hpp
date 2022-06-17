@@ -1,19 +1,15 @@
 #ifndef STRETCHMOVEITINTERFACE_HPP
 #define STRETCHMOVEITINTERFACE_HPP
 
-#include <moveit/move_group_interface/move_group_interface.h>
 #include <ros/ros.h>
-#include <stretch_moveit_grasps/stretch_move_bool.h>
+#include <std_msgs/Float64.h>
 
+#include <QDebug>
 #include <QObject>
 #include <QThread>
-#include <QDebug>
 #include <QTimer>
 
-enum direction { Up, Down, Left, Right, Home };
-
-const std::string HEAD = "stretch_head", ARM = "stretch_arm", GRIPPER = "stretch_gripper";
-const double DEG5 = 0.0872665;
+const double toRadians = M_PI / 180;
 
 class StretchMoveItInterface : public QThread {
     Q_OBJECT
@@ -24,28 +20,26 @@ class StretchMoveItInterface : public QThread {
 
    private:
     ros::NodeHandle *nh_;
-    ros::Subscriber armSub_;
-    ros::Subscriber headSub_;
-    ros::Publisher cameraAdjustment_;
+    ros::Publisher headTilt_;
+    ros::Publisher headPan_;
+    ros::Publisher armLift_;
+    ros::Publisher armExtension_;
+    ros::Publisher gipperYaw_;
+    ros::Publisher gripperAperature_;
 
-    moveit::planning_interface::MoveGroupInterface *move_group_interface_arm_;
-    moveit::planning_interface::MoveGroupInterface *move_group_interface_head_;
-    moveit::planning_interface::MoveGroupInterface *move_group_interface_gripper_;
+    int tiltAngle_;
+    int panAngle_;
 
-    void move(direction d);
-
-    void stretchArmCallback(const geometry_msgs::Pose::ConstPtr &target_pose1);
-    void stretchHeadCallback(const stretch_moveit_grasps::stretch_move_bool msg);
     void loop();
 
    public slots:
-    void headSetRotation(double degPan = 0, double degTilt = 0);
-    void headSetPan(double degPan = 0);
-    void headSetTilt(double degTilt = 0);
-    void armSetHeight(double meters = 0.2);
-    void armSetReach(double meters = 0);
-    void gripperSetRotate(double deg = 180);
-    void gripperSetGrip(double deg = 0);
+    void headSetRotation(const double degPan = 0, const double degTilt = 0);
+    void headSetPan(const double degPan = 0);
+    void headSetTilt(const double degTilt = 0);
+    void armSetHeight(const double metersHeight = 0.2);
+    void armSetReach(const double metersReach = 0);
+    void gripperSetRotate(const double deg = 180);
+    void gripperSetGrip(const double deg = 0);
     void homeRobot();
     void headUp();
     void headDown();

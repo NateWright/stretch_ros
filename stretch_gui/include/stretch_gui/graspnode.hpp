@@ -16,7 +16,10 @@
 #include <QWidget>
 #include <atomic>
 
-enum Stage{HOLD, HOME, GRASP, NEXT};
+enum Stage { HOLD,
+             HOME,
+             GRASP,
+             NEXT };
 
 class GraspNode : public QThread {
     Q_OBJECT
@@ -36,6 +39,7 @@ class GraspNode : public QThread {
     tf2_ros::TransformListener *tfListener_;
 
     geometry_msgs::PointStamped::Ptr point_;
+    geometry_msgs::PointStamped::Ptr pointBaseLink_;
 
     geometry_msgs::PoseStamped::Ptr homePose_;
 
@@ -56,13 +60,16 @@ class GraspNode : public QThread {
     void homeRobot();
     void navigateHome();
     void navigate(const geometry_msgs::PoseStamped::Ptr pose);
+    void turnLeft(int degrees);
     void graspDone(bool);
     void enableMapping();
     void disableMapping();
    public slots:
     void lineUp();
+    void replaceObject();
     void returnObject();
     void home();
+    void releaseObject();
 };
 
 #endif  // GRASPNODE_HPP

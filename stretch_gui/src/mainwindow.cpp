@@ -26,11 +26,14 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->ButtonNavigateHome->setEnabled(false);
 
+    ui->ButtonBackToGrasp->setEnabled(false);
+    ui->ButtonBackToGrasp->hide();
     connect(ui->ButtonGrasp, &QPushButton::clicked, this, &MainWindow::changeToPage2);
     connect(ui->ButtonGrasp, &QPushButton::clicked, mapSub_, &MapSubscriber::setHomeIfNone);
     connect(ui->ButtonStop, &QPushButton::clicked, moveBaseStatusNode_, &MoveBaseStatus::stopRobot);
     connect(ui->ButtonSetHome, &QPushButton::clicked, mapSub_, &MapSubscriber::setHome);
     connect(ui->ButtonNavigateHome, &QPushButton::clicked, mapSub_, &MapSubscriber::navigateHome);
+    connect(ui->ButtonToggleNavType, &QPushButton::clicked, this, &MainWindow::changeToPage6);
 
     connect(ui->DisplayMap, &SceneViewer::mouseClick, mapSub_, &MapSubscriber::moveRobot);
     connect(ui->DisplayMap, &SceneViewer::mousePressInitiated, mapSub_, &MapSubscriber::mousePressInitiated);
@@ -58,14 +61,13 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Find point in Camera
     connect(ui->DisplayCamera, &SceneViewer::mouseClick, cameraSub_, &RosCamera::sceneClicked);
-    //    connect(ui->DisplayCamera, &SceneViewer::mouseClick, ui->PointPleaseWait, &QTextBrowser::show);
     connect(ui->DisplayCamera, &SceneViewer::mouseClick, ui->ErrorNanPoint, &QTextBrowser::hide);
     connect(ui->DisplayCamera, &SceneViewer::mouseClick, ui->ErrorOutOfRange, &QTextBrowser::hide);
 
     connect(cameraSub_, &RosCamera::clickInitiated, ui->PointPleaseWait, &QTextBrowser::show);
 
     // Camera feed
-    connect(cameraSub_, &RosCamera::imgUpdate, ui->DisplayCamera, &SceneViewer::setPixmap);
+    connect(cameraSub_, &RosCamera::imgUpdate, ui->DisplayCamera, &SceneViewer::setCamera);
     // Error: Displays if NaN point was selected
     connect(cameraSub_, &RosCamera::clickFailure, ui->ErrorNanPoint, &QTextBrowser::show);
     connect(cameraSub_, &RosCamera::clickFailure, ui->PointPleaseWait, &QTextBrowser::hide);
@@ -83,23 +85,23 @@ MainWindow::MainWindow(QWidget *parent)
     ui->DisplayImage->setScaledContents(false);
 
     connect(ui->ConfirmButtonNo, &QPushButton::clicked, this, &MainWindow::changeToPage2);
-    connect(ui->ConfirmButtonNo, &QPushButton::clicked, cameraSub_, &RosCamera::hideCenterPoint);
     connect(ui->ConfirmButtonYes, &QPushButton::clicked, this, &MainWindow::changeToPage4);
-    connect(ui->ConfirmButtonYes, &QPushButton::clicked, cameraSub_, &RosCamera::hideCenterPoint);
     connect(ui->ConfirmButtonYes, &QPushButton::clicked, graspNode_, &GraspNode::lineUp);
 
-    connect(cameraSub_, &RosCamera::imgUpdateWithPoint, ui->DisplayImage, &SceneViewer::setPixmap);
+    connect(cameraSub_, &RosCamera::imgUpdateWithPoint, ui->DisplayImage, &SceneViewer::setCamera);
 
     // Page 4
 
     ui->DisplayGrasp->setScaledContents(false);
 
     connect(ui->ButtonBack_2, &QPushButton::clicked, graspNode_, &GraspNode::home);
-    connect(ui->ButtonBack_2, &QPushButton::clicked, this, &MainWindow::changeToPage3);
-    connect(ui->ButtonBack_2, &QPushButton::clicked, cameraSub_, &RosCamera::showCenterPoint);
+    connect(ui->ButtonBack_2, &QPushButton::clicked, this, &MainWindow::changeToPage2);
     connect(ui->ButtonReturnObject, &QPushButton::clicked, graspNode_, &GraspNode::returnObject);
+    connect(ui->ButtonRelease, &QPushButton::clicked, graspNode_, &GraspNode::releaseObject);
+    connect(ui->ButtonReplaceObject, &QPushButton::clicked, graspNode_, &GraspNode::replaceObject);
+    connect(ui->ButtonNavigate, &QPushButton::clicked, this, &MainWindow::changeToPage5);
 
-    connect(cameraSub_, &RosCamera::imgUpdate, ui->DisplayGrasp, &SceneViewer::setPixmap);
+    connect(cameraSub_, &RosCamera::imgUpdate, ui->DisplayGrasp, &SceneViewer::setCamera);
 
     connect(graspNode_, &GraspNode::headSetRotation, moveItNode_, &StretchMoveItInterface::headSetRotation, Qt::BlockingQueuedConnection);
     connect(graspNode_, &GraspNode::headSetPan, moveItNode_, &StretchMoveItInterface::headSetPan, Qt::BlockingQueuedConnection);
@@ -114,6 +116,21 @@ MainWindow::MainWindow(QWidget *parent)
     connect(graspNode_, &GraspNode::navigate, mapSub_, &MapSubscriber::moveRobotLoc);
     connect(graspNode_, &GraspNode::navigateHome, mapSub_, &MapSubscriber::navigateHome);
     connect(graspNode_, &GraspNode::graspDone, ui->ButtonReturnObject, &QPushButton::setEnabled);
+    connect(graspNode_, &GraspNode::turnLeft, mapSub_, &MapSubscriber::rotateLeft);
+
+    // Page 5
+
+    connect(ui->ButtonBackToGrasp, &QPushButton::clicked, this, &MainWindow::changeToPage4);
+
+    // Page 6
+
+    connect(ui->ButtonToggleNavType_2, &QPushButton::clicked, this, &MainWindow::changeToPage1);
+    connect(ui->ButtonTurnLeft, &QPushButton::clicked, [=]() { mapSub_->rotateLeft(); });
+    connect(ui->ButtonTurnRight, &QPushButton::clicked, [=]() { mapSub_->rotateRight(); });
+    connect(ui->ButtonForward, &QPushButton::clicked, [=]() { mapSub_->drive(0.15); });
+    //    connect(ui->ButtonBackwards, &QPushButton::clicked, [=](){mapSub_->drive(-0.2);});
+
+    connect(cameraSub_, &RosCamera::imgUpdate, ui->DisplayCamera_2, &SceneViewer::setCamera);
 
     // Start Threads
 
@@ -146,6 +163,10 @@ MainWindow::~MainWindow() {
 
 void MainWindow::changeToPage1() {
     ui->PagesStackedWidget->setCurrentWidget(ui->page_1);
+    ui->ButtonGrasp->show();
+    ui->ButtonGrasp->setEnabled(true);
+    ui->ButtonBackToGrasp->hide();
+    ui->ButtonBackToGrasp->setEnabled(false);
     emit homeRobot();
     emit enableMapping();
 }
@@ -160,13 +181,28 @@ void MainWindow::changeToPage2() {
 }
 
 void MainWindow::changeToPage3() {
-    cameraSub_->showCenterPoint();
+    emit disableMapping();
     ui->PagesStackedWidget->setCurrentWidget(ui->page_3);
 }
 
 void MainWindow::changeToPage4() {
+    emit disableMapping();
     ui->ButtonReturnObject->setDisabled(true);
     ui->PagesStackedWidget->setCurrentWidget(ui->page_4);
+}
+
+void MainWindow::changeToPage5() {
+    emit enableMapping();
+    ui->ButtonGrasp->hide();
+    ui->ButtonGrasp->setEnabled(false);
+    ui->ButtonBackToGrasp->show();
+    ui->ButtonBackToGrasp->setEnabled(true);
+    ui->PagesStackedWidget->setCurrentWidget(ui->page_1);
+}
+
+void MainWindow::changeToPage6() {
+    emit enableMapping();
+    ui->PagesStackedWidget->setCurrentWidget(ui->page_6);
 }
 
 void MainWindow::showButtonNavigateHome() {

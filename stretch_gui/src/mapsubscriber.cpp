@@ -3,7 +3,9 @@
 MapSubscriber::MapSubscriber(ros::NodeHandle* nodeHandle)
     : nh_(nodeHandle), robotPos_(QPoint(0, 0)), drawPos_(false), drawMouseArrow_(false) {
     mapSub_ = nh_->subscribe("/map", 30, &MapSubscriber::mapCallback, this);
-    posSub_ = nh_->subscribe("/stretch_diff_drive_controller/odom", 30, &MapSubscriber::posCallback, this);
+    std::string odomTopic;
+    nh_->getParam("/stretch_gui/odom", odomTopic);
+    posSub_ = nh_->subscribe(odomTopic, 30, &MapSubscriber::posCallback, this);
     movePub_ = nh_->advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 30);
     tfListener_ = new tf2_ros::TransformListener(tfBuffer_);
     map_ = QImage(10, 10, QImage::Format_RGB888);
@@ -13,7 +15,7 @@ MapSubscriber::MapSubscriber(ros::NodeHandle* nodeHandle)
 MapSubscriber::~MapSubscriber() { delete tfListener_; }
 
 void MapSubscriber::run() {
-    QTimer *timer = new QTimer();
+    QTimer* timer = new QTimer();
     timer->setInterval(15);
     connect(timer, &QTimer::timeout, this, &MapSubscriber::loop);
     timer->start();
@@ -21,43 +23,43 @@ void MapSubscriber::run() {
     delete timer;
 }
 
-void MapSubscriber::loop(){
-      ros::spinOnce();
+void MapSubscriber::loop() {
+    ros::spinOnce();
 
-      mapCopy_ = map_.copy();
-      QPainter painter(&mapCopy_);
-      painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-      if (drawPos_) {
-          painter.setPen(Qt::SolidLine);
-          painter.setPen(Qt::red);
-          painter.setBrush(QBrush(QColor(Qt::red), Qt::SolidPattern));
+    mapCopy_ = map_.copy();
+    QPainter painter(&mapCopy_);
+    painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+    if (drawPos_) {
+        painter.setPen(Qt::SolidLine);
+        painter.setPen(Qt::red);
+        painter.setBrush(QBrush(QColor(Qt::red), Qt::SolidPattern));
 
-          int size = 5;
-          QPoint p1(robotPos_.x() + size * std::sin(robotRot_ - M_PI / 2), robotPos_.y() + size * std::cos(robotRot_ - M_PI / 2));
-          QPoint p2(robotPos_.x() + size * std::sin(robotRot_ - M_PI), robotPos_.y() + size * std::cos(robotRot_ - M_PI));
-          QPoint p3(robotPos_.x() + size * std::sin(robotRot_), robotPos_.y() + size * std::cos(robotRot_));
+        int size = 5;
+        QPoint p1(robotPos_.x() + size * std::sin(robotRot_ - M_PI / 2), robotPos_.y() + size * std::cos(robotRot_ - M_PI / 2));
+        QPoint p2(robotPos_.x() + size * std::sin(robotRot_ - M_PI), robotPos_.y() + size * std::cos(robotRot_ - M_PI));
+        QPoint p3(robotPos_.x() + size * std::sin(robotRot_), robotPos_.y() + size * std::cos(robotRot_));
 
-          QPolygon triangle;
-          triangle.clear();
-          triangle << p1 << p2 << p3;
-          painter.drawPolygon(triangle);
-      }
-      if (drawMouseArrow_) {
-          painter.setPen(Qt::SolidLine);
-          painter.setPen(Qt::magenta);
-          painter.setBrush(QBrush(QColor(Qt::magenta), Qt::SolidPattern));
-          painter.drawLine(mousePressLocation_, mousePressCurrentLocation_);
-          painter.drawEllipse(mousePressCurrentLocation_, 1, 1);
-      }
-      // Paint origin
-      //      painter.setPen(Qt::NoPen);
-      //      painter.setBrush(QBrush(QColor(Qt::green), Qt::SolidPattern));
-      //      painter.drawEllipse(origin_, 5, 5);
-      painter.end();
+        QPolygon triangle;
+        triangle.clear();
+        triangle << p1 << p2 << p3;
+        painter.drawPolygon(triangle);
+    }
+    if (drawMouseArrow_) {
+        painter.setPen(Qt::SolidLine);
+        painter.setPen(Qt::magenta);
+        painter.setBrush(QBrush(QColor(Qt::magenta), Qt::SolidPattern));
+        painter.drawLine(mousePressLocation_, mousePressCurrentLocation_);
+        painter.drawEllipse(mousePressCurrentLocation_, 1, 1);
+    }
+    // Paint origin
+    //      painter.setPen(Qt::NoPen);
+    //      painter.setBrush(QBrush(QColor(Qt::green), Qt::SolidPattern));
+    //      painter.drawEllipse(origin_, 5, 5);
+    painter.end();
 
-      outputMap_ = QPixmap::fromImage(mapCopy_);
+    outputMap_ = QPixmap::fromImage(mapCopy_);
 
-      emit mapUpdate(outputMap_);
+    emit mapUpdate(outputMap_);
 }
 
 void MapSubscriber::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
@@ -103,8 +105,8 @@ void MapSubscriber::posCallback(const nav_msgs::Odometry::ConstPtr& msg) {
 }
 
 void MapSubscriber::moveRobot(QPoint press, QPoint release, QSize screen) {
-    if(press == release){
-      return;
+    if (press == release) {
+        return;
     }
     drawMouseArrow_ = false;
     geometry_msgs::PoseStamped pose;
@@ -137,8 +139,8 @@ void MapSubscriber::moveRobot(QPoint press, QPoint release, QSize screen) {
     movePub_.publish(pose);
 }
 
-void MapSubscriber::moveRobotLoc(const geometry_msgs::PoseStamped::Ptr pose){
-  movePub_.publish(pose);
+void MapSubscriber::moveRobotLoc(const geometry_msgs::PoseStamped::Ptr pose) {
+    movePub_.publish(pose);
 }
 
 void MapSubscriber::mousePressInitiated(QPoint press, QSize screen) {
@@ -149,30 +151,30 @@ void MapSubscriber::mousePressCurrentLocation(QPoint loc, QSize screen) {
     mousePressCurrentLocation_ = translateScreenToMap(loc, screen, map_.size());
     drawMouseArrow_ = true;
 }
-void MapSubscriber::navigateToPoint(const geometry_msgs::PointStamped::ConstPtr& input){
-//    qDebug() << "Begin";
+void MapSubscriber::navigateToPoint(const geometry_msgs::PointStamped::ConstPtr& input) {
+    //    qDebug() << "Begin";
     const double minDistance = 0.50;
     std::string source = "map";
     std::string destination = "base_link";
-    try{
-//        qDebug() << "point x: " << input.get()->point.x;
-//        qDebug() << "point y: " << input.get()->point.y;
+    try {
+        //        qDebug() << "point x: " << input.get()->point.x;
+        //        qDebug() << "point y: " << input.get()->point.y;
         geometry_msgs::PointStamped point = tfBuffer_.transform(*input.get(), "map");
         geometry_msgs::TransformStamped transBaseLinkToMap = tfBuffer_.lookupTransform(source, destination, ros::Time(0));
 
-//        qDebug() << "point x: " << point.point.x;
-//        qDebug() << "point y: " << point.point.y;
-//        qDebug() << "pos x: " << transBaseLinkToMap.transform.translation.x;
-//        qDebug() << "pos y: " << transBaseLinkToMap.transform.translation.y;
+        //        qDebug() << "point x: " << point.point.x;
+        //        qDebug() << "point y: " << point.point.y;
+        //        qDebug() << "pos x: " << transBaseLinkToMap.transform.translation.x;
+        //        qDebug() << "pos y: " << transBaseLinkToMap.transform.translation.y;
 
         const double x = point.point.x - transBaseLinkToMap.transform.translation.x,
                      y = point.point.y - transBaseLinkToMap.transform.translation.y;
 
-        if(x * x + y * y < minDistance * minDistance){
-          return;
+        if (x * x + y * y < minDistance * minDistance) {
+            return;
         }
 
-        const double theta = atan(y/x);
+        const double theta = atan(y / x);
 
         geometry_msgs::PoseStamped pose;
         pose.header.frame_id = "map";
@@ -190,65 +192,92 @@ void MapSubscriber::navigateToPoint(const geometry_msgs::PointStamped::ConstPtr&
         pose.pose.orientation.w = q.w();
 
         movePub_.publish(pose);
-//        qDebug() << "finished";
-    }catch(...){
+        //        qDebug() << "finished";
+    } catch (...) {
         qDebug() << "failed";
     }
 }
 
-void MapSubscriber::checkPointInRange(const geometry_msgs::PointStamped::ConstPtr& input){
-  const double minDistance = 1.00;
-  std::string source = "map";
-  std::string destination = "base_link";
-  try{
-      geometry_msgs::PointStamped point = tfBuffer_.transform(*input.get(), "map");
-      geometry_msgs::TransformStamped transBaseLinkToMap = tfBuffer_.lookupTransform(source, destination, ros::Time(0));
+void MapSubscriber::checkPointInRange(const geometry_msgs::PointStamped::ConstPtr& input) {
+    const double minDistance = 1.00;
+    std::string source = "map";
+    std::string destination = "base_link";
+    try {
+        geometry_msgs::PointStamped point = tfBuffer_.transform(*input.get(), "map");
+        geometry_msgs::TransformStamped transBaseLinkToMap = tfBuffer_.lookupTransform(source, destination, ros::Time(0));
 
-      const double x = point.point.x - transBaseLinkToMap.transform.translation.x,
-                   y = point.point.y - transBaseLinkToMap.transform.translation.y;
+        const double x = point.point.x - transBaseLinkToMap.transform.translation.x,
+                     y = point.point.y - transBaseLinkToMap.transform.translation.y;
 
-      qDebug() << x * x + y * y;
+        //      qDebug() << x * x + y * y;
+        //      qDebug() << "x: " << point.point.x;
+        //      qDebug() << "y: " << point.point.y;
+        //      qDebug() << "z: " << point.point.z;
 
-      if(x * x + y * y < minDistance * minDistance){
-        emit validPoint();
-        return;
-      }
-  }catch(...){
-      qDebug() << "failed";
-  }
-  emit invalidPoint();
+        if (x * x + y * y < minDistance * minDistance) {
+            emit validPoint();
+            return;
+        }
+    } catch (...) {
+        qDebug() << "failed";
+    }
+    emit invalidPoint();
 }
 
-void MapSubscriber::setHome(){
-  std::string source = "map",
-              destination = "base_link";
-  geometry_msgs::TransformStamped transBaseLinkToMap = tfBuffer_.lookupTransform(source, destination, ros::Time(0));
+void MapSubscriber::setHome() {
+    std::string source = "map",
+                destination = "base_link";
+    geometry_msgs::TransformStamped transBaseLinkToMap = tfBuffer_.lookupTransform(source, destination, ros::Time(0));
 
-  robotHome_.header.frame_id = transBaseLinkToMap.header.frame_id;
-  robotHome_.pose.orientation = transBaseLinkToMap.transform.rotation;
-  robotHome_.pose.position.x = transBaseLinkToMap.transform.translation.x;
-  robotHome_.pose.position.y = transBaseLinkToMap.transform.translation.y;
-  robotHome_.pose.position.z = transBaseLinkToMap.transform.translation.z;
-  emit homeSet(true);
-}
-
-void MapSubscriber::setHomeIfNone(){
-  std::string s = robotHome_.header.frame_id;
-  if(s.length() == 0){
-    setHome();
-  }
+    robotHome_.header.frame_id = transBaseLinkToMap.header.frame_id;
+    robotHome_.pose.orientation = transBaseLinkToMap.transform.rotation;
+    robotHome_.pose.position.x = transBaseLinkToMap.transform.translation.x;
+    robotHome_.pose.position.y = transBaseLinkToMap.transform.translation.y;
+    robotHome_.pose.position.z = transBaseLinkToMap.transform.translation.z;
+    emit homeSet(true);
 }
 
-void MapSubscriber::navigateHome(){
-  movePub_.publish(robotHome_);
+void MapSubscriber::setHomeIfNone() {
+    std::string s = robotHome_.header.frame_id;
+    if (s.length() == 0) {
+        setHome();
+    }
 }
-void MapSubscriber::disableMapping(){
-  std_srvs::Empty msg;
-  ros::service::call("/rtabmap/pause", msg);
+
+void MapSubscriber::navigateHome() {
+    movePub_.publish(robotHome_);
 }
-void MapSubscriber::enableMapping(){
-  std_srvs::Empty msg;
-  ros::service::call("/rtabmap/resume", msg);
+void MapSubscriber::disableMapping() {
+    std_srvs::Empty msg;
+    ros::service::call("/rtabmap/pause", msg);
+}
+void MapSubscriber::enableMapping() {
+    std_srvs::Empty msg;
+    ros::service::call("/rtabmap/resume", msg);
+}
+
+void MapSubscriber::rotate(int degrees) {
+    geometry_msgs::PoseStamped pose;
+    pose.header.frame_id = "base_link";
+    tf2::Quaternion q;
+    q.setRPY(0, 0, degrees * M_PI / 180);
+    pose.pose.orientation = tf2::toMsg(q);
+    movePub_.publish(pose);
+}
+
+void MapSubscriber::rotateLeft(int degrees) {
+    rotate(degrees);
+}
+void MapSubscriber::rotateRight(int degrees) {
+    rotate(-degrees);
+}
+
+void MapSubscriber::drive(double meters) {
+    geometry_msgs::PoseStamped pose;
+    pose.header.frame_id = "base_link";
+    pose.pose.position.x = meters;
+    pose.pose.orientation.w = 1;
+    movePub_.publish(pose);
 }
 
 QPoint translateScreenToMap(QPoint p, QSize screen, QSize map) {

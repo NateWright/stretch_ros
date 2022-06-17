@@ -8,12 +8,12 @@
 #include <QThread>
 #include <iostream>
 
-#include "mapsubscriber.hpp"
-#include "sceneviewer.hpp"
-#include "roscamera.hpp"
-#include "graspnode.hpp"
-#include "movebasestatus.hpp"
 #include "StretchMoveItInterface.hpp"
+#include "graspnode.hpp"
+#include "mapsubscriber.hpp"
+#include "movebasestatus.hpp"
+#include "roscamera.hpp"
+#include "sceneviewer.hpp"
 
 Q_DECLARE_METATYPE(geometry_msgs::PointStamped::ConstPtr);
 Q_DECLARE_METATYPE(geometry_msgs::PoseStamped::Ptr);
@@ -45,12 +45,13 @@ class MainWindow : public QMainWindow {
     void changeToPage1();
     void changeToPage3();
     void changeToPage4();
+    void changeToPage5();
+    void changeToPage6();
     void showButtonNavigateHome();
-  signals:
+   signals:
     void homeRobot();
     void cameraSetTilt(int);
     void enableMapping();
     void disableMapping();
-
 };
 #endif  // MAINWINDOW_H

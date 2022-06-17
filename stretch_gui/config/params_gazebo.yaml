@@ -1,0 +1,2 @@
+odom: "/stretch_diff_drive_controller/odom"
+pointCloudTopic: "/camera/depth/color/points"
