@@ -19,26 +19,6 @@ class stretch_interface(hm.HelloNode):
         self.debug_directory = None
         self.move_lock = threading.Lock();
 
-    # def joint_states_callback(self, joint_states):
-    #     with self.joint_states_lock: 
-    #         self.joint_states = joint_states
-    #     wrist_position, wrist_velocity, wrist_effort = hm.get_wrist_state(joint_states)
-    #     self.wrist_position = wrist_position
-    #     lift_position, lift_velocity, lift_effort = hm.get_lift_state(joint_states)
-    #     self.lift_position = lift_position
-    #     self.left_finger_position, temp1, temp2 = hm.get_left_finger_state(joint_states)
-
-    # def move_to_initial_configuration(self):
-    #     # initial_pose = {'wrist_extension': 0.25,
-    #     #                 'joint_wrist_yaw': 0.25,
-    #     #                 'gripper_aperture': 0,
-    #     #                 'joint_lift': 0.5}
-    #     initial_pose = {'joint_head_tilt': -1}
-
-    #     rospy.loginfo('Move to the initial configuration for drawer opening.')
-    #     self.move_to_pose(initial_pose)
-    #     rospy.loginfo('done')
-
     def callback_set_head_tilt(self, data):
         self.move_lock.acquire();
         initial_pose = {'joint_head_tilt': data.data}
