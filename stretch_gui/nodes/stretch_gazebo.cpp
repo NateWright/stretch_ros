@@ -6,10 +6,12 @@ int main(int argc, char** argv) {
     ros::init(argc, argv, "stretch_move_group_interface");
     ros::NodeHandlePtr nh(new ros::NodeHandle());
 
-    ros::AsyncSpinner s(1);
-    s.start();
-
     StretchInterfaceGazebo stretch(nh);
-    ros::waitForShutdown();
+    ros::Rate r(10);
+    while (ros::ok()) {
+        stretch.move();
+        r.sleep();
+    }
+
     return 0;
 }
