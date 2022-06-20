@@ -25,7 +25,7 @@ class StretchMoveItInterface : public QThread {
     ros::Publisher armLift_;
     ros::Publisher armExtension_;
     ros::Publisher gipperYaw_;
-    ros::Publisher gripperAperature_;
+    ros::Publisher gripperAperture_;
 
     int tiltAngle_;
     int panAngle_;

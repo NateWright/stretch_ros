@@ -6,7 +6,7 @@ StretchMoveItInterface::StretchMoveItInterface(ros::NodeHandle* nh) : nh_(nh), t
     armLift_ = nh_->advertise<std_msgs::Float64>("/stretch_interface/lift", 1000);
     armExtension_ = nh_->advertise<std_msgs::Float64>("/stretch_interface/lift_extension", 1000);
     gipperYaw_ = nh_->advertise<std_msgs::Float64>("/stretch_interface/wrist_yaw", 1000);
-    gripperAperature_ = nh_->advertise<std_msgs::Float64>("/stretch_interface/gripper_opening", 1000);
+    gripperAperture_ = nh_->advertise<std_msgs::Float64>("/stretch_interface/gripper_opening", 1000);
     moveToThread(this);
 }
 
@@ -61,7 +61,7 @@ void StretchMoveItInterface::gripperSetRotate(const double deg) {
 void StretchMoveItInterface::gripperSetGrip(const double deg) {
     std_msgs::Float64 msg;
     msg.data = deg * toRadians;
-    gripperAperature_.publish(msg);
+    gripperAperture_.publish(msg);
 }
 void StretchMoveItInterface::homeRobot() {
     headSetTilt();
