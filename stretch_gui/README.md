@@ -26,9 +26,9 @@ roslaunch stretch_rtabmap gazebo.launch
 # Shell 2
 roslaunch stretch_rtabmap start_rtab.launch sim:=true localization:=false move_base_config:=3d
 # Shell 3
-roslaunch stretch_pc stretch_pc.launch
+roslaunch stretch_pc stretch_pc.launch point_cloud_topic:="/camera/depth/color/points"
 # Shell 4
 roslaunch stretch_moveit_config move_group.launch
 # Shell 5
-roslaunch stretch_gui stretch_gui.launch
+roslaunch stretch_gui stretch_gui.launch sim:=true
 ```
