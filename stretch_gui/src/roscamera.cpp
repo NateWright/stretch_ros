@@ -1,6 +1,6 @@
 #include "roscamera.hpp"
 
-RosCamera::RosCamera(ros::NodeHandle* nh) : nh_(nh) {
+RosCamera::RosCamera(ros::NodeHandlePtr nh) : nh_(nh) {
     std::string pointCloudTopic;
     nh->getParam("/stretch_gui/pointCloudTopic", pointCloudTopic);
     colorCameraSub_ = nh_->subscribe(pointCloudTopic, 30, &RosCamera::cameraCallback, this);

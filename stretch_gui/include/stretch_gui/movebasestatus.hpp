@@ -14,7 +14,7 @@
 class MoveBaseStatus : public QThread {
     Q_OBJECT
    public:
-    explicit MoveBaseStatus(ros::NodeHandle *nodeHandle);
+    explicit MoveBaseStatus(ros::NodeHandlePtr nodeHandle);
     ~MoveBaseStatus();
     void run() override;
 
@@ -25,7 +25,7 @@ class MoveBaseStatus : public QThread {
     void stopRobot();
 
    private:
-    ros::NodeHandle *nh_;
+    ros::NodeHandlePtr nh_;
     ros::Subscriber moveBaseStatusSub_;
     ros::Publisher moveBaseStopPub_;
 

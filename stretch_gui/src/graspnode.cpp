@@ -1,6 +1,6 @@
 #include "graspnode.hpp"
 
-GraspNode::GraspNode(ros::NodeHandle* nh) : nh_(nh), stage_(HOLD) {
+GraspNode::GraspNode(ros::NodeHandlePtr nh) : nh_(nh), stage_(HOLD) {
     resetPub_ = nh_->advertise<std_msgs::Bool>("/stretch_pc/reset", 30);
     // cmdVelPub_ = nh_->advertise<geometry_msgs::Twist>("/stretch_diff_drive_controller/cmd_vel", 1000);
     cmdArmPub_ = nh_->advertise<geometry_msgs::Pose>("/stretch_moveit_grasps/arm", 1000);

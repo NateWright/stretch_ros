@@ -14,12 +14,12 @@ const double toRadians = M_PI / 180;
 class StretchMoveItInterface : public QThread {
     Q_OBJECT
    public:
-    explicit StretchMoveItInterface(ros::NodeHandle *nh);
+    explicit StretchMoveItInterface(ros::NodeHandlePtr nh);
     ~StretchMoveItInterface();
     void run() override;
 
    private:
-    ros::NodeHandle *nh_;
+    ros::NodeHandlePtr nh_;
     ros::Publisher headTilt_;
     ros::Publisher headPan_;
     ros::Publisher armLift_;

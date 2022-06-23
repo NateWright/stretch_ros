@@ -24,12 +24,12 @@ enum Stage { HOLD,
 class GraspNode : public QThread {
     Q_OBJECT
    public:
-    explicit GraspNode(ros::NodeHandle *nh);
+    explicit GraspNode(ros::NodeHandlePtr nh);
     ~GraspNode();
     void run() override;
 
    private:
-    ros::NodeHandle *nh_;
+    ros::NodeHandlePtr nh_;
     ros::Publisher resetPub_;
     ros::Publisher cmdVelPub_;
     ros::Publisher cmdArmPub_;

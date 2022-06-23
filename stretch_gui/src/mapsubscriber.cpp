@@ -1,6 +1,6 @@
 #include "mapsubscriber.hpp"
 
-MapSubscriber::MapSubscriber(ros::NodeHandle* nodeHandle)
+MapSubscriber::MapSubscriber(ros::NodeHandlePtr nodeHandle)
     : nh_(nodeHandle), robotPos_(QPoint(0, 0)), drawPos_(false), drawMouseArrow_(false) {
     mapSub_ = nh_->subscribe("/map", 30, &MapSubscriber::mapCallback, this);
     std::string odomTopic;

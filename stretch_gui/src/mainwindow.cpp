@@ -12,12 +12,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Initialize all Nodes
 
-    nh_ = ros::NodeHandle("stretch_gui");
-    mapSub_ = new MapSubscriber(&nh_);
-    moveBaseStatusNode_ = new MoveBaseStatus(&nh_);
-    cameraSub_ = new RosCamera(&nh_);
-    graspNode_ = new GraspNode(&nh_);
-    moveItNode_ = new StretchMoveItInterface(&nh_);
+    nh_.reset(new ros::NodeHandle("stretch_gui"));
+    mapSub_ = new MapSubscriber(nh_);
+    moveBaseStatusNode_ = new MoveBaseStatus(nh_);
+    cameraSub_ = new RosCamera(nh_);
+    graspNode_ = new GraspNode(nh_);
+    moveItNode_ = new StretchMoveItInterface(nh_);
 
     connect(this, &MainWindow::enableMapping, mapSub_, &MapSubscriber::enableMapping);
     connect(this, &MainWindow::disableMapping, mapSub_, &MapSubscriber::disableMapping);

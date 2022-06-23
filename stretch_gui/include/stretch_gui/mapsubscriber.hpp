@@ -30,12 +30,12 @@ using std::vector;
 class MapSubscriber : public QThread {
     Q_OBJECT
    public:
-    explicit MapSubscriber(ros::NodeHandle* nodeHandle);
+    explicit MapSubscriber(ros::NodeHandlePtr nodeHandle);
     ~MapSubscriber();
     void run() override;
 
    private:
-    ros::NodeHandle* nh_;
+    ros::NodeHandlePtr nh_;
     ros::Subscriber mapSub_;
     ros::Subscriber posSub_;
     ros::Publisher movePub_;

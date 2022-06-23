@@ -24,12 +24,12 @@
 class RosCamera : public QThread {
     Q_OBJECT
    public:
-    explicit RosCamera(ros::NodeHandle *nh);
+    explicit RosCamera(ros::NodeHandlePtr nh);
     ~RosCamera();
     void run() override;
 
    private:
-    ros::NodeHandle *nh_;
+    ros::NodeHandlePtr nh_;
     ros::Subscriber colorCameraSub_;
     ros::Subscriber segmentedCameraSub_;
     ros::Subscriber centerPointSub_;

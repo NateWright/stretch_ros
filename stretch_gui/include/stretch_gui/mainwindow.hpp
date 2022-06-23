@@ -33,7 +33,7 @@ class MainWindow : public QMainWindow {
 
    private:
     Ui::MainWindow *ui;
-    ros::NodeHandle nh_;
+    ros::NodeHandlePtr nh_;
     MapSubscriber *mapSub_;
     MoveBaseStatus *moveBaseStatusNode_;
     RosCamera *cameraSub_;
