@@ -64,6 +64,12 @@
   <build_depend>pcl_ros</build_depend>
   <build_export_depend>pcl_ros</build_export_depend>
   <exec_depend>pcl_ros</exec_depend>
+  <build_depend>moveit_ros_planning</build_depend>
+  <build_export_depend>moveit_ros_planning</build_export_depend>
+  <exec_depend>moveit_ros_planning</exec_depend>
+  <build_depend>moveit_ros_planning_interface</build_depend>
+  <build_export_depend>moveit_ros_planning_interface</build_export_depend>
+  <exec_depend>moveit_ros_planning_interface</exec_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->

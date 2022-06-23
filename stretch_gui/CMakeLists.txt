@@ -39,7 +39,8 @@ set(ROS_DEPENDS
   std_msgs
   tf2_ros
   pcl_ros
-  stretch_moveit_grasps
+  moveit_ros_planning
+  moveit_ros_planning_interface
   )
 
 set(EXTERNAL_DEPENDS

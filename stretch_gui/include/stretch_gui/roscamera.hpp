@@ -7,7 +7,6 @@
 #include <pcl_ros/point_cloud.h>
 #include <ros/ros.h>
 #include <sensor_msgs/PointCloud2.h>
-#include <stretch_moveit_grasps/stretch_move_bool.h>
 
 #include <QColor>
 #include <QDebug>
