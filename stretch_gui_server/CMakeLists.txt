@@ -26,7 +26,7 @@ cmake_minimum_required(VERSION 2.8.3)
 #get_filename_component(PACKAGE_NAME ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 #message("Creating Package: ${PACKAGE_NAME}")
 
-project(stretch_gui)  ## this package name is the name of the directory this cmake file is in
+project(stretch_gui_server)  ## this package name is the name of the directory this cmake file is in
 
 
 ################################
@@ -35,18 +35,14 @@ project(stretch_gui)  ## this package name is the name of the directory this cma
 
 set(ROS_DEPENDS
   roscpp
-  rospy
-  std_msgs
-  tf2_ros
-  pcl_ros
-  moveit_ros_planning
-  moveit_ros_planning_interface
+  stretch_gui_library
   )
 
 set(EXTERNAL_DEPENDS
+  Qt6Core
   Qt6Widgets
   Qt6PrintSupport
-  Qt6Core
+  Qt6RemoteObjects
   #OpenCV
   )
 
@@ -54,6 +50,7 @@ set(EXTERNAL_DEPENDS_LIB
   Qt6::Widgets
   Qt6::PrintSupport
   Qt6::Core
+  Qt6::RemoteObjects
   #${OpenCV_LIBS}
   )
 
@@ -88,19 +85,19 @@ find_package(catkin REQUIRED COMPONENTS ${ROS_DEPENDS})
 catkin_package(
   INCLUDE_DIRS
     include
+  LIBRARIES
+    ${PROJECT_NAME}
   CATKIN_DEPENDS
     ${ROS_DEPENDS}
   DEPENDS
     ${EXTERNAL_DEPENDS}
-  LIBRARIES
-    ${PROJECT_NAME}
 )
-catkin_python_setup()
 
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
 include_directories(
-  include/${PROJECT_NAME}
+  include
+  SYSTEM
   ${catkin_INCLUDE_DIRS}
   ${INCLUDE_DIRECTORIES}
 )
@@ -109,20 +106,13 @@ include_directories(
 ## Build ##
 ###########
 
-add_library(${PROJECT_NAME}
-  src/graspnode.cpp
-  src/mapsubscriber.cpp
-  src/movebasestatus.cpp
-  src/roscamera.cpp
-  src/StretchInterfaceGazebo.cpp
-  src/StretchMoveItInterface.cpp
-)
-
 file(GLOB HDRS
+  "include/${PROJECT_NAME}/*.h"
   "include/${PROJECT_NAME}/*.hpp"
 )
 file(GLOB SRCS
   "src/*.cpp"
+  "src/*.hpp"
 )
 file(GLOB NODES
   "nodes/*.cpp"
@@ -163,21 +153,16 @@ file(GLOB QRC
 ### compile
 ###
 
-target_link_libraries (${PROJECT_NAME} ${catkin_LIBRARIES}  ${EXTERNAL_DEPENDS_LIB})
-
 message("buliding ${PROJECT_NAME} node: ")
-foreach(NODE_FILE ${NODES})
-  get_filename_component(NODE_NAME ${NODE_FILE} NAME_WE)
-  message("  - " ${NODE_NAME})
 
-  add_executable(${NODE_NAME} ${NODE_FILE} ${HDRS} ${SRCS} ${UI} ${QRC})
-  add_dependencies(${NODE_NAME} ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-  target_link_libraries (${NODE_NAME} ${PROJECT_NAME} ${catkin_LIBRARIES}  ${EXTERNAL_DEPENDS_LIB})
-  target_include_directories(${NODE_NAME} PRIVATE "include/${PROJECT_NAME}/")
+add_executable(server_node nodes/server_node.cpp ${HDRS} ${SRCS} ${UI} ${QRC})
+qt_add_repc_sources(server_node
+  include/${PROJECT_NAME}/Server.rep
+)
+add_dependencies(server_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+target_link_libraries (server_node PRIVATE ${catkin_LIBRARIES} ${EXTERNAL_DEPENDS_LIB})
+target_include_directories(server_node PRIVATE "include/${PROJECT_NAME}/")
 
-  list(APPEND NODE_LIST ${NODE_NAME})
-
-endforeach(NODE_FILE)
 
 
 install(TARGETS ${NODE_LIST}
@@ -186,13 +171,3 @@ install(TARGETS ${NODE_LIST}
 install(DIRECTORY launch/
   DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
   )
-
-install(TARGETS ${PROJECT_NAME}
-        ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-        RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
-
-install(DIRECTORY launch include/${PROJECT_NAME}/ DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
-install(DIRECTORY include/${PROJECT_NAME}/
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-        PATTERN ".svn" EXCLUDE)

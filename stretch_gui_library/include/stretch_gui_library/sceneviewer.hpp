@@ -9,6 +9,8 @@
 #include <QSize>
 #include <QWidget>
 #include <QImage>
+#include <QFuture>
+#include <QtConcurrent/QtConcurrent>
 
 class SceneViewer : public QLabel {
     Q_OBJECT
@@ -27,9 +29,15 @@ class SceneViewer : public QLabel {
     void setMap(const QPixmap& map){
         setPixmap(map.scaled(size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
     }
+    void setMapQImage(const QImage img){
+      setPixmap(QPixmap::fromImage(img));
+    }
     void setCamera(const QPixmap& pix){
         resize(pix.width(), pix.height());
         setPixmap(pix);
+    }
+    void setCameraQImage(const QImage img){
+      setCamera(QPixmap::fromImage(img));
     }
 
    protected:

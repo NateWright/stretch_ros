@@ -1,6 +1,8 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
+#include <geometry_msgs/PointStamped.h>
+#include <geometry_msgs/PoseStamped.h>
 #include <ros/ros.h>
 
 #include <QGraphicsScene>
@@ -14,9 +16,6 @@
 #include "movebasestatus.hpp"
 #include "roscamera.hpp"
 #include "sceneviewer.hpp"
-
-Q_DECLARE_METATYPE(geometry_msgs::PointStamped::ConstPtr);
-Q_DECLARE_METATYPE(geometry_msgs::PoseStamped::Ptr);
 
 QT_BEGIN_NAMESPACE
 namespace Ui {

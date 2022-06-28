@@ -8,7 +8,6 @@
 #include <QPoint>
 #include <QSize>
 #include <QWidget>
-#include <QImage>
 
 class SceneViewer : public QLabel {
     Q_OBJECT
@@ -24,26 +23,26 @@ class SceneViewer : public QLabel {
     void mousePressInitiated(QPoint press, QSize screen);
     void mousePressCurrentLocation(QPoint loc, QSize screen);
    public slots:
-    void setMap(const QPixmap& map){
+    void setMap(const QPixmap& map) {
         setPixmap(map.scaled(size(), Qt::KeepAspectRatio, Qt::SmoothTransformation));
     }
-    void setCamera(const QPixmap& pix){
+    void setCamera(const QPixmap& pix) {
         resize(pix.width(), pix.height());
         setPixmap(pix);
     }
 
    protected:
-    virtual void mousePressEvent(QMouseEvent* event){
+    virtual void mousePressEvent(QMouseEvent* event) {
         press = event->pos();
         setMouseTracking(true);
         emit mousePressInitiated(press, frameSize());
     }
-    virtual void mouseReleaseEvent(QMouseEvent* event){
+    virtual void mouseReleaseEvent(QMouseEvent* event) {
         release = event->pos();
         setMouseTracking(false);
         emit mouseClick(press, release, frameSize());
     }
-    virtual void mouseMoveEvent(QMouseEvent* event){
+    virtual void mouseMoveEvent(QMouseEvent* event) {
         emit mousePressCurrentLocation(event->pos(), frameSize());
     }
 };

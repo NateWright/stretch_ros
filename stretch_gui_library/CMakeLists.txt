@@ -1,38 +1,24 @@
 cmake_minimum_required(VERSION 3.0.2)
-project(stretch_moveit_grasps)
+project(stretch_gui_library)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-# add_compile_options(-std=c++11)
+add_compile_options(-std=c++14)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED
-  COMPONENTS
-    roscpp
-    rospy
-    interactive_markers
-    moveit_core
-    moveit_ros_planning
-    moveit_ros_planning_interface
-    moveit_ros_perception
-    rviz_visual_tools
-    moveit_visual_tools
-    pluginlib
-    geometric_shapes
-    pcl_ros
-    pcl_conversions
-    rosbag
-    tf2_ros
-    tf2_eigen
-    tf2_geometry_msgs
-    std_msgs
-    message_generation
-    stretch_gui_library
-
+find_package(catkin REQUIRED COMPONENTS
+  moveit_ros_planning
+  moveit_ros_planning_interface
+  pcl_ros
+  roscpp
+  rospy
+  std_msgs
+  tf2_ros
 )
-find_package(Eigen3 REQUIRED)
-find_package(Boost REQUIRED system filesystem date_time thread)
+
+find_package(Qt6 REQUIRED COMPONENTS Core Widgets PrintSupport Concurrent)
+
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -68,10 +54,11 @@ find_package(Boost REQUIRED system filesystem date_time thread)
 ##   * add every package in MSG_DEP_SET to generate_messages(DEPENDENCIES ...)
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-  FILES
-  stretch_move_bool.msg
-)
+# add_message_files(
+#   FILES
+#   Message1.msg
+#   Message2.msg
+# )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -88,10 +75,10 @@ add_message_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  std_msgs  # Or other packages containing msgs
-)
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs
+# )
 
 ################################################
 ## Declare ROS dynamic reconfigure parameters ##
@@ -123,43 +110,44 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES stretch_moveit_grasps
-#  CATKIN_DEPENDS roscpp rospy
-#  DEPENDS system_lib
-)
-catkin_package(
-  LIBRARIES
-    ${PROJECT_NAME}
-  INCLUDE_DIRS
-  CATKIN_DEPENDS
-    moveit_core
-    moveit_visual_tools
-    moveit_ros_planning_interface
-    interactive_markers
-    tf2_geometry_msgs
-    message_runtime
-  DEPENDS
-    EIGEN3
+ INCLUDE_DIRS include
+ LIBRARIES ${PROJECT_NAME}
+ CATKIN_DEPENDS moveit_ros_planning moveit_ros_planning_interface pcl_ros roscpp rospy std_msgs tf2_ros
+ DEPENDS Qt6Core Qt6PrintSupport Qt6Widgets
 )
 
 ###########
 ## Build ##
 ###########
 
+SET(CMAKE_AUTOMOC ON)
+SET(CMAKE_AUTOUIC ON)
+SET(CMAKE_AUTORCC ON)
+
 ## Specify additional locations of header files
 ## Your package locations should be listed before other locations
-# include_directories(
-# # include
-#   ${catkin_INCLUDE_DIRS}
-#   # $ENV{EIGEN3_INCLUDE_DIR}
-# )
-# include_directories(${THIS_PACKAGE_INCLUDE_DIRS})
-include_directories(include/${PROJECT_NAME} SYSTEM ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIR} ${EIGEN3_INCLUDE_DIRS})
+include_directories(
+  include
+  include/${PROJECT_NAME}
+  ${catkin_INCLUDE_DIRS}
+)
+
+qt_wrap_cpp("include/${PROJECT_NAME}/*.hpp")
 
 ## Declare a C++ library
-add_library(${PROJECT_NAME}
-  src/stretch_moveit_interface.cpp
+add_library(${PROJECT_NAME} STATIC
+  include/${PROJECT_NAME}/graspnode.hpp
+  include/${PROJECT_NAME}/mapsubscriber.hpp
+  include/${PROJECT_NAME}/movebasestatus.hpp
+  include/${PROJECT_NAME}/roscamera.hpp
+  include/${PROJECT_NAME}/sceneviewer.hpp
+  include/${PROJECT_NAME}/StretchMoveItInterface.hpp
+  src/graspnode.cpp
+  src/mapsubscriber.cpp
+  src/movebasestatus.cpp
+  src/roscamera.cpp
+  src/StretchMoveItInterface.cpp
+  src/test.cpp
 )
 
 ## Add cmake target dependencies of the library
@@ -170,8 +158,7 @@ add_library(${PROJECT_NAME}
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/stretch_moveit_grasps_node.cpp)
-# add_executable(moveit_cpp_tutorial src/moveit_cpp_tutorial.cpp)
+# add_executable(${PROJECT_NAME}_node src/stretch_gui_library_node.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -182,16 +169,16 @@ add_library(${PROJECT_NAME}
 ## Add cmake target dependencies of the executable
 ## same as for the library above
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-# add_dependencies(moveit_cpp_tutorial ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
-# target_link_libraries(${PROJECT_NAME}_node
-#   ${catkin_LIBRARIES} ${Boost_LIBRARIES} Eigen3::Eigen
-# )
-# target_link_libraries(moveit_cpp_tutorial
-#   ${catkin_LIBRARIES} ${Boost_LIBRARIES} Eigen3::Eigen
-# )
-
+target_link_libraries(${PROJECT_NAME}
+  PRIVATE
+  ${catkin_LIBRARIES}
+  Qt6::Widgets
+  Qt6::PrintSupport
+  Qt6::Core
+  Qt6::Concurrent
+)
 
 #############
 ## Install ##
@@ -215,18 +202,17 @@ add_library(${PROJECT_NAME}
 
 ## Mark libraries for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html
-# install(TARGETS ${PROJECT_NAME}
-#   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-#   RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
-# )
+target_include_directories(${PROJECT_NAME} INTERFACE ${CMAKE_CURRENT_SOURCE_DIR})
+install(TARGETS ${PROJECT_NAME}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION}
+)
 
 ## Mark cpp header files for installation
-# install(DIRECTORY include/${PROJECT_NAME}/
-#   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-#   FILES_MATCHING PATTERN "*.h"
-#   PATTERN ".svn" EXCLUDE
-# )
+install(DIRECTORY include/${PROJECT_NAME}/
+  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+)
 
 ## Mark other files for installation (e.g. launch and bag files, etc.)
 # install(FILES
@@ -240,19 +226,10 @@ add_library(${PROJECT_NAME}
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_stretch_moveit_grasps.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_stretch_gui_library.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
-
-add_executable(stretch_node nodes/stretch_node.cpp)
-target_link_libraries(stretch_node ${PROJECT_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES})
-install(TARGETS stretch_node ${PROJECT_NAME} DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION})
-
-install(DIRECTORY launch include/${PROJECT_NAME}/ DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION})
-install(DIRECTORY include/${PROJECT_NAME}/
-        DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-        PATTERN ".svn" EXCLUDE)

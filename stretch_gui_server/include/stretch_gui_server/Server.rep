@@ -1,0 +1,46 @@
+#include <QtCore>
+#include <QByteArray>
+#include <QPoint>
+#include <QSize>
+#include <QImage>
+
+class Server {
+  SLOT(void uiButtonGraspClicked())
+  SLOT(void uiButtonStopClicked())
+  SLOT(void uiButtonSetHomeClicked())
+  SLOT(void uiButtonNavigateHomeClicked())
+  SLOT(void uiButtonToggleNavTypeClicked())
+  SLOT(void uiDisplayMapMouseClick(QPoint press, QPoint release, QSize screen))
+  SLOT(void uiDisplayMapMousePressInitiated(QPoint press, QSize screen))
+  SLOT(void uiDisplayMapMousePressCurrentLocation(QPoint loc, QSize screen))
+  SIGNAL(uiButtonNavigateHomeSetEnabled(bool b))
+  SIGNAL(uiPleaseWaitSetVisible(bool b))
+  SIGNAL(newMap(QImage map))
+
+  SLOT(void uiButtonBackClicked())
+  SLOT(void uiCameraMoveButtonUpClicked())
+  SLOT(void uiCameraMoveButtonDownClicked())
+  SLOT(void uiCameraMoveButtonLeftClicked())
+  SLOT(void uiCameraMoveButtonRightClicked())
+  SLOT(void uiCameraMoveButtonHomeClicked())
+  SLOT(void uiDisplayCameraMouseClicked(QPoint press, QPoint release, QSize screen))
+  SIGNAL(uiPointPleaseWaitShow())
+  SIGNAL(uiDisplayCameraSetCamera(QImage map))
+  SIGNAL(uiErrorNanPointShow())
+  SIGNAL(uiPointPleaseWaitHide())
+  SIGNAL(uiErrorOutOfRangeShow())
+  SIGNAL(uiChangeToPage3())
+
+  SLOT(void uiConfirmButtonNoClicked())
+  SLOT(void uiConfirmButtonYesClicked())
+  SIGNAL(uiDisplayImageSetCamera(QImage map))
+
+  SLOT(void uiButtonBack_2Clicked())
+  SLOT(void uiButtonReturnObjectClicked())
+  SLOT(void uiButtonReleaseClicked())
+  SLOT(void uiButtonReplaceObjectClicked())
+  SLOT(void uiButtonNavigateClicked())
+  SIGNAL(uiButtonReturnObjectSetEnabled(bool b = true))
+
+  SLOT(void uiButtonBackToGraspClicked())
+};
