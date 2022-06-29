@@ -43,6 +43,7 @@ set(EXTERNAL_DEPENDS
   Qt6Widgets
   Qt6PrintSupport
   Qt6RemoteObjects
+  Qt6Network
   #OpenCV
   )
 
@@ -51,6 +52,7 @@ set(EXTERNAL_DEPENDS_LIB
   Qt6::PrintSupport
   Qt6::Core
   Qt6::RemoteObjects
+  Qt6::Network
   #${OpenCV_LIBS}
   )
 

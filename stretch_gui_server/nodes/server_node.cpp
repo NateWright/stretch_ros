@@ -1,16 +1,26 @@
 #include <QApplication>
-#include <QPixmap>
+#include <csignal>
 
 #include "Server.hpp"
 
+QApplication *app;
+
+void closeApplication(int signal) {
+    if (app) {
+        app->quit();
+    }
+}
+
 int main(int argc, char *argv[]) {
     ros::init(argc, argv, "stretch_gui_server");
-    QApplication app(argc, argv);
+    app = new QApplication(argc, argv);
     Server server;
 
     QRemoteObjectHost srcNode(QUrl(QStringLiteral("local:switch")));
     srcNode.enableRemoting(&server);
     qDebug() << "start";
 
-    return app.exec();
+    signal(SIGINT, closeApplication);
+
+    return app->exec();
 }
