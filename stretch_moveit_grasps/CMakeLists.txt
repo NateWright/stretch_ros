@@ -28,8 +28,6 @@ find_package(catkin REQUIRED
     tf2_geometry_msgs
     std_msgs
     message_generation
-    stretch_gui_library
-
 )
 find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED system filesystem date_time thread)
