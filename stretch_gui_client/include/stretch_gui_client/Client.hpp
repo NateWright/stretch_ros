@@ -1,14 +1,14 @@
 #ifndef CLIENT_HPP
 #define CLIENT_HPP
 
-#include <QImage>
 #include <QDebug>
 #include <QGraphicsScene>
+#include <QImage>
 #include <QMainWindow>
 #include <QPixmap>
 #include <QTcpSocket>
 #include <iostream>
-#include <stretch_gui_library//sceneviewer.hpp>
+#include <stretch_gui_library/sceneviewer.hpp>
 
 #include "rep_Server_replica.h"
 
@@ -27,10 +27,9 @@ class Client : public QMainWindow {
    private:
     Ui::MainWindow *ui;
     QSharedPointer<ServerReplica> server_;
-    QPixmap map;
 
     QMetaObject::Connection DisplayFeedOne_,
-                            DisplayFeedTwo_;
+        DisplayFeedTwo_;
 
    signals:
 
@@ -42,7 +41,6 @@ class Client : public QMainWindow {
     void changeToPage5();
     void changeToPage6();
     void showButtonNavigateHome();
-
 };
 
 #endif  // CLIENT_HPP
