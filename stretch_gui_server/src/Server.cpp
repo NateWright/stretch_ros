@@ -55,7 +55,7 @@ void Server::initConnections() {
     // Find point in Camera
     connect(this, &Server::DisplayCameraMouseClicked, cameraNode_, &RosCamera::sceneClicked);
 
-    connect(cameraNode_, &RosCamera::clickInitiated, this, [this]() { emit uiPointPleaseWaitShow(); });  // Sever to client
+    connect(cameraNode_, &RosCamera::clickInitiated, this, &Server::uiPointPleaseWaitShow);  // Sever to client
 
     // Camera feed
     connect(cameraNode_, &RosCamera::imgUpdateQImage, this, &Server::uiDisplayCameraSetCamera);

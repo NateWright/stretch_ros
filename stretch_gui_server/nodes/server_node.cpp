@@ -16,7 +16,8 @@ int main(int argc, char *argv[]) {
     app = new QApplication(argc, argv);
     Server server;
 
-    QRemoteObjectHost srcNode(QUrl(QStringLiteral("local:switch")));
+    // QRemoteObjectHost srcNode(QUrl(QStringLiteral("local:switch")));
+    QRemoteObjectHost srcNode(QUrl(QStringLiteral("tcp://192.168.86.157:9999")));
     srcNode.enableRemoting(&server);
     qDebug() << "start";
 

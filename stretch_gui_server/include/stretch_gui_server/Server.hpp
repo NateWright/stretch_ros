@@ -96,7 +96,6 @@ class Server : public ServerSimpleSource {
 
     void ButtonBackToGraspClicked();
 
-
    private slots:
     void changeToPage1();
     void changeToPage2();
