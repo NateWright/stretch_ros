@@ -70,12 +70,13 @@ void RosCamera::centerPointCallback(const geometry_msgs::PointStamped::ConstPtr&
 }
 
 void RosCamera::sceneClicked(QPoint press, QPoint release, QSize screen) {
-    //  int locX = press.x() * (cloud_->width / screen.width());
-    //  int locY = press.y() * (cloud_->height / screen.height());
+    int locX = press.x() * static_cast<double>(cloud_->height) / static_cast<double>(screen.width());
+    int locY = press.y() * static_cast<double>(cloud_->width) / static_cast<double>(screen.height());
+    // qDebug() << QPoint(locX, locY);
     //    int locX = press.x(),
     //        locY = static_cast<double>(press.y()) * static_cast<double>(cloud_->width) / static_cast<double>(screen.height());
-    int locX = press.x(),
-        locY = press.y();
+    // int locX = press.x(),
+    //     locY = press.y();
 
     try {
         if (locY > cloud_->width || locX > cloud_->height) {
