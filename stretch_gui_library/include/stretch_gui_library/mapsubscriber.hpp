@@ -24,8 +24,6 @@
 #include <QThread>
 #include <QTimer>
 #include <cmath>
-#include <QByteArray>
-#include <QBuffer>
 
 using std::vector;
 
@@ -67,7 +65,7 @@ class MapSubscriber : public QThread {
     void loop();
    signals:
     void mapUpdate(const QPixmap&);
-    void mapUpdateQImage(QImage arr);
+    void mapUpdateQImage(QImage img);
     void validPoint();
     void invalidPoint();
     void homeSet(bool);

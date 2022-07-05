@@ -16,7 +16,7 @@ MapSubscriber::~MapSubscriber() { delete tfListener_; }
 
 void MapSubscriber::run() {
     QTimer* timer = new QTimer();
-    timer->setInterval(15);
+    timer->setInterval(35);
     connect(timer, &QTimer::timeout, this, &MapSubscriber::loop);
     timer->start();
     exec();
@@ -58,7 +58,6 @@ void MapSubscriber::loop() {
     painter.end();
 
     outputMap_ = QPixmap::fromImage(mapCopy_);
-
     emit mapUpdateQImage(mapCopy_);
     emit mapUpdate(outputMap_);
 }
