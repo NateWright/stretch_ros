@@ -1,4 +1,0 @@
-<launch>
-    <include file="$(find stretch_gazebo)/launch/gazebo.launch"/>
-    <include file="$(find stretch_moveit_grasps)/launch/move_group.launch"/>
-</launch>
