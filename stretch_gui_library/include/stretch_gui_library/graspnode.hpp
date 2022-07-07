@@ -14,12 +14,6 @@
 #include <QThread>
 #include <QTimer>
 #include <QWidget>
-#include <atomic>
-
-enum Stage { HOLD,
-             HOME,
-             GRASP,
-             NEXT };
 
 class GraspNode : public QThread {
     Q_OBJECT
@@ -42,8 +36,6 @@ class GraspNode : public QThread {
     geometry_msgs::PointStamped::Ptr pointBaseLink_;
 
     geometry_msgs::PoseStamped::Ptr homePose_;
-
-    std::atomic<Stage> stage_;
 
     void centerPointCallback(const geometry_msgs::PointStamped::ConstPtr &input);
     void loop();
