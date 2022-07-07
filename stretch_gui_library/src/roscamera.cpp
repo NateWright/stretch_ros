@@ -7,6 +7,7 @@ RosCamera::RosCamera(ros::NodeHandlePtr nh) : nh_(nh) {
     segmentedCameraSub_ = nh_->subscribe("/stretch_pc/cluster", 30, &RosCamera::segmentedCameraCallback, this);
     pointPick_ = nh->advertise<geometry_msgs::PointStamped>("/clicked_point", 30);
     centerPointSub_ = nh_->subscribe("/stretch_pc/centerPoint", 30, &RosCamera::centerPointCallback, this);
+    cloudToSegment_ = nh_->advertise<sensor_msgs::PointCloud2>("/stretch_gui/cloud", 30);
     moveToThread(this);
 }
 RosCamera::~RosCamera() {}
@@ -29,7 +30,7 @@ void RosCamera::cameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr
 
     const int width = pc->width,
               height = pc->height;
-    camera_ = QImage(height, width, QImage::Format_RGB888);
+    camera_ = QImage(height, width, QImage::Format_RGB444);
 
     pcl::PointXYZRGB point;
     for (int y = 0; y < height; y++) {
@@ -38,15 +39,15 @@ void RosCamera::cameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr
             camera_.setPixel(height - 1 - y, x, QColor(point.r, point.g, point.b).rgb());
         }
     }
-    cameraOutputRotated_ = QPixmap::fromImage(camera_);
-    emit imgUpdate(cameraOutputRotated_);
+    // cameraOutputRotated_ = QPixmap::fromImage(camera_);
+    // emit imgUpdate(cameraOutputRotated_);
     emit imgUpdateQImage(camera_);
 }
 
 void RosCamera::segmentedCameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& pc) {
     const int width = cloud_->width,
               height = cloud_->height;
-    QImage img = cameraOutputRotated_.toImage();
+    QImage img = camera_;
 
     pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
     kdtree.setInputCloud(cloud_);
@@ -59,8 +60,8 @@ void RosCamera::segmentedCameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>:
         int pos = pointIdxNKNSearch[0];
         img.setPixel(height - 1 - pos / width, pos % width, red);
     }
-    cameraOutputRotatedWithPoint_ = QPixmap::fromImage(img);
-    emit imgUpdateWithPoint(cameraOutputRotatedWithPoint_);
+    // cameraOutputRotatedWithPoint_ = QPixmap::fromImage(img);
+    // emit imgUpdateWithPoint(cameraOutputRotatedWithPoint_);
     emit imgUpdateWithPointQImage(img);
 }
 
@@ -77,7 +78,7 @@ void RosCamera::sceneClicked(QPoint press, QPoint release, QSize screen) {
     //        locY = static_cast<double>(press.y()) * static_cast<double>(cloud_->width) / static_cast<double>(screen.height());
     // int locX = press.x(),
     //     locY = press.y();
-
+    cloudToSegment_.publish(cloud_);
     try {
         if (locY > cloud_->width || locX > cloud_->height) {
             throw(std::runtime_error("Not in range"));

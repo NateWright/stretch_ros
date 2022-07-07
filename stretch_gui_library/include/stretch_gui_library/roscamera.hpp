@@ -13,7 +13,7 @@
 #include <QImage>
 #include <QObject>
 #include <QPainter>
-#include <QPixmap>
+// #include <QPixmap>
 #include <QPoint>
 #include <QRgb>
 #include <QSize>
@@ -33,14 +33,15 @@ class RosCamera : public QThread {
     ros::Subscriber segmentedCameraSub_;
     ros::Subscriber centerPointSub_;
     ros::Publisher pointPick_;
+    ros::Publisher cloudToSegment_;
 
     pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud_;
 
     QImage camera_;
     QImage objectImage_;
-    QPixmap cameraOutput_;
-    QPixmap cameraOutputRotated_;
-    QPixmap cameraOutputRotatedWithPoint_;
+    // QPixmap cameraOutput_;
+    // QPixmap cameraOutputRotated_;
+    // QPixmap cameraOutputRotatedWithPoint_;
 
     //    QPoint centerPoint_;
     //    bool showCenterPoint_;
