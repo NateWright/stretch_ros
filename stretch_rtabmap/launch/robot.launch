@@ -37,6 +37,6 @@
     <!-- -->
 
     <!-- ROBOT LOCALIZATION FILTER -->
-    <include file="$(find stretch_core)/launch/stretch_ekf.launch" />
+    <!-- <include file="$(find stretch_core)/launch/stretch_ekf.launch" /> -->
     <!-- -->
 </launch>
