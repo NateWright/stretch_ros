@@ -1,4 +1,4 @@
-#include <QApplication>
+#include <QCoreApplication>
 #include <QHostAddress>
 #include <QHostInfo>
 #include <QList>
@@ -8,7 +8,7 @@
 
 #include "Server.hpp"
 
-QApplication *app;
+QCoreApplication *app;
 
 void closeApplication(int signal) {
     if (app) {
@@ -18,7 +18,7 @@ void closeApplication(int signal) {
 
 int main(int argc, char *argv[]) {
     ros::init(argc, argv, "stretch_gui_server");
-    app = new QApplication(argc, argv);
+    app = new QCoreApplication(argc, argv);
     Server server;
 
     // QRemoteObjectHost srcNode(QUrl(QStringLiteral("local:switch")));
