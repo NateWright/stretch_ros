@@ -57,16 +57,16 @@ void MapSubscriber::loop() {
     //      painter.drawEllipse(origin_, 5, 5);
     painter.end();
 
-    outputMap_ = QPixmap::fromImage(mapCopy_);
+    // outputMap_ = QPixmap::fromImage(mapCopy_);
     emit mapUpdateQImage(mapCopy_);
-    emit mapUpdate(outputMap_);
+    // emit mapUpdate(outputMap_);
 }
 
 void MapSubscriber::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
     const int width = msg.get()->info.width,
               height = msg.get()->info.height;
 
-    map_ = QImage(width, height, QImage::Format_RGB888);
+    map_ = QImage(width, height, QImage::Format_RGB444);
     resolution_ = msg.get()->info.resolution;
     origin_ = QPoint(width + msg.get()->info.origin.position.x / resolution_, -msg.get()->info.origin.position.y / resolution_);
 

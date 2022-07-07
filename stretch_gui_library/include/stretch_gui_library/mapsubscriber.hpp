@@ -18,7 +18,7 @@
 #include <QObject>
 #include <QPainter>
 #include <QPen>
-#include <QPixmap>
+// #include <QPixmap>
 #include <QPoint>
 #include <QSize>
 #include <QThread>
@@ -45,7 +45,7 @@ class MapSubscriber : public QThread {
 
     QImage map_;
     QImage mapCopy_;
-    QPixmap outputMap_;
+    // QPixmap outputMap_;
 
     bool drawPos_;
     QPoint origin_;
