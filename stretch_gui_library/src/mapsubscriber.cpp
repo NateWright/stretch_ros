@@ -8,7 +8,7 @@ MapSubscriber::MapSubscriber(ros::NodeHandlePtr nodeHandle)
     posSub_ = nh_->subscribe(odomTopic, 30, &MapSubscriber::posCallback, this);
     movePub_ = nh_->advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 30);
     tfListener_ = new tf2_ros::TransformListener(tfBuffer_);
-    map_ = QImage(10, 10, QImage::Format_RGB888);
+    map_ = QImage(10, 10, MAPSUBSCRIBER::FORMAT);
     moveToThread(this);
 }
 
@@ -57,16 +57,14 @@ void MapSubscriber::loop() {
     //      painter.drawEllipse(origin_, 5, 5);
     painter.end();
 
-    // outputMap_ = QPixmap::fromImage(mapCopy_);
     emit mapUpdateQImage(mapCopy_);
-    // emit mapUpdate(outputMap_);
 }
 
 void MapSubscriber::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
     const int width = msg.get()->info.width,
               height = msg.get()->info.height;
 
-    map_ = QImage(width, height, QImage::Format_RGB444);
+    map_ = QImage(width, height, MAPSUBSCRIBER::FORMAT);
     resolution_ = msg.get()->info.resolution;
     origin_ = QPoint(width + msg.get()->info.origin.position.x / resolution_, -msg.get()->info.origin.position.y / resolution_);
 

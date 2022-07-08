@@ -18,7 +18,6 @@
 #include <QObject>
 #include <QPainter>
 #include <QPen>
-// #include <QPixmap>
 #include <QPoint>
 #include <QSize>
 #include <QThread>
@@ -26,6 +25,10 @@
 #include <cmath>
 
 using std::vector;
+
+namespace MAPSUBSCRIBER {
+const QImage::Format FORMAT = QImage::Format_RGB444;
+}
 
 class MapSubscriber : public QThread {
     Q_OBJECT

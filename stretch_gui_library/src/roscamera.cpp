@@ -1,6 +1,7 @@
 #include "roscamera.hpp"
 
 RosCamera::RosCamera(ros::NodeHandlePtr nh) : nh_(nh) {
+    segmenter_.reset(new ObjectSegmenter(nh_));
     std::string pointCloudTopic;
     nh->getParam("/stretch_gui/pointCloudTopic", pointCloudTopic);
     colorCameraSub_ = nh_->subscribe(pointCloudTopic, 30, &RosCamera::cameraCallback, this);
@@ -25,12 +26,12 @@ void RosCamera::loop() {
     ros::spinOnce();
 }
 
-void RosCamera::cameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& pc) {
+void RosCamera::cameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& pc) {
     cloud_ = pc;
 
     const int width = pc->width,
               height = pc->height;
-    camera_ = QImage(height, width, QImage::Format_RGB444);
+    camera_ = QImage(height, width, ROSCAMERA::FORMAT);
 
     pcl::PointXYZRGB point;
     for (int y = 0; y < height; y++) {
@@ -39,8 +40,6 @@ void RosCamera::cameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr
             camera_.setPixel(height - 1 - y, x, QColor(point.r, point.g, point.b).rgb());
         }
     }
-    // cameraOutputRotated_ = QPixmap::fromImage(camera_);
-    // emit imgUpdate(cameraOutputRotated_);
     emit imgUpdateQImage(camera_);
 }
 
@@ -73,11 +72,7 @@ void RosCamera::centerPointCallback(const geometry_msgs::PointStamped::ConstPtr&
 void RosCamera::sceneClicked(QPoint press, QPoint release, QSize screen) {
     int locX = press.x() * static_cast<double>(cloud_->height) / static_cast<double>(screen.width());
     int locY = press.y() * static_cast<double>(cloud_->width) / static_cast<double>(screen.height());
-    // qDebug() << QPoint(locX, locY);
-    //    int locX = press.x(),
-    //        locY = static_cast<double>(press.y()) * static_cast<double>(cloud_->width) / static_cast<double>(screen.height());
-    // int locX = press.x(),
-    //     locY = press.y();
+
     cloudToSegment_.publish(cloud_);
     try {
         if (locY > cloud_->width || locX > cloud_->height) {
@@ -91,13 +86,14 @@ void RosCamera::sceneClicked(QPoint press, QPoint release, QSize screen) {
             throw(std::runtime_error("Point contains NaN"));
         }
 
-        geometry_msgs::PointStamped point;
-        point.header.frame_id = cloud_->header.frame_id;
+        geometry_msgs::PointStamped::Ptr point(new geometry_msgs::PointStamped());
+        point->header.frame_id = cloud_->header.frame_id;
 
-        point.point.x = p.x;
-        point.point.y = p.y;
-        point.point.z = p.z;
+        point->point.x = p.x;
+        point->point.y = p.y;
+        point->point.z = p.z;
 
+        segmenter_->segmentAndFind(cloud_, point);
         pointPick_.publish(point);
         emit clickSuccess();
     } catch (...) {

@@ -20,6 +20,12 @@
 #include <QThread>
 #include <QTimer>
 
+#include "ObjectSegmenter.hpp"
+
+namespace ROSCAMERA {
+const QImage::Format FORMAT = QImage::Format_RGB444;
+}
+
 class RosCamera : public QThread {
     Q_OBJECT
    public:
@@ -29,26 +35,24 @@ class RosCamera : public QThread {
 
    private:
     ros::NodeHandlePtr nh_;
+
     ros::Subscriber colorCameraSub_;
     ros::Subscriber segmentedCameraSub_;
     ros::Subscriber centerPointSub_;
+
     ros::Publisher pointPick_;
     ros::Publisher cloudToSegment_;
 
-    pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr cloud_;
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_;
 
     QImage camera_;
     QImage objectImage_;
-    // QPixmap cameraOutput_;
-    // QPixmap cameraOutputRotated_;
-    // QPixmap cameraOutputRotatedWithPoint_;
 
-    //    QPoint centerPoint_;
-    //    bool showCenterPoint_;
+    ObjectSegmenterPtr segmenter_;
 
-    void cameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr &pc);
-    void segmentedCameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr &pc);
-    void centerPointCallback(const geometry_msgs::PointStamped::ConstPtr &point);
+    void cameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &);
+    void segmentedCameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr &);
+    void centerPointCallback(const geometry_msgs::PointStamped::ConstPtr &);
     void loop();
 
    signals:
@@ -56,14 +60,12 @@ class RosCamera : public QThread {
     void imgUpdateQImage(QImage);
     void imgUpdateWithPoint(const QPixmap &);
     void imgUpdateWithPointQImage(QImage);
-    void checkPointInRange(const geometry_msgs::PointStamped::ConstPtr &output);
+    void checkPointInRange(const geometry_msgs::PointStamped::ConstPtr &);
     void clickSuccess();
     void clickFailure();
     void clickInitiated();
    public slots:
     void sceneClicked(QPoint press, QPoint release, QSize screen);
-    //    void showCenterPoint();
-    //    void hideCenterPoint();
 };
 
 #endif  // ROSCAMERA_HPP
