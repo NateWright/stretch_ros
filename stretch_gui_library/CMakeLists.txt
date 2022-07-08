@@ -142,12 +142,14 @@ add_library(${PROJECT_NAME} STATIC
   include/${PROJECT_NAME}/roscamera.hpp
   include/${PROJECT_NAME}/sceneviewer.hpp
   include/${PROJECT_NAME}/StretchMoveItInterface.hpp
+  include/${PROJECT_NAME}/ObjectSegmenter.hpp
   src/graspnode.cpp
   src/mapsubscriber.cpp
   src/movebasestatus.cpp
   src/roscamera.cpp
   src/StretchMoveItInterface.cpp
   src/test.cpp
+  src/ObjectSegmenter.cpp
 )
 
 ## Add cmake target dependencies of the library
