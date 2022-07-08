@@ -21,7 +21,6 @@ int main(int argc, char *argv[]) {
     app = new QCoreApplication(argc, argv);
     Server server;
 
-    // QRemoteObjectHost srcNode(QUrl(QStringLiteral("local:switch")));
     // https://www.codegrepper.com/code-examples/whatever/qt+get+local+ip+address
     QString localhostname = QHostInfo::localHostName();
     QString ip = "tcp://";
