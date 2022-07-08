@@ -18,6 +18,8 @@ class StretchMoveItInterface : public QThread {
     ~StretchMoveItInterface();
     void run() override;
 
+    std::pair<int, int> getHeadPanTilt();
+
    private:
     ros::NodeHandlePtr nh_;
     ros::Publisher headTilt_;
@@ -27,8 +29,8 @@ class StretchMoveItInterface : public QThread {
     ros::Publisher gipperYaw_;
     ros::Publisher gripperAperture_;
 
-    int tiltAngle_;
     int panAngle_;
+    int tiltAngle_;
 
     void loop();
 

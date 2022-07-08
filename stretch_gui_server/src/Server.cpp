@@ -1,7 +1,7 @@
 #include "Server.hpp"
 
 Server::Server(QObject* parent)
-    : ServerSimpleSource(parent) {
+    : ServerSimpleSource(parent), headPanTilt_({0, -30}) {
     nh_.reset(new ros::NodeHandle("stretch_gui_server"));
     mapNode_ = new MapSubscriber(nh_);
     moveBaseStatusNode_ = new MoveBaseStatus(nh_);
@@ -42,7 +42,7 @@ void Server::initConnections() {
     // Page 2
 
     connect(this, &Server::homeRobot, moveItNode_, &StretchMoveItInterface::homeRobot);
-    connect(this, &Server::cameraSetTilt, moveItNode_, &StretchMoveItInterface::headSetTilt);
+    connect(this, &Server::cameraSetRotation, moveItNode_, &StretchMoveItInterface::headSetRotation);
 
     connect(this, &Server::ButtonBackClicked, this, &Server::changeToPage1);  // Both
 
@@ -137,14 +137,16 @@ void Server::changeToPage1() {
     emit homeRobot();
     emit enableMapping();
     // QObject::disconnect(cameraNodeImgUpdate_);
+    headPanTilt_ = {0, -30};
 }
 
 void Server::changeToPage2() {
     emit disableMapping();
-    emit cameraSetTilt(-30);
+    emit cameraSetRotation(headPanTilt_.first, headPanTilt_.second);
 }
 
 void Server::changeToPage3() {
+    headPanTilt_ = moveItNode_->getHeadPanTilt();
     emit disableMapping();
 }
 

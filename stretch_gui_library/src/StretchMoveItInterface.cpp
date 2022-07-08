@@ -1,6 +1,6 @@
 #include "StretchMoveItInterface.hpp"
 
-StretchMoveItInterface::StretchMoveItInterface(ros::NodeHandlePtr nh) : nh_(nh), tiltAngle_(0), panAngle_(0) {
+StretchMoveItInterface::StretchMoveItInterface(ros::NodeHandlePtr nh) : nh_(nh), panAngle_(0), tiltAngle_(0) {
     headTilt_ = nh_->advertise<std_msgs::Float64>("/stretch_interface/head_tilt", 1000);
     headPan_ = nh_->advertise<std_msgs::Float64>("/stretch_interface/head_pan", 1000);
     armLift_ = nh_->advertise<std_msgs::Float64>("/stretch_interface/lift", 1000);
@@ -17,9 +17,12 @@ void StretchMoveItInterface::run() {
     timer->setInterval(15);
     connect(timer, &QTimer::timeout, this, &StretchMoveItInterface::loop);
     timer->start();
-    armSetHeight(1);
     exec();
     delete timer;
+}
+
+std::pair<int, int> StretchMoveItInterface::getHeadPanTilt() {
+    return {panAngle_, tiltAngle_};
 }
 
 void StretchMoveItInterface::loop() {

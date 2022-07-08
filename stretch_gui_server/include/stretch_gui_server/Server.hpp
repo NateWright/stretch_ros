@@ -52,11 +52,14 @@ class Server : public ServerSimpleSource {
 
    private:
     ros::NodeHandlePtr nh_;
+
     MapSubscriber *mapNode_;
     MoveBaseStatus *moveBaseStatusNode_;
     RosCamera *cameraNode_;
     GraspNode *graspNode_;
     StretchMoveItInterface *moveItNode_;
+
+    std::pair<int, int> headPanTilt_;
 
     void initConnections();
 
@@ -67,7 +70,7 @@ class Server : public ServerSimpleSource {
     void enableMapping();
     void disableMapping();
     void homeRobot();
-    void cameraSetTilt(int);
+    void cameraSetRotation(int, int);
     void ButtonGraspClicked();
     void ButtonStopClicked();
     void ButtonSetHomeClicked();
