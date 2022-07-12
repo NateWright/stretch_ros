@@ -11,9 +11,7 @@ GraspNode::GraspNode(ros::NodeHandlePtr nh) : nh_(nh) {
     moveToThread(this);
 }
 
-GraspNode::~GraspNode() {
-    delete tfListener_;
-}
+GraspNode::~GraspNode() { delete tfListener_; }
 
 void GraspNode::run() {
     QTimer* timer = new QTimer();
@@ -23,9 +21,7 @@ void GraspNode::run() {
     exec();
     delete timer;
 }
-void GraspNode::loop() {
-    ros::spinOnce();
-}
+void GraspNode::loop() { ros::spinOnce(); }
 
 void GraspNode::centerPointCallback(const geometry_msgs::PointStamped::ConstPtr& input) {
     geometry_msgs::PointStamped point = tfBuffer_.transform(*input.get(), "map");
@@ -40,8 +36,7 @@ void GraspNode::lineUp() {
     s.start();
     ros::Duration d(0.5);
     emit disableMapping();
-    std::string targetFrame = "map",
-                sourceFrame = "base_link";
+    std::string targetFrame = "map", sourceFrame = "base_link";
 
     geometry_msgs::TransformStamped transBaseToMap = tfBuffer_.lookupTransform(targetFrame, sourceFrame, ros::Time(0));
     homePose_.reset(new geometry_msgs::PoseStamped());
@@ -51,14 +46,13 @@ void GraspNode::lineUp() {
     homePose_->pose.position.z = transBaseToMap.transform.translation.z;
     homePose_->pose.orientation = transBaseToMap.transform.rotation;
 
-    double x = point_->point.x - transBaseToMap.transform.translation.x,
-           y = point_->point.y - transBaseToMap.transform.translation.y;
+    double x = point_->point.x - transBaseToMap.transform.translation.x, y = point_->point.y - transBaseToMap.transform.translation.y;
 
     geometry_msgs::PoseStamped::Ptr pose(new geometry_msgs::PoseStamped());
 
     pose->header.frame_id = "base_link";
     tf2::Quaternion q;
-    q.setRPY(0, 0, atan(pointBaseLink_->point.y / pointBaseLink_->point.x) + 94 * M_PI / 180);
+    q.setRPY(0, 0, atan(pointBaseLink_->point.y / pointBaseLink_->point.x) + 95 * M_PI / 180);
     pose->pose.orientation = tf2::toMsg(q);
     emit navigate(pose);
     d.sleep();
@@ -83,8 +77,7 @@ void GraspNode::replaceObject() {
     s.start();
     ros::Duration d(0.5);
     emit disableMapping();
-    std::string targetFrame = "map",
-                sourceFrame = "base_link";
+    std::string targetFrame = "map", sourceFrame = "base_link";
 
     geometry_msgs::TransformStamped transBaseToMap = tfBuffer_.lookupTransform(targetFrame, sourceFrame, ros::Time(0));
     homePose_.reset(new geometry_msgs::PoseStamped());
@@ -94,14 +87,13 @@ void GraspNode::replaceObject() {
     homePose_->pose.position.z = transBaseToMap.transform.translation.z;
     homePose_->pose.orientation = transBaseToMap.transform.rotation;
 
-    double x = point_->point.x - transBaseToMap.transform.translation.x,
-           y = point_->point.y - transBaseToMap.transform.translation.y;
+    double x = point_->point.x - transBaseToMap.transform.translation.x, y = point_->point.y - transBaseToMap.transform.translation.y;
 
     geometry_msgs::PoseStamped::Ptr pose(new geometry_msgs::PoseStamped());
 
     pose->header.frame_id = "base_link";
     tf2::Quaternion q;
-    q.setRPY(0, 0, atan(pointBaseLink_->point.y / pointBaseLink_->point.x) + 94 * M_PI / 180);
+    q.setRPY(0, 0, atan(pointBaseLink_->point.y / pointBaseLink_->point.x) + 95 * M_PI / 180);
     pose->pose.orientation = tf2::toMsg(q);
     emit navigate(pose);
     d.sleep();
