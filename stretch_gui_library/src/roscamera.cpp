@@ -22,15 +22,12 @@ void RosCamera::run() {
     delete timer;
 }
 
-void RosCamera::loop() {
-    ros::spinOnce();
-}
+void RosCamera::loop() { ros::spinOnce(); }
 
 void RosCamera::cameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& pc) {
     cloud_ = pc;
 
-    const int width = pc->width,
-              height = pc->height;
+    const int width = pc->width, height = pc->height;
     camera_ = QImage(height, width, ROSCAMERA::FORMAT);
 
     pcl::PointXYZRGB point;
@@ -44,9 +41,8 @@ void RosCamera::cameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& pc)
 }
 
 void RosCamera::segmentedCameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& pc) {
-    const int width = cloud_->width,
-              height = cloud_->height;
-    QImage img = camera_;
+    const int width = cloud_->width, height = cloud_->height;
+    QImage img = camera_.copy();
 
     pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
     kdtree.setInputCloud(cloud_);
@@ -59,8 +55,7 @@ void RosCamera::segmentedCameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>:
         int pos = pointIdxNKNSearch[0];
         img.setPixel(height - 1 - pos / width, pos % width, red);
     }
-    // cameraOutputRotatedWithPoint_ = QPixmap::fromImage(img);
-    // emit imgUpdateWithPoint(cameraOutputRotatedWithPoint_);
+
     emit imgUpdateWithPointQImage(img);
 }
 

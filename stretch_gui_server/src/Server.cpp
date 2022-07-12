@@ -57,7 +57,7 @@ void Server::initConnections() {
     connect(cameraNode_, &RosCamera::clickInitiated, this, &Server::uiPointPleaseWaitShow);  // Sever to client
 
     // Camera feed
-    // connect(cameraNode_, &RosCamera::imgUpdateQImage, this, &Server::uiDisplayCameraSetCamera);
+    connect(cameraNode_, &RosCamera::imgUpdateQImage, this, &Server::uiDisplayCameraSetCamera);
     // Server to client
     // Error: Displays if NaN point was selected
     connect(cameraNode_, &RosCamera::clickFailure, this, &Server::uiErrorNanPointShow);    // Server to client
@@ -135,16 +135,12 @@ Server::~Server() {
 void Server::changeToPage1() {
     emit homeRobot();
     emit enableMapping();
-    QObject::disconnect(cameraNodeImgUpdate_);
-    mapImgUpdate_ = connect(mapNode_, &MapSubscriber::mapUpdateQImage, this, &Server::newMap);
     headPanTilt_ = {0, -30};
 }
 
 void Server::changeToPage2() {
     emit disableMapping();
     emit cameraSetRotation(headPanTilt_.first, headPanTilt_.second);
-    QObject::disconnect(mapImgUpdate_);
-    cameraNodeImgUpdate_ = connect(cameraNode_, &RosCamera::imgUpdateQImage, this, &Server::uiDisplayCameraSetCamera);
 }
 
 void Server::changeToPage3() {
