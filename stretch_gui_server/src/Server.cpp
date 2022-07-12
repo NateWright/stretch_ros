@@ -1,7 +1,6 @@
 #include "Server.hpp"
 
-Server::Server(QObject* parent)
-    : ServerSimpleSource(parent), headPanTilt_({0, -30}) {
+Server::Server(QObject* parent) : ServerSimpleSource(parent), headPanTilt_({0, -30}) {
     nh_.reset(new ros::NodeHandle("stretch_gui_server"));
     mapNode_ = new MapSubscriber(nh_);
     moveBaseStatusNode_ = new MoveBaseStatus(nh_);
@@ -34,7 +33,7 @@ void Server::initConnections() {
     connect(this, &Server::DisplayMapMousePressInitiated, mapNode_, &MapSubscriber::mousePressInitiated);
     connect(this, &Server::DisplayMapMousePressCurrentLocation, mapNode_, &MapSubscriber::mousePressCurrentLocation);
 
-    connect(mapNode_, &MapSubscriber::mapUpdateQImage, this, &Server::newMap);
+    // connect(mapNode_, &MapSubscriber::mapUpdateQImage, this, &Server::newMap);
     connect(mapNode_, &MapSubscriber::homeSet, this, [this](bool b) { emit uiButtonNavigateHomeSetEnabled(b); });
 
     connect(moveBaseStatusNode_, &MoveBaseStatus::robotMoving, this, [this](bool b) { emit uiPleaseWaitSetVisible(b); });
@@ -58,7 +57,7 @@ void Server::initConnections() {
     connect(cameraNode_, &RosCamera::clickInitiated, this, &Server::uiPointPleaseWaitShow);  // Sever to client
 
     // Camera feed
-    connect(cameraNode_, &RosCamera::imgUpdateQImage, this, &Server::uiDisplayCameraSetCamera);
+    // connect(cameraNode_, &RosCamera::imgUpdateQImage, this, &Server::uiDisplayCameraSetCamera);
     // Server to client
     // Error: Displays if NaN point was selected
     connect(cameraNode_, &RosCamera::clickFailure, this, &Server::uiErrorNanPointShow);    // Server to client
@@ -136,13 +135,16 @@ Server::~Server() {
 void Server::changeToPage1() {
     emit homeRobot();
     emit enableMapping();
-    // QObject::disconnect(cameraNodeImgUpdate_);
+    QObject::disconnect(cameraNodeImgUpdate_);
+    mapImgUpdate_ = connect(mapNode_, &MapSubscriber::mapUpdateQImage, this, &Server::newMap);
     headPanTilt_ = {0, -30};
 }
 
 void Server::changeToPage2() {
     emit disableMapping();
     emit cameraSetRotation(headPanTilt_.first, headPanTilt_.second);
+    QObject::disconnect(mapImgUpdate_);
+    cameraNodeImgUpdate_ = connect(cameraNode_, &RosCamera::imgUpdateQImage, this, &Server::uiDisplayCameraSetCamera);
 }
 
 void Server::changeToPage3() {
@@ -150,98 +152,46 @@ void Server::changeToPage3() {
     emit disableMapping();
 }
 
-void Server::changeToPage4() {
-    emit disableMapping();
-}
+void Server::changeToPage4() { emit disableMapping(); }
 
-void Server::changeToPage5() {
-    emit enableMapping();
-}
+void Server::changeToPage5() { emit enableMapping(); }
 
-void Server::changeToPage6() {
-    emit enableMapping();
-}
-void Server::uiButtonGraspClicked() {
-    emit ButtonGraspClicked();
-}
-void Server::uiButtonStopClicked() {
-    emit ButtonStopClicked();
-}
-void Server::uiButtonSetHomeClicked() {
-    emit ButtonSetHomeClicked();
-}
-void Server::uiButtonNavigateHomeClicked() {
-    emit ButtonNavigateHomeClicked();
-}
-void Server::uiButtonToggleNavTypeClicked() {
-    emit ButtonToggleNavTypeClicked();
-}
-void Server::uiDisplayMapMouseClick(QPoint press, QPoint release, QSize screen) {
-    emit DisplayMapMouseClick(press, release, screen);
-}
-void Server::uiDisplayMapMousePressInitiated(QPoint press, QSize screen) {
-    emit DisplayMapMousePressInitiated(press, screen);
-}
-void Server::uiDisplayMapMousePressCurrentLocation(QPoint loc, QSize screen) {
-    emit DisplayMapMousePressCurrentLocation(loc, screen);
-}
+void Server::changeToPage6() { emit enableMapping(); }
+void Server::uiButtonGraspClicked() { emit ButtonGraspClicked(); }
+void Server::uiButtonStopClicked() { emit ButtonStopClicked(); }
+void Server::uiButtonSetHomeClicked() { emit ButtonSetHomeClicked(); }
+void Server::uiButtonNavigateHomeClicked() { emit ButtonNavigateHomeClicked(); }
+void Server::uiButtonToggleNavTypeClicked() { emit ButtonToggleNavTypeClicked(); }
+void Server::uiDisplayMapMouseClick(QPoint press, QPoint release, QSize screen) { emit DisplayMapMouseClick(press, release, screen); }
+void Server::uiDisplayMapMousePressInitiated(QPoint press, QSize screen) { emit DisplayMapMousePressInitiated(press, screen); }
+void Server::uiDisplayMapMousePressCurrentLocation(QPoint loc, QSize screen) { emit DisplayMapMousePressCurrentLocation(loc, screen); }
 
-void Server::uiButtonBackClicked() {
-    emit ButtonBackClicked();
-}
+void Server::uiButtonBackClicked() { emit ButtonBackClicked(); }
 
-void Server::uiCameraMoveButtonUpClicked() {
-    emit CameraMoveButtonUpClicked();
-}
+void Server::uiCameraMoveButtonUpClicked() { emit CameraMoveButtonUpClicked(); }
 
-void Server::uiCameraMoveButtonDownClicked() {
-    emit CameraMoveButtonDownClicked();
-}
+void Server::uiCameraMoveButtonDownClicked() { emit CameraMoveButtonDownClicked(); }
 
-void Server::uiCameraMoveButtonLeftClicked() {
-    emit CameraMoveButtonLeftClicked();
-}
+void Server::uiCameraMoveButtonLeftClicked() { emit CameraMoveButtonLeftClicked(); }
 
-void Server::uiCameraMoveButtonRightClicked() {
-    emit CameraMoveButtonRightClicked();
-}
+void Server::uiCameraMoveButtonRightClicked() { emit CameraMoveButtonRightClicked(); }
 
-void Server::uiCameraMoveButtonHomeClicked() {
-    emit CameraMoveButtonHomeClicked();
-}
+void Server::uiCameraMoveButtonHomeClicked() { emit CameraMoveButtonHomeClicked(); }
 
-void Server::uiDisplayCameraMouseClicked(QPoint press, QPoint release, QSize screen) {
-    emit DisplayCameraMouseClicked(press, release, screen);
-}
+void Server::uiDisplayCameraMouseClicked(QPoint press, QPoint release, QSize screen) { emit DisplayCameraMouseClicked(press, release, screen); }
 
-void Server::uiConfirmButtonNoClicked() {
-    emit ConfirmButtonNoClicked();
-}
+void Server::uiConfirmButtonNoClicked() { emit ConfirmButtonNoClicked(); }
 
-void Server::uiConfirmButtonYesClicked() {
-    emit ConfirmButtonYesClicked();
-}
+void Server::uiConfirmButtonYesClicked() { emit ConfirmButtonYesClicked(); }
 
-void Server::uiButtonBack_2Clicked() {
-    emit ButtonBack_2Clicked();
-}
+void Server::uiButtonBack_2Clicked() { emit ButtonBack_2Clicked(); }
 
-void Server::uiButtonReturnObjectClicked() {
-    emit ButtonReturnObjectClicked();
-}
+void Server::uiButtonReturnObjectClicked() { emit ButtonReturnObjectClicked(); }
 
-void Server::uiButtonReleaseClicked() {
-    void ButtonReleaseClicked();
-}
+void Server::uiButtonReleaseClicked() { void ButtonReleaseClicked(); }
 
-void Server::uiButtonReplaceObjectClicked() {
-    emit ButtonReplaceObjectClicked();
-}
+void Server::uiButtonReplaceObjectClicked() { emit ButtonReplaceObjectClicked(); }
 
-void Server::uiButtonNavigateClicked() {
-    emit ButtonNavigateClicked();
-}
+void Server::uiButtonNavigateClicked() { emit ButtonNavigateClicked(); }
 
-void Server::uiButtonBackToGraspClicked() {
-    emit ButtonBackToGraspClicked();
-}
+void Server::uiButtonBackToGraspClicked() { emit ButtonBackToGraspClicked(); }
