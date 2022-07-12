@@ -1,5 +1,4 @@
 #include <QtCore>
-#include <QByteArray>
 #include <QPoint>
 #include <QSize>
 #include <QImage>
