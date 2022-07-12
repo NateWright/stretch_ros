@@ -5,6 +5,7 @@
 #include <QImage>
 
 class Server {
+  PROP(int pageNumber_)
   SLOT(void uiButtonGraspClicked())
   SLOT(void uiButtonStopClicked())
   SLOT(void uiButtonSetHomeClicked())

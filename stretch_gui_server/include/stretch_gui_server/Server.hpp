@@ -63,9 +63,6 @@ class Server : public ServerSimpleSource {
 
     void initConnections();
 
-    QMetaObject::Connection cameraNodeImgUpdate_;
-    QMetaObject::Connection mapImgUpdate_;
-
    signals:
     void enableMapping();
     void disableMapping();

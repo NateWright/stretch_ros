@@ -7,6 +7,7 @@ Server::Server(QObject* parent) : ServerSimpleSource(parent), headPanTilt_({0, -
     cameraNode_ = new RosCamera(nh_);
     graspNode_ = new GraspNode(nh_);
     moveItNode_ = new StretchMoveItInterface(nh_);
+    setPageNumber_(0);
 
     initConnections();
 
@@ -136,21 +137,30 @@ void Server::changeToPage1() {
     emit homeRobot();
     emit enableMapping();
     headPanTilt_ = {0, -30};
+    setPageNumber_(0);
 }
 
 void Server::changeToPage2() {
     emit disableMapping();
     emit cameraSetRotation(headPanTilt_.first, headPanTilt_.second);
+    setPageNumber_(1);
 }
 
 void Server::changeToPage3() {
     headPanTilt_ = moveItNode_->getHeadPanTilt();
     emit disableMapping();
+    setPageNumber_(2);
 }
 
-void Server::changeToPage4() { emit disableMapping(); }
+void Server::changeToPage4() {
+    emit disableMapping();
+    setPageNumber_(3);
+}
 
-void Server::changeToPage5() { emit enableMapping(); }
+void Server::changeToPage5() {
+    emit enableMapping();
+    setPageNumber_(4);
+}
 
 void Server::changeToPage6() { emit enableMapping(); }
 void Server::uiButtonGraspClicked() { emit ButtonGraspClicked(); }
