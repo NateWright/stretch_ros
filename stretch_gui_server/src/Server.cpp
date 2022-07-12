@@ -33,7 +33,7 @@ void Server::initConnections() {
     connect(this, &Server::DisplayMapMousePressInitiated, mapNode_, &MapSubscriber::mousePressInitiated);
     connect(this, &Server::DisplayMapMousePressCurrentLocation, mapNode_, &MapSubscriber::mousePressCurrentLocation);
 
-    // connect(mapNode_, &MapSubscriber::mapUpdateQImage, this, &Server::newMap);
+    connect(mapNode_, &MapSubscriber::mapUpdateQImage, this, &Server::newMap);
     connect(mapNode_, &MapSubscriber::homeSet, this, [this](bool b) { emit uiButtonNavigateHomeSetEnabled(b); });
 
     connect(moveBaseStatusNode_, &MoveBaseStatus::robotMoving, this, [this](bool b) { emit uiPleaseWaitSetVisible(b); });
