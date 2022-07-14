@@ -58,7 +58,6 @@ void Server::initConnections() {
     connect(cameraNode_, &RosCamera::clickInitiated, this, &Server::uiPointPleaseWaitShow);  // Sever to client
 
     // Camera feed
-    connect(cameraNode_, &RosCamera::imgUpdateQImage, this, &Server::uiDisplayCameraSetCamera);
     // Server to client
     // Error: Displays if NaN point was selected
     connect(cameraNode_, &RosCamera::clickFailure, this, &Server::uiErrorNanPointShow);    // Server to client

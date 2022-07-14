@@ -25,7 +25,6 @@ class Server {
   SLOT(void uiCameraMoveButtonHomeClicked())
   SLOT(void uiDisplayCameraMouseClicked(QPoint press, QPoint release, QSize screen))
   SIGNAL(uiPointPleaseWaitShow())
-  SIGNAL(uiDisplayCameraSetCamera(QImage map))
   SIGNAL(uiErrorNanPointShow())
   SIGNAL(uiPointPleaseWaitHide())
   SIGNAL(uiErrorOutOfRangeShow())
