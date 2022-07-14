@@ -110,6 +110,8 @@ void GraspNode::replaceObject() {
     emit armSetReach(sqrt(x * x + y * y) - 0.36);
     d.sleep();
     emit gripperSetGrip(30);
+    d.sleep();
+    emit armSetHeight(point_->point.z + 0.05);
 }
 
 void GraspNode::releaseObject() {
