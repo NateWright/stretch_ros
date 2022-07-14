@@ -30,18 +30,20 @@ void RosCamera::cameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& pc)
 
     const int width = pc->width, height = pc->height;
     camera_ = QImage(height, width, ROSCAMERA::FORMAT);
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr rotatedCloud(new pcl::PointCloud<pcl::PointXYZRGB>(height, width, pcl::PointXYZRGB(0, 0, 0)));
 
     pcl::PointXYZRGB point;
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             point = pc->at(x, y);
             camera_.setPixel(height - 1 - y, x, QColor(point.r, point.g, point.b).rgb());
+            rotatedCloud->at(height - 1 - y, x) = point;
         }
     }
     uchar* bits = camera_.bits();
     std::vector<uchar> dest(bits, bits + sizeof(bits) / sizeof(bits[0]));
     sensor_msgs::Image img;
-    pcl::toROSMsg(*pc, img);
+    pcl::toROSMsg(*rotatedCloud, img);
     cameraPub_.publish(img);
 }
 
