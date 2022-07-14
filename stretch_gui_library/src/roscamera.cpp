@@ -41,11 +41,7 @@ void RosCamera::cameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& pc)
     uchar* bits = camera_.bits();
     std::vector<uchar> dest(bits, bits + sizeof(bits) / sizeof(bits[0]));
     sensor_msgs::Image img;
-    img.data = dest;
-    img.encoding = "rgb16";
-    img.width = height;
-    img.height = width;
-    img.step = 480 * 2 * 3;
+    pcl::toROSMsg(*pc, img);
     cameraPub_.publish(img);
 }
 
