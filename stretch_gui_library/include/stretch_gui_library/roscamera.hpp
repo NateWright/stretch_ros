@@ -16,6 +16,7 @@
 #include <QPainter>
 #include <QPoint>
 #include <QRgb>
+#include <QSharedPointer>
 #include <QSize>
 #include <QThread>
 #include <QTimer>
@@ -47,7 +48,7 @@ class RosCamera : public QThread {
 
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_;
 
-    QImage camera_;
+    QSharedPointer<QImage> camera_;
 
     ObjectSegmenterPtr segmenter_;
 

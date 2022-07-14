@@ -29,19 +29,17 @@ void RosCamera::cameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& pc)
     cloud_ = pc;
 
     const int width = pc->width, height = pc->height;
-    camera_ = QImage(height, width, ROSCAMERA::FORMAT);
+    camera_.reset(new QImage(height, width, ROSCAMERA::FORMAT));
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr rotatedCloud(new pcl::PointCloud<pcl::PointXYZRGB>(height, width, pcl::PointXYZRGB(0, 0, 0)));
 
     pcl::PointXYZRGB point;
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
             point = pc->at(x, y);
-            camera_.setPixel(height - 1 - y, x, QColor(point.r, point.g, point.b).rgb());
+            camera_->setPixel(height - 1 - y, x, QColor(point.r, point.g, point.b).rgb());
             rotatedCloud->at(height - 1 - y, x) = point;
         }
     }
-    uchar* bits = camera_.bits();
-    std::vector<uchar> dest(bits, bits + sizeof(bits) / sizeof(bits[0]));
     sensor_msgs::Image img;
     pcl::toROSMsg(*rotatedCloud, img);
     cameraPub_.publish(img);
@@ -49,7 +47,7 @@ void RosCamera::cameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& pc)
 
 void RosCamera::segmentedCameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& pc) {
     const int width = cloud_->width, height = cloud_->height;
-    QImage img = camera_.copy();
+    QSharedPointer<QImage> img = camera_;
 
     pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
     kdtree.setInputCloud(cloud_);
@@ -60,10 +58,10 @@ void RosCamera::segmentedCameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>:
     for (pcl::PointXYZRGB p : *pc) {
         kdtree.nearestKSearch(p, 1, pointIdxNKNSearch, pointNKNSquaredDistance);
         int pos = pointIdxNKNSearch[0];
-        img.setPixel(height - 1 - pos / width, pos % width, red);
+        img->setPixel(height - 1 - pos / width, pos % width, red);
     }
 
-    emit imgUpdateWithPointQImage(img);
+    emit imgUpdateWithPointQImage(*img.data());
 }
 
 void RosCamera::centerPointCallback(const geometry_msgs::PointStamped::ConstPtr& point) {
