@@ -45,6 +45,7 @@ void RosCamera::cameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& pc)
     img.encoding = "rgb16";
     img.width = height;
     img.height = width;
+    img.step = 480 * 2 * 3;
     cameraPub_.publish(img);
 }
 
