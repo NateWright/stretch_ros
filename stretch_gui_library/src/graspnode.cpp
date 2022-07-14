@@ -136,7 +136,7 @@ void GraspNode::returnObject() {
     d.sleep();
     emit headSetPan();
     d.sleep();
-    emit armSetHeight();
+    emit armSetHeight(0.40);
     d.sleep();
     emit enableMapping();
     d.sleep();
@@ -155,7 +155,7 @@ void GraspNode::home() {
     d.sleep();
     emit gripperSetRotate();
     d.sleep();
-    emit armSetHeight(0.40);
+    emit armSetHeight();
     d.sleep();
     emit enableMapping();
     d.sleep();
