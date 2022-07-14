@@ -9,6 +9,7 @@ RosCamera::RosCamera(ros::NodeHandlePtr nh) : nh_(nh) {
     pointPick_ = nh->advertise<geometry_msgs::PointStamped>("/clicked_point", 30);
     centerPointSub_ = nh_->subscribe("/stretch_pc/centerPoint", 30, &RosCamera::centerPointCallback, this);
     cloudToSegment_ = nh_->advertise<sensor_msgs::PointCloud2>("/stretch_gui/cloud", 30);
+    cameraPub_ = nh_->advertise<sensor_msgs::Image>("/stretch_gui/image", 30);
     moveToThread(this);
 }
 RosCamera::~RosCamera() {}
@@ -37,7 +38,14 @@ void RosCamera::cameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& pc)
             camera_.setPixel(height - 1 - y, x, QColor(point.r, point.g, point.b).rgb());
         }
     }
-    emit imgUpdateQImage(camera_);
+    uchar* bits = camera_.bits();
+    std::vector<uchar> dest(bits, bits + sizeof(bits) / sizeof(bits[0]));
+    sensor_msgs::Image img;
+    img.data = dest;
+    img.encoding = "rgb16";
+    img.width = height;
+    img.height = width;
+    cameraPub_.publish(img);
 }
 
 void RosCamera::segmentedCameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr& pc) {

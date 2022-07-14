@@ -6,6 +6,7 @@
 #include <pcl/kdtree/kdtree_flann.h>
 #include <pcl_ros/point_cloud.h>
 #include <ros/ros.h>
+#include <sensor_msgs/Image.h>
 #include <sensor_msgs/PointCloud2.h>
 
 #include <QColor>
@@ -18,11 +19,12 @@
 #include <QSize>
 #include <QThread>
 #include <QTimer>
+#include <vector>
 
 #include "ObjectSegmenter.hpp"
 
 namespace ROSCAMERA {
-const QImage::Format FORMAT = QImage::Format_RGB444;
+const QImage::Format FORMAT = QImage::Format_RGB16;
 }
 
 class RosCamera : public QThread {
@@ -41,6 +43,7 @@ class RosCamera : public QThread {
 
     ros::Publisher pointPick_;
     ros::Publisher cloudToSegment_;
+    ros::Publisher cameraPub_;
 
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_;
 
