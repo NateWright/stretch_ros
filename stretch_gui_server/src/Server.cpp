@@ -157,6 +157,7 @@ void Server::changeToPage4() {
 }
 
 void Server::changeToPage5() {
+    emit cameraSetRotation(0, 0);
     emit enableMapping();
     setPageNumber_(4);
 }
