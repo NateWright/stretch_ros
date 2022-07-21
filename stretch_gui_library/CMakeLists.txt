@@ -15,6 +15,7 @@ find_package(catkin REQUIRED COMPONENTS
   rospy
   std_msgs
   tf2_ros
+  cv_bridge
 )
 
 find_package(Qt6 REQUIRED COMPONENTS Core Widgets PrintSupport Concurrent)
@@ -112,7 +113,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core Widgets PrintSupport Concurrent)
 catkin_package(
  INCLUDE_DIRS include
  LIBRARIES ${PROJECT_NAME}
- CATKIN_DEPENDS moveit_ros_planning moveit_ros_planning_interface pcl_ros roscpp rospy std_msgs tf2_ros
+ CATKIN_DEPENDS moveit_ros_planning moveit_ros_planning_interface pcl_ros roscpp rospy std_msgs tf2_ros cv_bridge
  DEPENDS Qt6Core Qt6PrintSupport Qt6Widgets
 )
 

@@ -7,6 +7,7 @@ MapSubscriber::MapSubscriber(ros::NodeHandlePtr nodeHandle)
     nh_->getParam("/stretch_gui/odom", odomTopic);
     posSub_ = nh_->subscribe(odomTopic, 30, &MapSubscriber::posCallback, this);
     movePub_ = nh_->advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 30);
+    mapPub_ = nh_->advertise<sensor_msgs::Image>("/stretch_gui/map", 30);
     tfListener_ = new tf2_ros::TransformListener(tfBuffer_);
     map_ = QImage(10, 10, MAPSUBSCRIBER::FORMAT);
     moveToThread(this);
@@ -68,21 +69,32 @@ void MapSubscriber::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
     resolution_ = msg.get()->info.resolution;
     origin_ = QPoint(width + msg.get()->info.origin.position.x / resolution_, -msg.get()->info.origin.position.y / resolution_);
 
+    cv::Mat mapImage(height, width, CV_8UC3, cv::Scalar(0,0,0));
     int val = 0;
-    int pos = 0;
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-            pos = x + width * y;
-            if (msg.get()->data[pos] == -1) {
+            cv::Vec3b color = mapImage.at<cv::Vec3b>(cv::Point(x,y));
+            int occupancyProb = (int)msg->data[x + width * y];
+            if (occupancyProb == -1) {
                 val = 100;
-            } else if (msg.get()->data[pos] == 100) {
+            } else if (occupancyProb == 100) {
                 val = 0;
             } else {
                 val = 255;
             }
             map_.setPixel(width - 1 - x, y, QColor(val, val, val).rgb());
+            color[0] = val;
+            color[1] = val;
+            color[2] = val;
+            mapImage.at<cv::Vec3b>(cv::Point(x,y)) = color;
         }
     }
+    cv_bridge::CvImage out_img;
+    out_img.header = msg->header;
+    out_img.encoding = sensor_msgs::image_encodings::RGB8;
+    out_img.image = mapImage;
+
+    mapPub_.publish(out_img.toImageMsg());
 }
 
 void MapSubscriber::posCallback(const nav_msgs::Odometry::ConstPtr& msg) {

@@ -11,6 +11,8 @@
 #include <tf2/utils.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_ros/transform_listener.h>
+#include <cv_bridge/cv_bridge.h>
+#include<sensor_msgs/Image.h>
 
 #include <QDebug>
 #include <QGraphicsScene>
@@ -42,6 +44,7 @@ class MapSubscriber : public QThread {
     ros::Subscriber mapSub_;
     ros::Subscriber posSub_;
     ros::Publisher movePub_;
+    ros::Publisher mapPub_;
 
     tf2_ros::Buffer tfBuffer_;
     tf2_ros::TransformListener* tfListener_;
