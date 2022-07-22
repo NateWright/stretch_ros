@@ -7,9 +7,8 @@ MapSubscriber::MapSubscriber(ros::NodeHandlePtr nodeHandle)
     nh_->getParam("/stretch_gui/odom", odomTopic);
     posSub_ = nh_->subscribe(odomTopic, 30, &MapSubscriber::posCallback, this);
     movePub_ = nh_->advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 30);
-    mapPub_ = nh_->advertise<sensor_msgs::Image>("/stretch_gui/map", 30);
+    mapPub_ = nh_->advertise<sensor_msgs::Image>("/stretch_gui/map", 30, true);
     tfListener_ = new tf2_ros::TransformListener(tfBuffer_);
-    map_ = QImage(10, 10, MAPSUBSCRIBER::FORMAT);
     moveToThread(this);
 }
 
@@ -26,54 +25,22 @@ void MapSubscriber::run() {
 
 void MapSubscriber::loop() {
     ros::spinOnce();
-
-    mapCopy_ = map_.copy();
-    QPainter painter(&mapCopy_);
-    painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
-    if (drawPos_) {
-        painter.setPen(Qt::SolidLine);
-        painter.setPen(Qt::red);
-        painter.setBrush(QBrush(QColor(Qt::red), Qt::SolidPattern));
-
-        int size = 5;
-        QPoint p1(robotPos_.x() + size * std::sin(robotRot_ - M_PI / 2), robotPos_.y() + size * std::cos(robotRot_ - M_PI / 2));
-        QPoint p2(robotPos_.x() + size * std::sin(robotRot_ - M_PI), robotPos_.y() + size * std::cos(robotRot_ - M_PI));
-        QPoint p3(robotPos_.x() + size * std::sin(robotRot_), robotPos_.y() + size * std::cos(robotRot_));
-
-        QPolygon triangle;
-        triangle.clear();
-        triangle << p1 << p2 << p3;
-        painter.drawPolygon(triangle);
-    }
-    if (drawMouseArrow_) {
-        painter.setPen(Qt::SolidLine);
-        painter.setPen(Qt::magenta);
-        painter.setBrush(QBrush(QColor(Qt::magenta), Qt::SolidPattern));
-        painter.drawLine(mousePressLocation_, mousePressCurrentLocation_);
-        painter.drawEllipse(mousePressCurrentLocation_, 1, 1);
-    }
-    // Paint origin
-    //      painter.setPen(Qt::NoPen);
-    //      painter.setBrush(QBrush(QColor(Qt::green), Qt::SolidPattern));
-    //      painter.drawEllipse(origin_, 5, 5);
-    painter.end();
-
-    emit mapUpdateQImage(mapCopy_);
 }
 
 void MapSubscriber::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
     const int width = msg.get()->info.width,
               height = msg.get()->info.height;
 
-    map_ = QImage(width, height, MAPSUBSCRIBER::FORMAT);
+    mapSize_.setWidth(width);
+    mapSize_.setHeight(height);
     resolution_ = msg.get()->info.resolution;
     origin_ = QPoint(width + msg.get()->info.origin.position.x / resolution_, -msg.get()->info.origin.position.y / resolution_);
 
-    cv::Mat mapImage(height, width, CV_8UC3, cv::Scalar(0,0,0));
+    cv::Mat mapImage(height, width, CV_8UC3, cv::Scalar(0, 0, 0));
     int val = 0;
     for (int y = 0; y < height; y++) {
         for (int x = 0; x < width; x++) {
-            cv::Vec3b color = mapImage.at<cv::Vec3b>(cv::Point(x,y));
+            cv::Vec3b color = mapImage.at<cv::Vec3b>(cv::Point(x, y));
             int occupancyProb = (int)msg->data[x + width * y];
             if (occupancyProb == -1) {
                 val = 100;
@@ -82,19 +49,17 @@ void MapSubscriber::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
             } else {
                 val = 255;
             }
-            map_.setPixel(width - 1 - x, y, QColor(val, val, val).rgb());
             color[0] = val;
             color[1] = val;
             color[2] = val;
-            mapImage.at<cv::Vec3b>(cv::Point(x,y)) = color;
+            mapImage.at<cv::Vec3b>(cv::Point(width - 1 - x, y)) = color;
         }
     }
-    cv_bridge::CvImage out_img;
-    out_img.header = msg->header;
-    out_img.encoding = sensor_msgs::image_encodings::RGB8;
-    out_img.image = mapImage;
-
-    mapPub_.publish(out_img.toImageMsg());
+    mapImage_.reset(new cv_bridge::CvImage());
+    mapImage_->header = msg->header;
+    mapImage_->encoding = sensor_msgs::image_encodings::RGB8;
+    mapImage_->image = mapImage;
+    mapPub_.publish(mapImage_->toImageMsg());
 }
 
 void MapSubscriber::posCallback(const nav_msgs::Odometry::ConstPtr& msg) {
@@ -108,6 +73,7 @@ void MapSubscriber::posCallback(const nav_msgs::Odometry::ConstPtr& msg) {
 
         robotPos_.setX(origin_.x() - transBaseLinkToMap.transform.translation.x / resolution_);
         robotPos_.setY(origin_.y() + transBaseLinkToMap.transform.translation.y / resolution_);
+        emit robotPose(robotPos_, robotRot_);
 
         drawPos_ = true;
     } catch (...) {
@@ -121,7 +87,7 @@ void MapSubscriber::moveRobot(QPoint press, QPoint release, QSize screen) {
     drawMouseArrow_ = false;
     geometry_msgs::PoseStamped pose;
 
-    QPoint mapLoc = translateScreenToMap(press, screen, map_.size());
+    QPoint mapLoc = translateScreenToMap(press, screen, mapSize_);
 
     double locX = (origin_.x() - mapLoc.x()) * resolution_,
            locY = (mapLoc.y() - origin_.y()) * resolution_;
@@ -151,15 +117,6 @@ void MapSubscriber::moveRobot(QPoint press, QPoint release, QSize screen) {
 
 void MapSubscriber::moveRobotLoc(const geometry_msgs::PoseStamped::Ptr pose) {
     movePub_.publish(pose);
-}
-
-void MapSubscriber::mousePressInitiated(QPoint press, QSize screen) {
-    mousePressLocation_ = translateScreenToMap(press, screen, map_.size());
-}
-
-void MapSubscriber::mousePressCurrentLocation(QPoint loc, QSize screen) {
-    mousePressCurrentLocation_ = translateScreenToMap(loc, screen, map_.size());
-    drawMouseArrow_ = true;
 }
 void MapSubscriber::navigateToPoint(const geometry_msgs::PointStamped::ConstPtr& input) {
     //    qDebug() << "Begin";

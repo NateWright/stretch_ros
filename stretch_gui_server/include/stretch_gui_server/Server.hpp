@@ -23,15 +23,15 @@ class Server : public ServerSimpleSource {
     explicit Server(QObject *parent = nullptr);
     ~Server();
 
-    void uiButtonGraspClicked();
+    void uiGrasp();
+
+    // Navigate Page
     void uiButtonStopClicked();
     void uiButtonSetHomeClicked();
     void uiButtonNavigateHomeClicked();
-    void uiButtonToggleNavTypeClicked();
     void uiDisplayMapMouseClick(QPoint press, QPoint release, QSize screen);
-    void uiDisplayMapMousePressInitiated(QPoint press, QSize screen);
-    void uiDisplayMapMousePressCurrentLocation(QPoint loc, QSize screen);
-    void uiButtonBackClicked();
+
+    // Object Selection Page
     void uiCameraMoveButtonUpClicked();
     void uiCameraMoveButtonDownClicked();
     void uiCameraMoveButtonLeftClicked();
@@ -39,16 +39,16 @@ class Server : public ServerSimpleSource {
     void uiCameraMoveButtonHomeClicked();
     void uiDisplayCameraMouseClicked(QPoint press, QPoint release, QSize screen);
 
+    // Confirm Selection Page
     void uiConfirmButtonNoClicked();
     void uiConfirmButtonYesClicked();
 
-    void uiButtonBack_2Clicked();
-    void uiButtonReturnObjectClicked();
+    // Grasp Page
+    void uiButtonBackClicked();
+    void uiButtonStowObjectClicked();
     void uiButtonReleaseClicked();
     void uiButtonReplaceObjectClicked();
     void uiButtonNavigateClicked();
-
-    void uiButtonBackToGraspClicked();
 
    private:
     ros::NodeHandlePtr nh_;
@@ -68,16 +68,14 @@ class Server : public ServerSimpleSource {
     void disableMapping();
     void homeRobot();
     void cameraSetRotation(int, int);
-    void ButtonGraspClicked();
+
+    // Navigation Page
     void ButtonStopClicked();
     void ButtonSetHomeClicked();
     void ButtonNavigateHomeClicked();
-    void ButtonToggleNavTypeClicked();
     void DisplayMapMouseClick(QPoint press, QPoint release, QSize screen);
-    void DisplayMapMousePressInitiated(QPoint press, QSize screen);
-    void DisplayMapMousePressCurrentLocation(QPoint loc, QSize screen);
 
-    void ButtonBackClicked();
+    // Select Object Page
     void CameraMoveButtonUpClicked();
     void CameraMoveButtonDownClicked();
     void CameraMoveButtonLeftClicked();
@@ -85,24 +83,24 @@ class Server : public ServerSimpleSource {
     void CameraMoveButtonHomeClicked();
     void DisplayCameraMouseClicked(QPoint press, QPoint release, QSize screen);
 
+    // Object Confirm Page
+
     void ConfirmButtonNoClicked();
     void ConfirmButtonYesClicked();
 
-    void ButtonBack_2Clicked();
-    void ButtonReturnObjectClicked();
+    // Grasp Page
+
+    void ButtonBackClicked();
+    void ButtonStowObjectClicked();
     void ButtonReleaseClicked();
     void ButtonReplaceObjectClicked();
     void ButtonNavigateClicked();
 
-    void ButtonBackToGraspClicked();
-
    private slots:
-    void changeToPage1();
-    void changeToPage2();
-    void changeToPage3();
-    void changeToPage4();
-    void changeToPage5();
-    void changeToPage6();
+    void changeToNavigation();
+    void changeToSelectScreen();
+    void changeToConfirmObject();
+    void changeToGrasping();
 };
 
 #endif  // SERVER_HPP

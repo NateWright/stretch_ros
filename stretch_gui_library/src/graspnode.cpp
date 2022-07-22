@@ -46,8 +46,6 @@ void GraspNode::lineUp() {
     homePose_->pose.position.z = transBaseToMap.transform.translation.z;
     homePose_->pose.orientation = transBaseToMap.transform.rotation;
 
-    double x = point_->point.x - transBaseToMap.transform.translation.x, y = point_->point.y - transBaseToMap.transform.translation.y;
-
     geometry_msgs::PoseStamped::Ptr pose(new geometry_msgs::PoseStamped());
 
     pose->header.frame_id = "base_link";
@@ -68,7 +66,7 @@ void GraspNode::lineUp() {
     d.sleep();
     emit armSetHeight(point_->point.z);
     d.sleep();
-    emit armSetReach(sqrt(x * x + y * y) - 0.36);
+    emit armSetReach(sqrt(point_->point.x * point_->point.x + point_->point.y * point_->point.y) - 0.36);
     emit graspDone(true);
 }
 
@@ -77,17 +75,8 @@ void GraspNode::replaceObject() {
     s.start();
     ros::Duration d(0.5);
     emit disableMapping();
-    std::string targetFrame = "map", sourceFrame = "base_link";
 
-    geometry_msgs::TransformStamped transBaseToMap = tfBuffer_.lookupTransform(targetFrame, sourceFrame, ros::Time(0));
-    homePose_.reset(new geometry_msgs::PoseStamped());
-    homePose_->header.frame_id = "map";
-    homePose_->pose.position.x = transBaseToMap.transform.translation.x;
-    homePose_->pose.position.y = transBaseToMap.transform.translation.y;
-    homePose_->pose.position.z = transBaseToMap.transform.translation.z;
-    homePose_->pose.orientation = transBaseToMap.transform.rotation;
-
-    double x = point_->point.x - transBaseToMap.transform.translation.x, y = point_->point.y - transBaseToMap.transform.translation.y;
+    emit navigate(homePose_);
 
     geometry_msgs::PoseStamped::Ptr pose(new geometry_msgs::PoseStamped());
 
@@ -107,11 +96,12 @@ void GraspNode::replaceObject() {
     d.sleep();
     emit armSetHeight(point_->point.z);
     d.sleep();
-    emit armSetReach(sqrt(x * x + y * y) - 0.36);
+    emit armSetReach(sqrt(point_->point.x * point_->point.x + point_->point.y * point_->point.y) - 0.36);
     d.sleep();
     emit gripperSetGrip(30);
     d.sleep();
     emit armSetHeight(point_->point.z + 0.05);
+    emit hasObject(false);
 }
 
 void GraspNode::releaseObject() {
@@ -119,9 +109,11 @@ void GraspNode::releaseObject() {
     emit armSetHeight(0.5);
     d.sleep();
     emit gripperSetGrip(30);
+    emit hasObject(false);
 }
 
-void GraspNode::returnObject() {
+void GraspNode::stowObject() {
+    emit hasObject(true);
     ros::Duration d(1.0);
     emit gripperSetGrip(-3);
     d.sleep();
@@ -139,8 +131,6 @@ void GraspNode::returnObject() {
     emit armSetHeight(0.40);
     d.sleep();
     emit enableMapping();
-    d.sleep();
-    emit navigateHome();
 }
 
 void GraspNode::home() {

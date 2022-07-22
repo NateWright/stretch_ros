@@ -32,7 +32,7 @@ int main(int argc, char *argv[]) {
         }
     }
     qDebug() << "Localhost name: " << localhostname;
-    ip += ":9999";
+    ip += ":stretch";
     qDebug() << "IP = " << ip;
     QRemoteObjectHost srcNode(QUrl(ip), nullptr);
     srcNode.enableRemoting(&server);

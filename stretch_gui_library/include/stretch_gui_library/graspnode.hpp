@@ -56,10 +56,11 @@ class GraspNode : public QThread {
     void graspDone(bool);
     void enableMapping();
     void disableMapping();
+    void hasObject(bool);
    public slots:
     void lineUp();
     void replaceObject();
-    void returnObject();
+    void stowObject();
     void home();
     void releaseObject();
 };

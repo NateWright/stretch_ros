@@ -5,41 +5,51 @@
 
 class Server {
   PROP(int pageNumber_)
-  SLOT(void uiButtonGraspClicked())
+  PROP(bool hasObject_)
+
+  // Main Pages
+
+  SLOT(void changeToNavigation())
+  SLOT(void uiGrasp())
+
+  // Navigation Page
+
   SLOT(void uiButtonStopClicked())
   SLOT(void uiButtonSetHomeClicked())
   SLOT(void uiButtonNavigateHomeClicked())
-  SLOT(void uiButtonToggleNavTypeClicked())
   SLOT(void uiDisplayMapMouseClick(QPoint press, QPoint release, QSize screen))
-  SLOT(void uiDisplayMapMousePressInitiated(QPoint press, QSize screen))
-  SLOT(void uiDisplayMapMousePressCurrentLocation(QPoint loc, QSize screen))
+
   SIGNAL(uiButtonNavigateHomeSetEnabled(bool b))
   SIGNAL(uiPleaseWaitSetVisible(bool b))
-  SIGNAL(newMap(QImage map))
+  SIGNAL(robotPose(QPoint, double))
 
-  SLOT(void uiButtonBackClicked())
+  // Select Object Page
+
   SLOT(void uiCameraMoveButtonUpClicked())
   SLOT(void uiCameraMoveButtonDownClicked())
   SLOT(void uiCameraMoveButtonLeftClicked())
   SLOT(void uiCameraMoveButtonRightClicked())
   SLOT(void uiCameraMoveButtonHomeClicked())
+
   SLOT(void uiDisplayCameraMouseClicked(QPoint press, QPoint release, QSize screen))
   SIGNAL(uiPointPleaseWaitShow())
   SIGNAL(uiErrorNanPointShow())
   SIGNAL(uiPointPleaseWaitHide())
   SIGNAL(uiErrorOutOfRangeShow())
-  SIGNAL(uiChangeToPage3())
+  SIGNAL(uiChangeToConfirmObject())
+
+  // Confirm Object Page
 
   SLOT(void uiConfirmButtonNoClicked())
   SLOT(void uiConfirmButtonYesClicked())
   SIGNAL(uiDisplayImageSetCamera(QImage map))
 
-  SLOT(void uiButtonBack_2Clicked())
-  SLOT(void uiButtonReturnObjectClicked())
+  // Grasp Page
+
+  SLOT(void uiButtonBackClicked())
+  SLOT(void uiButtonStowObjectClicked())
   SLOT(void uiButtonReleaseClicked())
   SLOT(void uiButtonReplaceObjectClicked())
   SLOT(void uiButtonNavigateClicked())
   SIGNAL(uiButtonReturnObjectSetEnabled(bool b = true))
-
-  SLOT(void uiButtonBackToGraspClicked())
 };

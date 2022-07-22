@@ -3,16 +3,16 @@
 
 #include <actionlib_msgs/GoalStatus.h>
 #include <actionlib_msgs/GoalStatusArray.h>
+#include <cv_bridge/cv_bridge.h>
 #include <geometry_msgs/PoseStamped.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <nav_msgs/Odometry.h>
 #include <ros/ros.h>
+#include <sensor_msgs/Image.h>
 #include <std_srvs/Empty.h>
 #include <tf2/utils.h>
 #include <tf2_geometry_msgs/tf2_geometry_msgs.h>
 #include <tf2_ros/transform_listener.h>
-#include <cv_bridge/cv_bridge.h>
-#include<sensor_msgs/Image.h>
 
 #include <QDebug>
 #include <QGraphicsScene>
@@ -49,9 +49,8 @@ class MapSubscriber : public QThread {
     tf2_ros::Buffer tfBuffer_;
     tf2_ros::TransformListener* tfListener_;
 
-    QImage map_;
-    QImage mapCopy_;
-    // QPixmap outputMap_;
+    QSize mapSize_;
+    cv_bridge::CvImage::Ptr mapImage_;
 
     bool drawPos_;
     QPoint origin_;
@@ -70,17 +69,14 @@ class MapSubscriber : public QThread {
     void posCallback(const nav_msgs::Odometry::ConstPtr& msg);
     void loop();
    signals:
-    void mapUpdate(const QPixmap&);
-    void mapUpdateQImage(QImage img);
     void validPoint();
     void invalidPoint();
     void homeSet(bool);
+    void robotPose(QPoint, double);
 
    public slots:
     void moveRobot(QPoint press, QPoint release, QSize screen);
     void moveRobotLoc(const geometry_msgs::PoseStamped::Ptr pose);
-    void mousePressInitiated(QPoint press, QSize screen);
-    void mousePressCurrentLocation(QPoint loc, QSize screen);
     void navigateToPoint(const geometry_msgs::PointStamped::ConstPtr& input);
     void checkPointInRange(const geometry_msgs::PointStamped::ConstPtr& input);
     void setHome();
