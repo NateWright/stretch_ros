@@ -1,3 +1,0 @@
-<launch>
-  <node name="stretch_gazebo_interface" pkg="stretch_gui" type="stretch_gazebo" output="screen"/>
-</launch>

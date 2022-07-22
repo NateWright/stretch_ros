@@ -1,2 +1,0 @@
-odom: "/odom"
-pointCloudTopic: "/camera/depth_registered/points"

@@ -1,3 +1,0 @@
-<launch>
-  <node name="stretch_interface" pkg="stretch_gui" type="stretch_interface" output="screen"/>
-</launch>
