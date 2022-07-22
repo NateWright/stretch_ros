@@ -28,7 +28,7 @@ find_package(Qt6 REQUIRED COMPONENTS Core Widgets PrintSupport Concurrent)
 ## Uncomment this if the package has a setup.py. This macro ensures
 ## modules and global scripts declared therein get installed
 ## See http://ros.org/doc/api/catkin/html/user_guide/setup_dot_py.html
-# catkin_python_setup()
+catkin_python_setup()
 
 ################################################
 ## Declare ROS messages, services and actions ##
@@ -144,6 +144,7 @@ add_library(${PROJECT_NAME} STATIC
   include/${PROJECT_NAME}/sceneviewer.hpp
   include/${PROJECT_NAME}/StretchMoveItInterface.hpp
   include/${PROJECT_NAME}/ObjectSegmenter.hpp
+  include/${PROJECT_NAME}/StretchInterfaceGazebo.hpp
   src/graspnode.cpp
   src/mapsubscriber.cpp
   src/movebasestatus.cpp
@@ -151,6 +152,7 @@ add_library(${PROJECT_NAME} STATIC
   src/StretchMoveItInterface.cpp
   src/test.cpp
   src/ObjectSegmenter.cpp
+  src/StretchInterfaceGazebo.cpp
 )
 
 ## Add cmake target dependencies of the library
@@ -161,7 +163,7 @@ add_library(${PROJECT_NAME} STATIC
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
-# add_executable(${PROJECT_NAME}_node src/stretch_gui_library_node.cpp)
+add_executable(stretch_gazebo nodes/stretch_gazebo.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -183,6 +185,8 @@ target_link_libraries(${PROJECT_NAME}
   Qt6::Concurrent
 )
 
+target_link_libraries(stretch_gazebo ${PROJECT_NAME})
+
 #############
 ## Install ##
 #############
@@ -199,9 +203,9 @@ target_link_libraries(${PROJECT_NAME}
 
 ## Mark executables for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_executables.html
-# install(TARGETS ${PROJECT_NAME}_node
-#   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-# )
+install(TARGETS stretch_gazebo
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
 
 ## Mark libraries for installation
 ## See http://docs.ros.org/melodic/api/catkin/html/howto/format1/building_libraries.html
