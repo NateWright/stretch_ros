@@ -46,6 +46,8 @@ class MapSubscriber : public QThread {
     ros::Publisher movePub_;
     ros::Publisher mapPub_;
 
+    ros::AsyncSpinner* spinner_;
+
     tf2_ros::Buffer tfBuffer_;
     tf2_ros::TransformListener* tfListener_;
 
@@ -67,7 +69,6 @@ class MapSubscriber : public QThread {
 
     void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg);
     void posCallback(const nav_msgs::Odometry::ConstPtr& msg);
-    void loop();
    signals:
     void validPoint();
     void invalidPoint();

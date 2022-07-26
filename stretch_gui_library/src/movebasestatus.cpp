@@ -7,19 +7,14 @@ MoveBaseStatus::MoveBaseStatus(ros::NodeHandlePtr nodeHandle) : nh_(nodeHandle) 
 }
 
 MoveBaseStatus::~MoveBaseStatus() {
+    spinner_->stop();
+    delete spinner_;
 }
 
 void MoveBaseStatus::run() {
-    QTimer *timer = new QTimer();
-    timer->setInterval(15);
-    connect(timer, &QTimer::timeout, this, &MoveBaseStatus::loop);
-    timer->start();
+    spinner_ = new ros::AsyncSpinner(0);
+    spinner_->start();
     exec();
-    delete timer;
-}
-
-void MoveBaseStatus::loop() {
-    ros::spinOnce();
 }
 
 void MoveBaseStatus::moveBaseStatusCallback(const actionlib_msgs::GoalStatusArray::ConstPtr &msg) {

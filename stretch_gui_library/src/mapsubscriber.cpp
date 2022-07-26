@@ -12,19 +12,16 @@ MapSubscriber::MapSubscriber(ros::NodeHandlePtr nodeHandle)
     moveToThread(this);
 }
 
-MapSubscriber::~MapSubscriber() { delete tfListener_; }
-
-void MapSubscriber::run() {
-    QTimer* timer = new QTimer();
-    timer->setInterval(35);
-    connect(timer, &QTimer::timeout, this, &MapSubscriber::loop);
-    timer->start();
-    exec();
-    delete timer;
+MapSubscriber::~MapSubscriber() {
+    spinner_->stop();
+    delete spinner_;
+    delete tfListener_;
 }
 
-void MapSubscriber::loop() {
-    ros::spinOnce();
+void MapSubscriber::run() {
+    spinner_ = new ros::AsyncSpinner(0);
+    spinner_->start();
+    exec();
 }
 
 void MapSubscriber::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg) {

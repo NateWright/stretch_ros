@@ -10,23 +10,19 @@ StretchMoveItInterface::StretchMoveItInterface(ros::NodeHandlePtr nh) : nh_(nh),
     moveToThread(this);
 }
 
-StretchMoveItInterface::~StretchMoveItInterface() {}
+StretchMoveItInterface::~StretchMoveItInterface() {
+    spinner_->stop();
+    delete spinner_;
+}
 
 void StretchMoveItInterface::run() {
-    QTimer* timer = new QTimer();
-    timer->setInterval(15);
-    connect(timer, &QTimer::timeout, this, &StretchMoveItInterface::loop);
-    timer->start();
+    spinner_ = new ros::AsyncSpinner(0);
+    spinner_->start();
     exec();
-    delete timer;
 }
 
 std::pair<int, int> StretchMoveItInterface::getHeadPanTilt() {
     return {panAngle_, tiltAngle_};
-}
-
-void StretchMoveItInterface::loop() {
-    ros::spinOnce();
 }
 
 void StretchMoveItInterface::headSetRotation(const double degPan, const double degTilt) {

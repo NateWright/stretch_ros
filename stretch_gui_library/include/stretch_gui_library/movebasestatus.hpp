@@ -29,8 +29,9 @@ class MoveBaseStatus : public QThread {
     ros::Subscriber moveBaseStatusSub_;
     ros::Publisher moveBaseStopPub_;
 
+    ros::AsyncSpinner *spinner_;
+
     void moveBaseStatusCallback(const actionlib_msgs::GoalStatusArray::ConstPtr &msg);
-    void loop();
 };
 
 #endif  // MOVEBASESTATUS_HPP

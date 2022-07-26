@@ -29,10 +29,10 @@ class StretchMoveItInterface : public QThread {
     ros::Publisher gipperYaw_;
     ros::Publisher gripperAperture_;
 
+    ros::AsyncSpinner *spinner_;
+
     int panAngle_;
     int tiltAngle_;
-
-    void loop();
 
    public slots:
     void headSetRotation(const double degPan = 0, const double degTilt = 0);

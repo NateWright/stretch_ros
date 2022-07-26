@@ -12,18 +12,16 @@ RosCamera::RosCamera(ros::NodeHandlePtr nh) : nh_(nh) {
     cameraPub_ = nh_->advertise<sensor_msgs::Image>("/stretch_gui/image", 30);
     moveToThread(this);
 }
-RosCamera::~RosCamera() {}
-
-void RosCamera::run() {
-    QTimer* timer = new QTimer();
-    timer->setInterval(15);
-    connect(timer, &QTimer::timeout, this, &RosCamera::loop);
-    timer->start();
-    exec();
-    delete timer;
+RosCamera::~RosCamera() {
+    spinner_->stop();
+    delete spinner_;
 }
 
-void RosCamera::loop() { ros::spinOnce(); }
+void RosCamera::run() {
+    spinner_ = new ros::AsyncSpinner(0);
+    spinner_->start();
+    exec();
+}
 
 void RosCamera::cameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr& pc) {
     cloud_ = pc;

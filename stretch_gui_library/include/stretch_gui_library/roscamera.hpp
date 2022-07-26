@@ -46,6 +46,8 @@ class RosCamera : public QThread {
     ros::Publisher cloudToSegment_;
     ros::Publisher cameraPub_;
 
+    ros::AsyncSpinner *spinner_;
+
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud_;
 
     QSharedPointer<QImage> camera_;
@@ -55,7 +57,6 @@ class RosCamera : public QThread {
     void cameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr &);
     void segmentedCameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>::ConstPtr &);
     void centerPointCallback(const geometry_msgs::PointStamped::ConstPtr &);
-    void loop();
 
    signals:
     void imgUpdate(const QPixmap &);
