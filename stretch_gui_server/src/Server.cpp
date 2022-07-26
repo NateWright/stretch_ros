@@ -9,6 +9,7 @@ Server::Server(QObject* parent) : ServerSimpleSource(parent), headPanTilt_({0, -
     moveItNode_ = new StretchMoveItInterface(nh_);
     setPageNumber_(0);
     setHasObject_(false);
+    setCanNavigate_(true);
 
     initConnections();
 
@@ -78,6 +79,7 @@ void Server::initConnections() {
 
     // Grasp Page
 
+    connect(graspNode_, &GraspNode::canNavigate, this, &Server::setCanNavigate_);
     connect(graspNode_, &GraspNode::hasObject, this, &Server::setHasObject_);
 
     connect(this, &Server::ButtonBackClicked, graspNode_, &GraspNode::home);                    // Client to Server

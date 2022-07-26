@@ -63,6 +63,7 @@ class GraspNode : public QThread {
     void enableMapping();
     void disableMapping();
     void hasObject(bool);
+    void canNavigate(bool);
    public slots:
     void setHorizontal();
     void setVertical();

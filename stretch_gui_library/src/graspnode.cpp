@@ -88,6 +88,7 @@ void GraspNode::lineUpOffset(double offset) {
     d.sleep();
     emit armSetReach(sqrt(point_->point.x * point_->point.x + point_->point.y * point_->point.y) - offset);
     emit graspDone(true);
+    emit canNavigate(false);
 }
 
 void GraspNode::replaceObject() {
@@ -151,6 +152,7 @@ void GraspNode::stowObject() {
     emit armSetHeight(0.40);
     d.sleep();
     emit enableMapping();
+    emit canNavigate(true);
 }
 
 void GraspNode::home() {
@@ -171,4 +173,5 @@ void GraspNode::home() {
     d.sleep();
     d.sleep();
     emit navigate(homePose_);
+    emit canNavigate(true);
 }

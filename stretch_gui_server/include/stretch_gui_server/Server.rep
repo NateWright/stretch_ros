@@ -6,6 +6,7 @@
 class Server {
   PROP(int pageNumber_)
   PROP(bool hasObject_)
+  PROP(bool canNavigate_)
 
   // Main Pages
 
