@@ -40,6 +40,9 @@ class Server {
 
   // Confirm Object Page
 
+  SLOT(void setVertical())
+  SLOT(void setHorizontal())
+
   SLOT(void uiConfirmButtonNoClicked())
   SLOT(void uiConfirmButtonYesClicked())
   SIGNAL(uiDisplayImageSetCamera(QImage map))

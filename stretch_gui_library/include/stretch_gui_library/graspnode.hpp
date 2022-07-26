@@ -15,6 +15,9 @@
 #include <QTimer>
 #include <QWidget>
 
+enum Position { VERTICAL,
+                HORIZONTAL };
+
 class GraspNode : public QThread {
     Q_OBJECT
    public:
@@ -29,6 +32,8 @@ class GraspNode : public QThread {
     ros::Publisher cmdArmPub_;
     ros::Subscriber centerPointSub_;
 
+    ros::AsyncSpinner *spinner_;
+
     tf2_ros::Buffer tfBuffer_;
     tf2_ros::TransformListener *tfListener_;
 
@@ -37,8 +42,9 @@ class GraspNode : public QThread {
 
     geometry_msgs::PoseStamped::Ptr homePose_;
 
+    Position orientation = VERTICAL;
+
     void centerPointCallback(const geometry_msgs::PointStamped::ConstPtr &input);
-    void loop();
 
    signals:
     //    void navigateToPoint(const geometry_msgs::PointStamped::ConstPtr& input);
@@ -58,7 +64,10 @@ class GraspNode : public QThread {
     void disableMapping();
     void hasObject(bool);
    public slots:
+    void setHorizontal();
+    void setVertical();
     void lineUp();
+    void lineUpOffset(double offset);
     void replaceObject();
     void stowObject();
     void home();

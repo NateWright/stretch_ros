@@ -67,6 +67,9 @@ void Server::initConnections() {
 
     // Confirm Object Page
 
+    connect(this, &Server::SetVertical, graspNode_, &GraspNode::setVertical);
+    connect(this, &Server::SetHorizontal, graspNode_, &GraspNode::setHorizontal);
+
     connect(this, &Server::ConfirmButtonNoClicked, this, &Server::changeToSelectScreen);  // Client to Both
     connect(this, &Server::ConfirmButtonYesClicked, this, &Server::changeToGrasping);     // Client to Both
     connect(this, &Server::ConfirmButtonYesClicked, graspNode_, &GraspNode::lineUp);      // Client to server
@@ -166,6 +169,9 @@ void Server::uiCameraMoveButtonHomeClicked() { emit CameraMoveButtonHomeClicked(
 void Server::uiDisplayCameraMouseClicked(QPoint press, QPoint release, QSize screen) { emit DisplayCameraMouseClicked(press, release, screen); }
 
 // Confirm Selection Page
+void Server::setVertical() { emit SetVertical(); }
+void Server::setHorizontal() { emit SetHorizontal(); }
+
 void Server::uiConfirmButtonNoClicked() { emit ConfirmButtonNoClicked(); }
 void Server::uiConfirmButtonYesClicked() { emit ConfirmButtonYesClicked(); }
 

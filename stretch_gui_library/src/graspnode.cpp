@@ -11,17 +11,17 @@ GraspNode::GraspNode(ros::NodeHandlePtr nh) : nh_(nh) {
     moveToThread(this);
 }
 
-GraspNode::~GraspNode() { delete tfListener_; }
+GraspNode::~GraspNode() {
+    spinner_->stop();
+    delete spinner_;
+    delete tfListener_;
+}
 
 void GraspNode::run() {
-    QTimer* timer = new QTimer();
-    timer->setInterval(15);
-    connect(timer, &QTimer::timeout, this, &GraspNode::loop);
-    timer->start();
+    spinner_ = new ros::AsyncSpinner(0);
+    spinner_->start();
     exec();
-    delete timer;
 }
-void GraspNode::loop() { ros::spinOnce(); }
 
 void GraspNode::centerPointCallback(const geometry_msgs::PointStamped::ConstPtr& input) {
     geometry_msgs::PointStamped point = tfBuffer_.transform(*input.get(), "map");
@@ -31,7 +31,27 @@ void GraspNode::centerPointCallback(const geometry_msgs::PointStamped::ConstPtr&
     pointBaseLink_.reset(new geometry_msgs::PointStamped());
     *pointBaseLink_.get() = point;
 }
+
 void GraspNode::lineUp() {
+    switch (orientation) {
+        case VERTICAL: {
+            lineUpOffset(0.36);
+            break;
+        }
+        case HORIZONTAL: {
+            lineUpOffset(0.36);
+            break;
+        }
+    }
+}
+
+void GraspNode::setHorizontal() {
+    orientation = HORIZONTAL;
+}
+void GraspNode::setVertical() {
+    orientation = VERTICAL;
+}
+void GraspNode::lineUpOffset(double offset) {
     ros::AsyncSpinner s(1);
     s.start();
     ros::Duration d(0.5);
@@ -66,7 +86,7 @@ void GraspNode::lineUp() {
     d.sleep();
     emit armSetHeight(point_->point.z);
     d.sleep();
-    emit armSetReach(sqrt(point_->point.x * point_->point.x + point_->point.y * point_->point.y) - 0.36);
+    emit armSetReach(sqrt(point_->point.x * point_->point.x + point_->point.y * point_->point.y) - offset);
     emit graspDone(true);
 }
 

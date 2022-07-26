@@ -40,6 +40,9 @@ class Server : public ServerSimpleSource {
     void uiDisplayCameraMouseClicked(QPoint press, QPoint release, QSize screen);
 
     // Confirm Selection Page
+    void setVertical();
+    void setHorizontal();
+
     void uiConfirmButtonNoClicked();
     void uiConfirmButtonYesClicked();
 
@@ -84,6 +87,8 @@ class Server : public ServerSimpleSource {
     void DisplayCameraMouseClicked(QPoint press, QPoint release, QSize screen);
 
     // Object Confirm Page
+    void SetVertical();
+    void SetHorizontal();
 
     void ConfirmButtonNoClicked();
     void ConfirmButtonYesClicked();
