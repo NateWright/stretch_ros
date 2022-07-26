@@ -27,6 +27,8 @@ roslaunch stretch_rtabmap start_rtab.launch sim:=true localization:=false move_b
 # Shell 3
 roslaunch stretch_moveit_config move_group.launch
 # Shell 4
+rosrun web_video_server web_video_server
+# Shell 5
 roslaunch stretch_gui_server stretch_gui_server.launch sim:=true
 ```
 
@@ -40,12 +42,14 @@ rosdep install --from-paths src --ignore-src -r -y
 catkin build
 ```
 
-# Usage Gazebo
+# Usage Stretch
 
 ```shell
 # Shell 1
 roslaunch stretch_rtabmap start_rtab.launch sim:=false localization:=false move_base_config:=3d
 # Shell 2
+rosrun web_video_server web_video_server
+# Shell 3
 roslaunch stretch_gui_server stretch_gui_server.launch sim:=false
 ```
 
