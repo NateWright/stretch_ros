@@ -150,7 +150,6 @@ add_library(${PROJECT_NAME} STATIC
   src/movebasestatus.cpp
   src/roscamera.cpp
   src/StretchMoveItInterface.cpp
-  src/test.cpp
   src/ObjectSegmenter.cpp
   src/StretchInterfaceGazebo.cpp
 )
