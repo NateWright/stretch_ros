@@ -10,7 +10,7 @@ stretch_gui is meant to utilize all aspects of stretch to navigate and grasps ob
 
 ```shell
 cd ~/catkin_ws/src
-git clone https://github.com/NateWright/stretch_ros dev/Android
+git clone https://github.com/NateWright/stretch_ros -b dev/Android
 git clone https://github.com/pal-robotics/realsense_gazebo_plugin
 cd ~/catkin_ws
 rosdep install --from-paths src --ignore-src -r -y
