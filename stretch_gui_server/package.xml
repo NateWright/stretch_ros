@@ -55,6 +55,7 @@
   <build_depend>stretch_gui_library</build_depend>
   <build_export_depend>stretch_gui_library</build_export_depend>
   <exec_depend>stretch_gui_library</exec_depend>
+  <exec_depend>web_video_server</exec_depend>
 
 
   <!-- The export tag contains other, unspecified, tags -->
