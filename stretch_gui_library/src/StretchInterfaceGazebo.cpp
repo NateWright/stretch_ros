@@ -21,12 +21,12 @@ StretchInterfaceGazebo::StretchInterfaceGazebo(ros::NodeHandlePtr nh)
     subHandle_.reset(new ros::NodeHandle("stretch_interface_callback"));
     subHandle_->setCallbackQueue(&queue_);
 
-    headTiltSubscriber_ = subHandle_->subscribe("/stretch_interface/head_tilt", 1000, &StretchInterfaceGazebo::headTiltCallback, this);
-    headPanSubscriber_ = subHandle_->subscribe("/stretch_interface/head_pan", 1000, &StretchInterfaceGazebo::headPanCallback, this);
-    armLiftSubscriber_ = subHandle_->subscribe("/stretch_interface/lift", 1000, &StretchInterfaceGazebo::armLiftCallback, this);
-    armExtensionSubscriber_ = subHandle_->subscribe("/stretch_interface/lift_extension", 1000, &StretchInterfaceGazebo::armExtensionCallback, this);
-    gripperYawSubscriber_ = subHandle_->subscribe("/stretch_interface/wrist_yaw", 1000, &StretchInterfaceGazebo::gripperYawCallback, this);
-    gripperApertureSubscriber_ = subHandle_->subscribe("/stretch_interface/gripper_opening", 1000, &StretchInterfaceGazebo::gripperApertureCallback, this);
+    headTiltServiceServer_ = subHandle_->advertiseService("/stretch_interface/head_tilt", &StretchInterfaceGazebo::headTiltCallback, this);
+    headPanServiceServer_ = subHandle_->advertiseService("/stretch_interface/head_pan", &StretchInterfaceGazebo::headPanCallback, this);
+    armLiftServiceServer_ = subHandle_->advertiseService("/stretch_interface/lift", &StretchInterfaceGazebo::armLiftCallback, this);
+    armExtensionServiceServer_ = subHandle_->advertiseService("/stretch_interface/lift_extension", &StretchInterfaceGazebo::armExtensionCallback, this);
+    gripperYawServiceServer_ = subHandle_->advertiseService("/stretch_interface/wrist_yaw", &StretchInterfaceGazebo::gripperYawCallback, this);
+    gripperApertureServiceServer_ = subHandle_->advertiseService("/stretch_interface/gripper_opening", &StretchInterfaceGazebo::gripperApertureCallback, this);
 }
 StretchInterfaceGazebo::~StretchInterfaceGazebo() {
     delete move_group_interface_arm_;
@@ -93,33 +93,51 @@ void StretchInterfaceGazebo::move() {
     //     moveGripper_ = false;
     // }
 }
-void StretchInterfaceGazebo::headTiltCallback(const std_msgs::Float64::ConstPtr msg) {
+bool StretchInterfaceGazebo::headTiltCallback(stretch_gui_library::DoubleBool::Request& req,
+                                              stretch_gui_library::DoubleBool::Response& res) {
     std::lock_guard<std::mutex> guard(robotLock_);
-    headTilt_ = msg->data;
+    headTilt_ = req.data;
     moveHead_ = true;
+    res.success = true;
+    return true;
 }
-void StretchInterfaceGazebo::headPanCallback(const std_msgs::Float64::ConstPtr msg) {
+bool StretchInterfaceGazebo::headPanCallback(stretch_gui_library::DoubleBool::Request& req,
+                                             stretch_gui_library::DoubleBool::Response& res) {
     std::lock_guard<std::mutex> guard(robotLock_);
-    headPan_ = msg->data;
+    headPan_ = req.data;
     moveHead_ = true;
+    res.success = true;
+    return true;
 }
-void StretchInterfaceGazebo::armLiftCallback(const std_msgs::Float64::ConstPtr msg) {
+bool StretchInterfaceGazebo::armLiftCallback(stretch_gui_library::DoubleBool::Request& req,
+                                             stretch_gui_library::DoubleBool::Response& res) {
     std::lock_guard<std::mutex> guard(robotLock_);
-    armLift_ = msg->data;
+    armLift_ = req.data;
     moveArm_ = true;
+    res.success = true;
+    return true;
 }
-void StretchInterfaceGazebo::armExtensionCallback(const std_msgs::Float64::ConstPtr msg) {
+bool StretchInterfaceGazebo::armExtensionCallback(stretch_gui_library::DoubleBool::Request& req,
+                                                  stretch_gui_library::DoubleBool::Response& res) {
     std::lock_guard<std::mutex> guard(robotLock_);
-    armExtension_ = msg->data;
+    armExtension_ = req.data;
     moveArm_ = true;
+    res.success = true;
+    return true;
 }
-void StretchInterfaceGazebo::gripperYawCallback(const std_msgs::Float64::ConstPtr msg) {
+bool StretchInterfaceGazebo::gripperYawCallback(stretch_gui_library::DoubleBool::Request& req,
+                                                stretch_gui_library::DoubleBool::Response& res) {
     std::lock_guard<std::mutex> guard(robotLock_);
-    gripperYaw_ = msg->data;
+    gripperYaw_ = req.data;
     moveArm_ = true;
+    res.success = true;
+    return true;
 }
-void StretchInterfaceGazebo::gripperApertureCallback(const std_msgs::Float64::ConstPtr msg) {
+bool StretchInterfaceGazebo::gripperApertureCallback(stretch_gui_library::DoubleBool::Request& req,
+                                                     stretch_gui_library::DoubleBool::Response& res) {
     std::lock_guard<std::mutex> guard(robotLock_);
-    gripperAperture_ = msg->data;
+    gripperAperture_ = req.data;
     moveGripper_ = true;
+    res.success = true;
+    return true;
 }

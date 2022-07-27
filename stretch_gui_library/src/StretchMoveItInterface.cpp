@@ -1,12 +1,12 @@
 #include "StretchMoveItInterface.hpp"
 
 StretchMoveItInterface::StretchMoveItInterface(ros::NodeHandlePtr nh) : nh_(nh), panAngle_(0), tiltAngle_(0) {
-    headTilt_ = nh_->advertise<std_msgs::Float64>("/stretch_interface/head_tilt", 1000);
-    headPan_ = nh_->advertise<std_msgs::Float64>("/stretch_interface/head_pan", 1000);
-    armLift_ = nh_->advertise<std_msgs::Float64>("/stretch_interface/lift", 1000);
-    armExtension_ = nh_->advertise<std_msgs::Float64>("/stretch_interface/lift_extension", 1000);
-    gipperYaw_ = nh_->advertise<std_msgs::Float64>("/stretch_interface/wrist_yaw", 1000);
-    gripperAperture_ = nh_->advertise<std_msgs::Float64>("/stretch_interface/gripper_opening", 1000);
+    headTilt_ = nh_->serviceClient<stretch_gui_library::DoubleBool>("/stretch_interface/head_tilt");
+    headPan_ = nh_->serviceClient<stretch_gui_library::DoubleBool>("/stretch_interface/head_pan");
+    armLift_ = nh_->serviceClient<stretch_gui_library::DoubleBool>("/stretch_interface/lift");
+    armExtension_ = nh_->serviceClient<stretch_gui_library::DoubleBool>("/stretch_interface/lift_extension");
+    gipperYaw_ = nh_->serviceClient<stretch_gui_library::DoubleBool>("/stretch_interface/wrist_yaw");
+    gripperAperture_ = nh_->serviceClient<stretch_gui_library::DoubleBool>("/stretch_interface/gripper_opening");
     moveToThread(this);
 }
 
@@ -32,35 +32,35 @@ void StretchMoveItInterface::headSetRotation(const double degPan, const double d
 
 void StretchMoveItInterface::headSetPan(const double degPan) {
     panAngle_ = degPan;
-    std_msgs::Float64 msg;
-    msg.data = degPan * toRadians;
-    headPan_.publish(msg);
+    stretch_gui_library::DoubleBool srv;
+    srv.request.data = degPan * toRadians;
+    headPan_.call(srv);
 }
 void StretchMoveItInterface::headSetTilt(const double degTilt) {
     tiltAngle_ = degTilt;
-    std_msgs::Float64 msg;
-    msg.data = degTilt * toRadians;
-    headTilt_.publish(msg);
+    stretch_gui_library::DoubleBool srv;
+    srv.request.data = degTilt * toRadians;
+    headTilt_.call(srv);
 }
 void StretchMoveItInterface::armSetHeight(const double metersHeight) {
-    std_msgs::Float64 msg;
-    msg.data = metersHeight;
-    armLift_.publish(msg);
+    stretch_gui_library::DoubleBool srv;
+    srv.request.data = metersHeight;
+    armLift_.call(srv);
 }
 void StretchMoveItInterface::armSetReach(const double metersReach) {
-    std_msgs::Float64 msg;
-    msg.data = metersReach;
-    armExtension_.publish(msg);
+    stretch_gui_library::DoubleBool srv;
+    srv.request.data = metersReach;
+    armExtension_.call(srv);
 }
 void StretchMoveItInterface::gripperSetRotate(const double deg) {
-    std_msgs::Float64 msg;
-    msg.data = deg * toRadians;
-    gipperYaw_.publish(msg);
+    stretch_gui_library::DoubleBool srv;
+    srv.request.data = deg * toRadians;
+    gipperYaw_.call(srv);
 }
 void StretchMoveItInterface::gripperSetGrip(const double deg) {
-    std_msgs::Float64 msg;
-    msg.data = deg * toRadians;
-    gripperAperture_.publish(msg);
+    stretch_gui_library::DoubleBool srv;
+    srv.request.data = deg * toRadians;
+    gripperAperture_.call(srv);
 }
 void StretchMoveItInterface::homeRobot() {
     headSetTilt();

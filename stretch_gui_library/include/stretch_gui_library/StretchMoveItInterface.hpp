@@ -2,12 +2,13 @@
 #define STRETCHMOVEITINTERFACE_HPP
 
 #include <ros/ros.h>
-#include <std_msgs/Float64.h>
 
 #include <QDebug>
 #include <QObject>
 #include <QThread>
 #include <QTimer>
+
+#include "stretch_gui_library/DoubleBool.h"
 
 const double toRadians = M_PI / 180;
 
@@ -22,12 +23,12 @@ class StretchMoveItInterface : public QThread {
 
    private:
     ros::NodeHandlePtr nh_;
-    ros::Publisher headTilt_;
-    ros::Publisher headPan_;
-    ros::Publisher armLift_;
-    ros::Publisher armExtension_;
-    ros::Publisher gipperYaw_;
-    ros::Publisher gripperAperture_;
+    ros::ServiceClient headTilt_;
+    ros::ServiceClient headPan_;
+    ros::ServiceClient armLift_;
+    ros::ServiceClient armExtension_;
+    ros::ServiceClient gipperYaw_;
+    ros::ServiceClient gripperAperture_;
 
     ros::AsyncSpinner *spinner_;
 
