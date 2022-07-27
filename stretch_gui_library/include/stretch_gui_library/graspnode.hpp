@@ -43,6 +43,7 @@ class GraspNode : public QThread {
     geometry_msgs::PoseStamped::Ptr homePose_;
 
     Position orientation = VERTICAL;
+    bool robotMoving_;
 
     void centerPointCallback(const geometry_msgs::PointStamped::ConstPtr &input);
 
@@ -74,6 +75,7 @@ class GraspNode : public QThread {
     void stowObject();
     void home();
     void releaseObject();
+    void robotMoving(bool b) { robotMoving_ = b; }
 };
 
 #endif  // GRASPNODE_HPP

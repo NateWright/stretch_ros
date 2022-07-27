@@ -67,6 +67,10 @@ void GraspNode::lineUpOffset(double offset) {
     emit navigate(pose);
     d.sleep();
 
+    while (robotMoving_) {
+        d.sleep();
+    }
+
     d.sleep();
     emit headSetPan(-90);
     d.sleep();
@@ -112,15 +116,11 @@ void GraspNode::replaceObjectOffset(double offset) {
     emit disableMapping();
 
     emit navigate(homePose_);
-
-    // geometry_msgs::PoseStamped::Ptr pose(new geometry_msgs::PoseStamped());
-
-    // pose->header.frame_id = "base_link";
-    // tf2::Quaternion q;
-    // q.setRPY(0, 0, atan(pointBaseLink_->point.y / pointBaseLink_->point.x) + 96 * M_PI / 180);
-    // pose->pose.orientation = tf2::toMsg(q);
-    // emit navigate(pose);
     d.sleep();
+
+    while (robotMoving_) {
+        d.sleep();
+    }
 
     d.sleep();
     emit headSetPan(-90);
@@ -144,7 +144,7 @@ void GraspNode::replaceObjectOffset(double offset) {
 
 void GraspNode::releaseObject() {
     ros::Duration d(3.0);
-    emit armSetHeight(0.5);
+    emit armSetHeight(0.75);
     d.sleep();
     emit gripperSetGrip(30);
     emit hasObject(false);
