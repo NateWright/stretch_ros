@@ -75,15 +75,15 @@ void GraspNode::lineUpOffset(double offset) {
     interface_->headSetPan(-90);
     // emit headSetPan(-90);
     d.sleep();
-    emit armSetHeight(pointBaseLink_->point.z + 0.05);
+    interface_->armSetHeight(pointBaseLink_->point.z + 0.05);
     d.sleep();
-    emit gripperSetRotate(0);
+    interface_->gripperSetRotate(0);
     d.sleep();
-    emit gripperSetGrip(30);
+    interface_->gripperSetGrip(30);
     d.sleep();
-    emit armSetHeight(pointBaseLink_->point.z);
+    interface_->armSetHeight(pointBaseLink_->point.z);
     d.sleep();
-    emit armSetReach(sqrt(pointBaseLink_->point.x * pointBaseLink_->point.x + pointBaseLink_->point.y * pointBaseLink_->point.y) - offset);
+    interface_->armSetReach(sqrt(pointBaseLink_->point.x * pointBaseLink_->point.x + pointBaseLink_->point.y * pointBaseLink_->point.y) - offset);
 
     geometry_msgs::TransformStamped transBaseToMap = tfBuffer_.lookupTransform(targetFrame, sourceFrame, ros::Time(0));
     homePose_.reset(new geometry_msgs::PoseStamped());
