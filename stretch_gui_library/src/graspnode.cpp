@@ -72,17 +72,17 @@ void GraspNode::lineUpOffset(double offset) {
     }
 
     d.sleep();
-    interface_->headSetPan(-90);
+    emit headSetPan(-90);
     // emit headSetPan(-90);
     d.sleep();
-    interface_->armSetHeight(pointBaseLink_->point.z + 0.05);
+    emit armSetHeight(pointBaseLink_->point.z + 0.05);
     d.sleep();
-    interface_->gripperSetRotate(0);
+    emit gripperSetRotate(0);
     d.sleep();
-    interface_->gripperSetGrip(30);
+    emit gripperSetGrip(30);
     d.sleep();
-    interface_->armSetReach(sqrt(pointBaseLink_->point.x * pointBaseLink_->point.x + pointBaseLink_->point.y * pointBaseLink_->point.y) - offset);
-    interface_->armSetHeight(pointBaseLink_->point.z);
+    emit armSetReach(sqrt(pointBaseLink_->point.x * pointBaseLink_->point.x + pointBaseLink_->point.y * pointBaseLink_->point.y) - offset);
+    emit armSetHeight(pointBaseLink_->point.z);
 
     geometry_msgs::TransformStamped transBaseToMap = tfBuffer_.lookupTransform(targetFrame, sourceFrame, ros::Time(0));
     homePose_.reset(new geometry_msgs::PoseStamped());
@@ -125,24 +125,24 @@ void GraspNode::replaceObjectOffset(double offset) {
     d.sleep();
     emit headSetPan(-90);
     d.sleep();
-    interface_->armSetHeight(pointBaseLink_->point.z + 0.05);
+    emit armSetHeight(pointBaseLink_->point.z + 0.05);
     d.sleep();
-    interface_->gripperSetRotate(0);
-    d.sleep();
-    d.sleep();
-    d.sleep();
-    interface_->armSetReach(sqrt(pointBaseLink_->point.x * pointBaseLink_->point.x + pointBaseLink_->point.y * pointBaseLink_->point.y) - offset);
-    d.sleep();
-    interface_->armSetHeight(pointBaseLink_->point.z);
+    emit gripperSetRotate(0);
     d.sleep();
     d.sleep();
     d.sleep();
-    interface_->gripperSetGrip(30);
+    emit armSetReach(sqrt(pointBaseLink_->point.x * pointBaseLink_->point.x + pointBaseLink_->point.y * pointBaseLink_->point.y) - offset);
+    d.sleep();
+    emit armSetHeight(pointBaseLink_->point.z);
+    d.sleep();
+    d.sleep();
+    d.sleep();
+    emit gripperSetGrip(30);
     d.sleep();
     d.sleep();
     d.sleep();
     d.sleep();
-    interface_->armSetHeight(pointBaseLink_->point.z + 0.05);
+    emit armSetHeight(pointBaseLink_->point.z + 0.05);
     emit hasObject(false);
 }
 
