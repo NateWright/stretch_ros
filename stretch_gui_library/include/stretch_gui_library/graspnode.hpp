@@ -69,6 +69,7 @@ class GraspNode : public QThread {
     void setVertical();
     void lineUp();
     void lineUpOffset(double offset);
+    void replaceObjectOffset(double offset);
     void replaceObject();
     void stowObject();
     void home();

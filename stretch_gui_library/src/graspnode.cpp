@@ -93,6 +93,19 @@ void GraspNode::lineUpOffset(double offset) {
 }
 
 void GraspNode::replaceObject() {
+    switch (orientation) {
+        case VERTICAL: {
+            replaceObjectOffset(0.33);
+            break;
+        }
+        case HORIZONTAL: {
+            replaceObjectOffset(0.36);
+            break;
+        }
+    }
+}
+
+void GraspNode::replaceObjectOffset(double offset) {
     ros::AsyncSpinner s(1);
     s.start();
     ros::Duration d(0.5);
@@ -121,6 +134,8 @@ void GraspNode::replaceObject() {
     emit armSetReach(sqrt(pointBaseLink_->point.x * pointBaseLink_->point.x + pointBaseLink_->point.y * pointBaseLink_->point.y) - 0.36);
     d.sleep();
     emit gripperSetGrip(30);
+    d.sleep();
+    d.sleep();
     d.sleep();
     d.sleep();
     emit armSetHeight(pointBaseLink_->point.z + 0.05);
