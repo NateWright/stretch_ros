@@ -131,7 +131,7 @@ void GraspNode::replaceObjectOffset(double offset) {
     d.sleep();
     emit armSetHeight(pointBaseLink_->point.z);
     d.sleep();
-    emit armSetReach(sqrt(pointBaseLink_->point.x * pointBaseLink_->point.x + pointBaseLink_->point.y * pointBaseLink_->point.y) - 0.36);
+    emit armSetReach(sqrt(pointBaseLink_->point.x * pointBaseLink_->point.x + pointBaseLink_->point.y * pointBaseLink_->point.y) - offset);
     d.sleep();
     emit gripperSetGrip(30);
     d.sleep();
