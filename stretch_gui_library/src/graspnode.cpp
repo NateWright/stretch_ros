@@ -126,24 +126,24 @@ void GraspNode::replaceObjectOffset(double offset) {
     d.sleep();
     emit headSetPan(-90);
     d.sleep();
-    emit armSetHeight(pointBaseLink_->point.z + 0.05);
+    interface_->armSetHeight(pointBaseLink_->point.z + 0.05);
     d.sleep();
-    emit gripperSetRotate(0);
+    interface_->gripperSetRotate(0);
     d.sleep();
-    emit armSetHeight(pointBaseLink_->point.z);
-    d.sleep();
-    d.sleep();
-    emit armSetReach(sqrt(pointBaseLink_->point.x * pointBaseLink_->point.x + pointBaseLink_->point.y * pointBaseLink_->point.y) - offset);
+    interface_->armSetHeight(pointBaseLink_->point.z);
     d.sleep();
     d.sleep();
-    d.sleep();
-    d.sleep();
-    emit gripperSetGrip(30);
+    interface_->armSetReach(sqrt(pointBaseLink_->point.x * pointBaseLink_->point.x + pointBaseLink_->point.y * pointBaseLink_->point.y) - offset);
     d.sleep();
     d.sleep();
     d.sleep();
     d.sleep();
-    emit armSetHeight(pointBaseLink_->point.z + 0.05);
+    interface_->gripperSetGrip(30);
+    d.sleep();
+    d.sleep();
+    d.sleep();
+    d.sleep();
+    interface_->armSetHeight(pointBaseLink_->point.z + 0.05);
     emit hasObject(false);
 }
 
