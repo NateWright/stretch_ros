@@ -35,7 +35,7 @@ void GraspNode::centerPointCallback(const geometry_msgs::PointStamped::ConstPtr&
 void GraspNode::lineUp() {
     switch (orientation) {
         case VERTICAL: {
-            lineUpOffset(0.36);
+            lineUpOffset(0.34);
             break;
         }
         case HORIZONTAL: {
