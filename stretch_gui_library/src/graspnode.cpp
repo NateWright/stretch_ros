@@ -112,7 +112,7 @@ void GraspNode::replaceObject() {
 void GraspNode::replaceObjectOffset(double offset) {
     ros::AsyncSpinner s(1);
     s.start();
-    ros::Duration d(0.5);
+    ros::Duration d(1.0);
     emit disableMapping();
 
     emit navigate(homePose_);
