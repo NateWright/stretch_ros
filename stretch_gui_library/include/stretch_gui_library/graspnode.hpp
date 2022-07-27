@@ -14,6 +14,7 @@
 #include <QThread>
 #include <QTimer>
 #include <QWidget>
+#include <stretch_gui_library/StretchMoveItInterface.hpp>
 
 enum Position { VERTICAL,
                 HORIZONTAL };
@@ -21,12 +22,13 @@ enum Position { VERTICAL,
 class GraspNode : public QThread {
     Q_OBJECT
    public:
-    explicit GraspNode(ros::NodeHandlePtr nh);
+    explicit GraspNode(ros::NodeHandlePtr nh, StretchMoveItInterface *);
     ~GraspNode();
     void run() override;
 
    private:
     ros::NodeHandlePtr nh_;
+    StretchMoveItInterface *interface_;
     ros::Publisher resetPub_;
     ros::Publisher cmdVelPub_;
     ros::Publisher cmdArmPub_;

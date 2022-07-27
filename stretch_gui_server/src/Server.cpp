@@ -5,8 +5,8 @@ Server::Server(QObject* parent) : ServerSimpleSource(parent), headPanTilt_({0, -
     mapNode_ = new MapSubscriber(nh_);
     moveBaseStatusNode_ = new MoveBaseStatus(nh_);
     cameraNode_ = new RosCamera(nh_);
-    graspNode_ = new GraspNode(nh_);
     moveItNode_ = new StretchMoveItInterface(nh_);
+    graspNode_ = new GraspNode(nh_, moveItNode_);
     setPageNumber_(0);
     setHasObject_(false);
     setCanNavigate_(true);
@@ -97,7 +97,7 @@ void Server::initConnections() {
     connect(graspNode_, &GraspNode::gripperSetGrip, moveItNode_, &StretchMoveItInterface::gripperSetGrip, Qt::BlockingQueuedConnection);
     connect(graspNode_, &GraspNode::enableMapping, mapNode_, &MapSubscriber::enableMapping, Qt::BlockingQueuedConnection);
     connect(graspNode_, &GraspNode::disableMapping, mapNode_, &MapSubscriber::disableMapping, Qt::BlockingQueuedConnection);
-    connect(graspNode_, &GraspNode::homeRobot, moveItNode_, &StretchMoveItInterface::homeRobot);
+    connect(graspNode_, &GraspNode::homeRobot, moveItNode_, &StretchMoveItInterface::homeRobot, Qt::BlockingQueuedConnection);
     connect(graspNode_, &GraspNode::navigate, mapNode_, &MapSubscriber::moveRobotLoc);
     connect(graspNode_, &GraspNode::navigateHome, mapNode_, &MapSubscriber::navigateHome);
     connect(graspNode_, &GraspNode::graspDone, this, &Server::uiButtonReturnObjectSetEnabled);  // Server to client

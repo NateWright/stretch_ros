@@ -1,6 +1,6 @@
 #include "graspnode.hpp"
 
-GraspNode::GraspNode(ros::NodeHandlePtr nh) : nh_(nh) {
+GraspNode::GraspNode(ros::NodeHandlePtr nh, StretchMoveItInterface* inter) : nh_(nh), interface_(inter) {
     resetPub_ = nh_->advertise<std_msgs::Bool>("/stretch_pc/reset", 30);
     // cmdVelPub_ = nh_->advertise<geometry_msgs::Twist>("/stretch_diff_drive_controller/cmd_vel", 1000);
     cmdArmPub_ = nh_->advertise<geometry_msgs::Pose>("/stretch_moveit_grasps/arm", 1000);
@@ -72,7 +72,8 @@ void GraspNode::lineUpOffset(double offset) {
     }
 
     d.sleep();
-    emit headSetPan(-90);
+    interface_->headSetPan(-90);
+    // emit headSetPan(-90);
     d.sleep();
     emit armSetHeight(pointBaseLink_->point.z + 0.05);
     d.sleep();
