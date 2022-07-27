@@ -78,15 +78,15 @@ void GraspNode::lineUpOffset(double offset) {
     d.sleep();
     emit headSetPan(-90);
     d.sleep();
-    emit armSetHeight(point_->point.z + 0.05);
+    emit armSetHeight(pointBaseLink_->point.z + 0.05);
     d.sleep();
     emit gripperSetRotate(0);
     d.sleep();
     emit gripperSetGrip(30);
     d.sleep();
-    emit armSetHeight(point_->point.z);
+    emit armSetHeight(pointBaseLink_->point.z);
     d.sleep();
-    emit armSetReach(sqrt(point_->point.x * point_->point.x + point_->point.y * point_->point.y) - offset);
+    emit armSetReach(sqrt(pointBaseLink_->point.x * pointBaseLink_->point.x + pointBaseLink_->point.y * pointBaseLink_->point.y) - offset);
     emit graspDone(true);
     emit canNavigate(false);
 }
@@ -111,17 +111,17 @@ void GraspNode::replaceObject() {
     d.sleep();
     emit headSetPan(-90);
     d.sleep();
-    emit armSetHeight(point_->point.z + 0.05);
+    emit armSetHeight(pointBaseLink_->point.z + 0.05);
     d.sleep();
     emit gripperSetRotate(0);
     d.sleep();
-    emit armSetHeight(point_->point.z);
+    emit armSetHeight(pointBaseLink_->point.z);
     d.sleep();
-    emit armSetReach(sqrt(point_->point.x * point_->point.x + point_->point.y * point_->point.y) - 0.36);
+    emit armSetReach(sqrt(pointBaseLink_->point.x * pointBaseLink_->point.x + pointBaseLink_->point.y * pointBaseLink_->point.y) - 0.36);
     d.sleep();
     emit gripperSetGrip(30);
     d.sleep();
-    emit armSetHeight(point_->point.z + 0.05);
+    emit armSetHeight(pointBaseLink_->point.z + 0.05);
     emit hasObject(false);
 }
 
@@ -139,7 +139,7 @@ void GraspNode::stowObject() {
     emit gripperSetGrip(-3);
     d.sleep();
     d.sleep();
-    emit armSetHeight(point_->point.z + 0.05);
+    emit armSetHeight(pointBaseLink_->point.z + 0.05);
     d.sleep();
     emit gripperSetRotate(90);
     d.sleep();
