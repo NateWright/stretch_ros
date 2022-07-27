@@ -5,8 +5,9 @@ Server::Server(QObject* parent) : ServerSimpleSource(parent), headPanTilt_({0, -
     mapNode_ = new MapSubscriber(nh_);
     moveBaseStatusNode_ = new MoveBaseStatus(nh_);
     cameraNode_ = new RosCamera(nh_);
+    graspNode_ = new GraspNode(nh_);
     moveItNode_ = new StretchMoveItInterface(nh_);
-    graspNode_ = new GraspNode(nh_, moveItNode_);
+
     setPageNumber_(0);
     setHasObject_(false);
     setCanNavigate_(true);

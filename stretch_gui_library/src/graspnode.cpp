@@ -1,8 +1,7 @@
 #include "graspnode.hpp"
 
-GraspNode::GraspNode(ros::NodeHandlePtr nh, StretchMoveItInterface* inter) : nh_(nh), interface_(inter) {
+GraspNode::GraspNode(ros::NodeHandlePtr nh) : nh_(nh) {
     resetPub_ = nh_->advertise<std_msgs::Bool>("/stretch_pc/reset", 30);
-    // cmdVelPub_ = nh_->advertise<geometry_msgs::Twist>("/stretch_diff_drive_controller/cmd_vel", 1000);
     cmdArmPub_ = nh_->advertise<geometry_msgs::Pose>("/stretch_moveit_grasps/arm", 1000);
     centerPointSub_ = nh_->subscribe("/stretch_pc/centerPoint", 30, &GraspNode::centerPointCallback, this);
 
@@ -82,6 +81,7 @@ void GraspNode::lineUpOffset(double offset) {
     emit gripperSetGrip(30);
     d.sleep();
     emit armSetReach(sqrt(pointBaseLink_->point.x * pointBaseLink_->point.x + pointBaseLink_->point.y * pointBaseLink_->point.y) - offset);
+    d.sleep();
     emit armSetHeight(pointBaseLink_->point.z);
 
     geometry_msgs::TransformStamped transBaseToMap = tfBuffer_.lookupTransform(targetFrame, sourceFrame, ros::Time(0));
@@ -129,18 +129,11 @@ void GraspNode::replaceObjectOffset(double offset) {
     d.sleep();
     emit gripperSetRotate(0);
     d.sleep();
-    d.sleep();
-    d.sleep();
     emit armSetReach(sqrt(pointBaseLink_->point.x * pointBaseLink_->point.x + pointBaseLink_->point.y * pointBaseLink_->point.y) - offset);
     d.sleep();
     emit armSetHeight(pointBaseLink_->point.z);
     d.sleep();
-    d.sleep();
-    d.sleep();
     emit gripperSetGrip(30);
-    d.sleep();
-    d.sleep();
-    d.sleep();
     d.sleep();
     emit armSetHeight(pointBaseLink_->point.z + 0.05);
     emit hasObject(false);
@@ -158,7 +151,6 @@ void GraspNode::stowObject() {
     emit hasObject(true);
     ros::Duration d(1.0);
     emit gripperSetGrip(-3);
-    d.sleep();
     d.sleep();
     emit armSetHeight(pointBaseLink_->point.z + 0.05);
     d.sleep();
@@ -191,7 +183,6 @@ void GraspNode::home() {
     emit armSetHeight();
     d.sleep();
     emit enableMapping();
-    d.sleep();
     d.sleep();
     emit navigate(homePose_);
     emit canNavigate(true);
