@@ -35,7 +35,7 @@ void GraspNode::centerPointCallback(const geometry_msgs::PointStamped::ConstPtr&
 void GraspNode::lineUp() {
     switch (orientation) {
         case VERTICAL: {
-            lineUpOffset(0.34);
+            lineUpOffset(0.33);
             break;
         }
         case HORIZONTAL: {
@@ -70,7 +70,7 @@ void GraspNode::lineUpOffset(double offset) {
 
     pose->header.frame_id = "base_link";
     tf2::Quaternion q;
-    q.setRPY(0, 0, atan(pointBaseLink_->point.y / pointBaseLink_->point.x) + 95 * M_PI / 180);
+    q.setRPY(0, 0, atan(pointBaseLink_->point.y / pointBaseLink_->point.x) + 96 * M_PI / 180);
     pose->pose.orientation = tf2::toMsg(q);
     emit navigate(pose);
     d.sleep();
@@ -103,7 +103,7 @@ void GraspNode::replaceObject() {
 
     pose->header.frame_id = "base_link";
     tf2::Quaternion q;
-    q.setRPY(0, 0, atan(pointBaseLink_->point.y / pointBaseLink_->point.x) + 95 * M_PI / 180);
+    q.setRPY(0, 0, atan(pointBaseLink_->point.y / pointBaseLink_->point.x) + 96 * M_PI / 180);
     pose->pose.orientation = tf2::toMsg(q);
     emit navigate(pose);
     d.sleep();
