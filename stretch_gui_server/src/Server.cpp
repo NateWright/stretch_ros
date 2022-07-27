@@ -180,6 +180,6 @@ void Server::uiConfirmButtonYesClicked() { emit ConfirmButtonYesClicked(); }
 // Grasp Page
 void Server::uiButtonBackClicked() { emit ButtonBackClicked(); }
 void Server::uiButtonStowObjectClicked() { emit ButtonStowObjectClicked(); }
-void Server::uiButtonReleaseClicked() { void ButtonReleaseClicked(); }
+void Server::uiButtonReleaseClicked() { emit ButtonReleaseClicked(); }
 void Server::uiButtonReplaceObjectClicked() { emit ButtonReplaceObjectClicked(); }
 void Server::uiButtonNavigateClicked() { emit ButtonNavigateClicked(); }
