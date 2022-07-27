@@ -58,14 +58,6 @@ void GraspNode::lineUpOffset(double offset) {
     emit disableMapping();
     std::string targetFrame = "map", sourceFrame = "base_link";
 
-    geometry_msgs::TransformStamped transBaseToMap = tfBuffer_.lookupTransform(targetFrame, sourceFrame, ros::Time(0));
-    homePose_.reset(new geometry_msgs::PoseStamped());
-    homePose_->header.frame_id = "map";
-    homePose_->pose.position.x = transBaseToMap.transform.translation.x;
-    homePose_->pose.position.y = transBaseToMap.transform.translation.y;
-    homePose_->pose.position.z = transBaseToMap.transform.translation.z;
-    homePose_->pose.orientation = transBaseToMap.transform.rotation;
-
     geometry_msgs::PoseStamped::Ptr pose(new geometry_msgs::PoseStamped());
 
     pose->header.frame_id = "base_link";
@@ -87,6 +79,15 @@ void GraspNode::lineUpOffset(double offset) {
     emit armSetHeight(pointBaseLink_->point.z);
     d.sleep();
     emit armSetReach(sqrt(pointBaseLink_->point.x * pointBaseLink_->point.x + pointBaseLink_->point.y * pointBaseLink_->point.y) - offset);
+
+    geometry_msgs::TransformStamped transBaseToMap = tfBuffer_.lookupTransform(targetFrame, sourceFrame, ros::Time(0));
+    homePose_.reset(new geometry_msgs::PoseStamped());
+    homePose_->header.frame_id = "map";
+    homePose_->pose.position.x = transBaseToMap.transform.translation.x;
+    homePose_->pose.position.y = transBaseToMap.transform.translation.y;
+    homePose_->pose.position.z = transBaseToMap.transform.translation.z;
+    homePose_->pose.orientation = transBaseToMap.transform.rotation;
+
     emit graspDone(true);
     emit canNavigate(false);
 }
@@ -99,13 +100,13 @@ void GraspNode::replaceObject() {
 
     emit navigate(homePose_);
 
-    geometry_msgs::PoseStamped::Ptr pose(new geometry_msgs::PoseStamped());
+    // geometry_msgs::PoseStamped::Ptr pose(new geometry_msgs::PoseStamped());
 
-    pose->header.frame_id = "base_link";
-    tf2::Quaternion q;
-    q.setRPY(0, 0, atan(pointBaseLink_->point.y / pointBaseLink_->point.x) + 96 * M_PI / 180);
-    pose->pose.orientation = tf2::toMsg(q);
-    emit navigate(pose);
+    // pose->header.frame_id = "base_link";
+    // tf2::Quaternion q;
+    // q.setRPY(0, 0, atan(pointBaseLink_->point.y / pointBaseLink_->point.x) + 96 * M_PI / 180);
+    // pose->pose.orientation = tf2::toMsg(q);
+    // emit navigate(pose);
     d.sleep();
 
     d.sleep();
@@ -120,6 +121,7 @@ void GraspNode::replaceObject() {
     emit armSetReach(sqrt(pointBaseLink_->point.x * pointBaseLink_->point.x + pointBaseLink_->point.y * pointBaseLink_->point.y) - 0.36);
     d.sleep();
     emit gripperSetGrip(30);
+    d.sleep();
     d.sleep();
     emit armSetHeight(pointBaseLink_->point.z + 0.05);
     emit hasObject(false);
