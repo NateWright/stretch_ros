@@ -1,16 +1,15 @@
 base_local_planner: "dwa_local_planner/DWAPlannerROS"
 
 TrajectoryPlannerROS:
-  acc_lim_x: 0.20
-  acc_lim_y: 0.0
-  acc_lim_theta: 0.20
-  max_vel_x: 0.25
-  min_vel_x: 0.15
+  acc_lim_x: 1.0
+  acc_lim_y: 1.0
+  acc_lim_theta: 1.0
+  max_vel_x: 0.1
+  min_vel_x: 0.0
   max_vel_y: 0.0
   min_vel_y: 0.0
-  max_vel_theta: 0.25
-  min_vel_theta: -0.25
-  min_in_place_vel_theta: 0.3
+  max_vel_theta: 0.1
+  min_in_place_vel_theta: 0.05
   holonomic_robot: false
   # base vel/accel profile is in robot folders
   # tolerances (defaults)
@@ -49,10 +48,10 @@ DWAPlannerROS:
   min_vel_theta: -1.5
 
   #accel params
-  acc_lim_x: 0.7
-  acc_lim_y: 0  #diff drive
+  acc_lim_x: 1.0
+  acc_lim_y: 1.0
   acc_lim_trans: 0.7
-  acc_lim_theta: 4
+  acc_lim_theta: 1.0
 
   #forward sim params
   sim_time: 1.1
