@@ -31,6 +31,7 @@ class GraspNode : public QThread {
     ros::Subscriber centerPointSub_;
 
     geometry_msgs::Twist cmdMsg_;
+    double turnTime_;
 
     ros::AsyncSpinner *spinner_;
 

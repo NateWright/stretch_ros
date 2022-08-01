@@ -1,6 +1,6 @@
 #include "graspnode.hpp"
 
-GraspNode::GraspNode(ros::NodeHandlePtr nh) : nh_(nh) {
+GraspNode::GraspNode(ros::NodeHandlePtr nh) : nh_(nh), robotMoving_(false) {
     cmdVel_ = nh_->advertise<geometry_msgs::Twist>("/stretch/cmd_vel", 30);
     centerPointSub_ = nh_->subscribe("/stretch_pc/centerPoint", 30, &GraspNode::centerPointCallback, this);
 
@@ -57,6 +57,14 @@ void GraspNode::lineUpOffset(double offset) {
 
     std::string targetFrame = "map", sourceFrame = "base_link";
 
+    geometry_msgs::TransformStamped transBaseToMap = tfBuffer_.lookupTransform(targetFrame, sourceFrame, ros::Time(0));
+    homePose_.reset(new geometry_msgs::PoseStamped());
+    homePose_->header.frame_id = "map";
+    homePose_->pose.position.x = transBaseToMap.transform.translation.x;
+    homePose_->pose.position.y = transBaseToMap.transform.translation.y;
+    homePose_->pose.position.z = transBaseToMap.transform.translation.z;
+    homePose_->pose.orientation = transBaseToMap.transform.rotation;
+
     geometry_msgs::PoseStamped::Ptr pose(new geometry_msgs::PoseStamped());
 
     pose->header.frame_id = "base_link";
@@ -65,7 +73,8 @@ void GraspNode::lineUpOffset(double offset) {
     double speed = 0.25;
     if (angleRad >= 0) {
         cmdMsg_.angular.z = speed;
-        ros::Duration turnTime(angleRad / speed);
+        turnTime_ = angleRad / speed;
+        ros::Duration turnTime(turnTime_);
         ros::Timer timer = nh_->createTimer(
             ros::Duration(0.1), [&](const ros::TimerEvent& event) { cmdVel_.publish(cmdMsg_); });
         if (turnTime.sleep()) {
@@ -73,21 +82,17 @@ void GraspNode::lineUpOffset(double offset) {
         }
     } else {
         cmdMsg_.angular.z = -speed;
-        ros::Duration turnTime(-angleRad / speed);
+        turnTime_ = -angleRad / speed;
+        ros::Duration turnTime(turnTime_);
         ros::Timer timer = nh_->createTimer(
             ros::Duration(0.1), [&](const ros::TimerEvent& event) { cmdVel_.publish(cmdMsg_); });
         if (turnTime.sleep()) {
             timer.stop();
         }
     }
-    tf2::Quaternion q;
-    q.setRPY(0, 0, atan(pointBaseLink_->point.y / pointBaseLink_->point.x) + 96 * M_PI / 180);
-    pose->pose.orientation = tf2::toMsg(q);
-    // emit navigate(pose);
 
     d.sleep();
     emit headSetPan(-90);
-    // emit headSetPan(-90);
     d.sleep();
     emit armSetHeight(pointBaseLink_->point.z + 0.05);
     d.sleep();
@@ -98,14 +103,6 @@ void GraspNode::lineUpOffset(double offset) {
     emit armSetReach(sqrt(pointBaseLink_->point.x * pointBaseLink_->point.x + pointBaseLink_->point.y * pointBaseLink_->point.y) - offset);
     d.sleep();
     emit armSetHeight(pointBaseLink_->point.z);
-
-    geometry_msgs::TransformStamped transBaseToMap = tfBuffer_.lookupTransform(targetFrame, sourceFrame, ros::Time(0));
-    homePose_.reset(new geometry_msgs::PoseStamped());
-    homePose_->header.frame_id = "map";
-    homePose_->pose.position.x = transBaseToMap.transform.translation.x;
-    homePose_->pose.position.y = transBaseToMap.transform.translation.y;
-    homePose_->pose.position.z = transBaseToMap.transform.translation.z;
-    homePose_->pose.orientation = transBaseToMap.transform.rotation;
 
     emit graspDone(true);
     emit canNavigate(false);
@@ -132,9 +129,18 @@ void GraspNode::replaceObjectOffset(double offset) {
 
     emit navigate(homePose_);
     d.sleep();
+    d.sleep();
 
     while (robotMoving_) {
         d.sleep();
+    }
+
+    cmdMsg_.angular.z = -cmdMsg_.angular.z;
+    ros::Duration turnTime(turnTime_);
+    ros::Timer timer = nh_->createTimer(
+        ros::Duration(0.1), [&](const ros::TimerEvent& event) { cmdVel_.publish(cmdMsg_); });
+    if (turnTime.sleep()) {
+        timer.stop();
     }
 
     d.sleep();
@@ -153,6 +159,15 @@ void GraspNode::replaceObjectOffset(double offset) {
     d.sleep();
     d.sleep();
     emit armSetHeight(pointBaseLink_->point.z + 0.05);
+
+    cmdMsg_.angular.z = -cmdMsg_.angular.z;
+    ros::Duration turnTime(turnTime_);
+    ros::Timer timer = nh_->createTimer(
+        ros::Duration(0.1), [&](const ros::TimerEvent& event) { cmdVel_.publish(cmdMsg_); });
+    if (turnTime.sleep()) {
+        timer.stop();
+    }
+
     emit hasObject(false);
 }
 
@@ -181,6 +196,14 @@ void GraspNode::stowObject() {
     d.sleep();
     emit armSetHeight(0.40);
     d.sleep();
+
+    cmdMsg_.angular.z = -cmdMsg_.angular.z;
+    ros::Duration turnTime(turnTime_);
+    ros::Timer timer = nh_->createTimer(
+        ros::Duration(0.1), [&](const ros::TimerEvent& event) { cmdVel_.publish(cmdMsg_); });
+    if (turnTime.sleep()) {
+        timer.stop();
+    }
     emit enableMapping();
     emit canNavigate(true);
 }
