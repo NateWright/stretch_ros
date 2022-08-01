@@ -126,7 +126,7 @@ Server::~Server() {
 }
 
 void Server::changeToNavigation() {
-    emit cameraSetRotation(0, 0);
+    emit cameraSetRotation(0, -30);
     emit enableMapping();
     headPanTilt_ = {0, -30};
 }
