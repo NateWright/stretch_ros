@@ -61,19 +61,22 @@ void GraspNode::lineUpOffset(double offset) {
 
     pose->header.frame_id = "base_link";
 
-    geometry_msgs::Twist cmdMsg, pauseMsg;
     double angleRad = atan(pointBaseLink_->point.y / pointBaseLink_->point.x) + 96 * M_PI / 180;
     double speed = 0.1;
     if (angleRad >= 0) {
-        cmdMsg.angular.z = speed;
-        cmdVel_.publish(cmdMsg);
-        ros::Duration(angleRad / speed).sleep();
-        cmdVel_.publish(pauseMsg);
+        cmdMsg_.angular.z = speed;
+        ros::Timer timer = nh_->createTimer(
+            ros::Duration(0.1), [&](const ros::TimerEvent& event) { cmdVel_.publish(cmdMsg_); });
+        if (ros::Duration(angleRad / speed).sleep()) {
+            timer.stop();
+        }
     } else {
-        cmdMsg.angular.z = -speed;
-        cmdVel_.publish(cmdMsg);
-        ros::Duration(-angleRad / speed).sleep();
-        cmdVel_.publish(pauseMsg);
+        cmdMsg_.angular.z = -speed;
+        ros::Timer timer = nh_->createTimer(
+            ros::Duration(0.1), [&](const ros::TimerEvent& event) { cmdVel_.publish(cmdMsg_); });
+        if (ros::Duration(-angleRad / speed).sleep()) {
+            timer.stop();
+        }
     }
     tf2::Quaternion q;
     q.setRPY(0, 0, atan(pointBaseLink_->point.y / pointBaseLink_->point.x) + 96 * M_PI / 180);

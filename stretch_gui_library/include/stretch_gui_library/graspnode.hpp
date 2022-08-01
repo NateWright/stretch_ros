@@ -30,6 +30,8 @@ class GraspNode : public QThread {
     ros::Publisher cmdVel_;
     ros::Subscriber centerPointSub_;
 
+    geometry_msgs::Twist cmdMsg_;
+
     ros::AsyncSpinner *spinner_;
 
     tf2_ros::Buffer tfBuffer_;
