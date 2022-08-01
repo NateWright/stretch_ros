@@ -7,6 +7,8 @@
 #include <geometry_msgs/PoseStamped.h>
 #include <nav_msgs/OccupancyGrid.h>
 #include <nav_msgs/Odometry.h>
+#include <pcl/point_types.h>
+#include <pcl_ros/point_cloud.h>
 #include <ros/ros.h>
 #include <sensor_msgs/Image.h>
 #include <std_srvs/Empty.h>
@@ -42,9 +44,11 @@ class MapSubscriber : public QThread {
    private:
     ros::NodeHandlePtr nh_;
     ros::Subscriber mapSub_;
+    ros::Subscriber mapPointCloudSub_;
     ros::Subscriber posSub_;
     ros::Publisher movePub_;
     ros::Publisher mapPub_;
+    ros::Publisher mapColoredPub_;
 
     ros::AsyncSpinner* spinner_;
 
@@ -52,7 +56,7 @@ class MapSubscriber : public QThread {
     tf2_ros::TransformListener* tfListener_;
 
     QSize mapSize_;
-    cv_bridge::CvImage::Ptr mapImage_;
+    // cv_bridge::CvImage::Ptr mapImage_;
 
     bool drawPos_;
     QPoint origin_;
@@ -69,6 +73,7 @@ class MapSubscriber : public QThread {
 
     void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg);
     void posCallback(const nav_msgs::Odometry::ConstPtr& msg);
+    void mapPointCloudCallback(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr);
    signals:
     void validPoint();
     void invalidPoint();

@@ -3,11 +3,13 @@
 MapSubscriber::MapSubscriber(ros::NodeHandlePtr nodeHandle)
     : nh_(nodeHandle), robotPos_(QPoint(0, 0)), drawPos_(false), drawMouseArrow_(false) {
     mapSub_ = nh_->subscribe("/map", 30, &MapSubscriber::mapCallback, this);
+    mapPointCloudSub_ = nh_->subscribe("/rtabmap/cloud_ground", 30, &MapSubscriber::mapPointCloudCallback, this);
     std::string odomTopic;
     nh_->getParam("/stretch_gui/odom", odomTopic);
     posSub_ = nh_->subscribe(odomTopic, 30, &MapSubscriber::posCallback, this);
     movePub_ = nh_->advertise<geometry_msgs::PoseStamped>("/move_base_simple/goal", 30);
     mapPub_ = nh_->advertise<sensor_msgs::Image>("/stretch_gui/map", 30, true);
+    mapColoredPub_ = nh_->advertise<sensor_msgs::Image>("/stretch_gui/map_color", 30, true);
     tfListener_ = new tf2_ros::TransformListener(tfBuffer_);
     moveToThread(this);
 }
@@ -33,30 +35,48 @@ void MapSubscriber::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
     resolution_ = msg.get()->info.resolution;
     origin_ = QPoint(width + msg.get()->info.origin.position.x / resolution_, -msg.get()->info.origin.position.y / resolution_);
 
-    cv::Mat mapImage(height, width, CV_8UC3, cv::Scalar(0, 0, 0));
-    int val = 0;
-    for (int y = 0; y < height; y++) {
-        for (int x = 0; x < width; x++) {
-            cv::Vec3b color = mapImage.at<cv::Vec3b>(cv::Point(x, y));
-            int occupancyProb = (int)msg->data[x + width * y];
-            if (occupancyProb == -1) {
-                val = 100;
-            } else if (occupancyProb == 100) {
-                val = 0;
-            } else {
-                val = 255;
-            }
-            color[0] = val;
-            color[1] = val;
-            color[2] = val;
-            mapImage.at<cv::Vec3b>(cv::Point(width - 1 - x, y)) = color;
-        }
+    // cv::Mat mapImage(height, width, CV_8UC3, cv::Scalar(0, 0, 0));
+    // int val = 0;
+    // for (int y = 0; y < height; y++) {
+    //     for (int x = 0; x < width; x++) {
+    //         cv::Vec3b color = mapImage.at<cv::Vec3b>(cv::Point(x, y));
+    //         int occupancyProb = (int)msg->data[x + width * y];
+    //         if (occupancyProb == -1) {
+    //             val = 100;
+    //         } else if (occupancyProb == 100) {
+    //             val = 0;
+    //         } else {
+    //             val = 255;
+    //         }
+    //         color[0] = val;
+    //         color[1] = val;
+    //         color[2] = val;
+    //         mapImage.at<cv::Vec3b>(cv::Point(width - 1 - x, y)) = color;
+    //     }
+    // }
+    // mapImage_.reset(new cv_bridge::CvImage());
+    // mapImage_->header = msg->header;
+    // mapImage_->encoding = sensor_msgs::image_encodings::RGB8;
+    // mapImage_->image = mapImage;
+    // mapImageCopy_ = mapImage_;
+    // mapPub_.publish(mapImage_->toImageMsg());
+}
+
+void MapSubscriber::mapPointCloudCallback(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud) {
+    if (mapSize_.width() == 0 || mapSize_.height() == 0) {
+        return;
     }
-    mapImage_.reset(new cv_bridge::CvImage());
-    mapImage_->header = msg->header;
-    mapImage_->encoding = sensor_msgs::image_encodings::RGB8;
-    mapImage_->image = mapImage;
-    mapPub_.publish(mapImage_->toImageMsg());
+    int width = mapSize_.width();
+    int height = mapSize_.height();
+    cv::Mat mapImage(height, width, CV_8UC3, cv::Scalar(0, 0, 0));
+    cv_bridge::CvImage::Ptr map(new cv_bridge::CvImage());
+    map->header.frame_id = cloud->header.frame_id;
+    map->encoding = sensor_msgs::image_encodings::RGB8;
+    map->image = mapImage;
+    for (const auto& p : *cloud) {
+        map->image.at<cv::Vec3b>(cv::Point(origin_.x() - p.x / resolution_, origin_.y() + p.y / resolution_)) = {p.r, p.g, p.b};
+    }
+    mapPub_.publish(map->toImageMsg());
 }
 
 void MapSubscriber::posCallback(const nav_msgs::Odometry::ConstPtr& msg) {
