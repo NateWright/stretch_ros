@@ -65,16 +65,18 @@ void GraspNode::lineUpOffset(double offset) {
     double speed = 0.25;
     if (angleRad >= 0) {
         cmdMsg_.angular.z = speed;
+        ros::Duration turnTime(angleRad / speed);
         ros::Timer timer = nh_->createTimer(
             ros::Duration(0.1), [&](const ros::TimerEvent& event) { cmdVel_.publish(cmdMsg_); });
-        if (ros::Duration(angleRad / speed).sleep()) {
+        if (turnTime.sleep()) {
             timer.stop();
         }
     } else {
         cmdMsg_.angular.z = -speed;
+        ros::Duration turnTime(-angleRad / speed);
         ros::Timer timer = nh_->createTimer(
             ros::Duration(0.1), [&](const ros::TimerEvent& event) { cmdVel_.publish(cmdMsg_); });
-        if (ros::Duration(-angleRad / speed).sleep()) {
+        if (turnTime.sleep()) {
             timer.stop();
         }
     }
