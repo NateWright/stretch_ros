@@ -160,14 +160,6 @@ void GraspNode::replaceObjectOffset(double offset) {
     d.sleep();
     emit armSetHeight(pointBaseLink_->point.z + 0.05);
 
-    cmdMsg_.angular.z = -cmdMsg_.angular.z;
-    ros::Duration turnTime(turnTime_);
-    ros::Timer timer = nh_->createTimer(
-        ros::Duration(0.1), [&](const ros::TimerEvent& event) { cmdVel_.publish(cmdMsg_); });
-    if (turnTime.sleep()) {
-        timer.stop();
-    }
-
     emit hasObject(false);
 }
 
