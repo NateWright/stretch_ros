@@ -91,7 +91,7 @@ void RosCamera::sceneClicked(QPoint press, QPoint release, QSize screen) {
         point->point.y = p.y;
         point->point.z = p.z;
 
-        segmenter_->segmentAndFind(cloud_, point);
+        segmenter_->segmentAndFind(cloud_, locY, cloud_->height - locX);
         pointPick_.publish(point);
         emit clickSuccess();
     } catch (...) {
