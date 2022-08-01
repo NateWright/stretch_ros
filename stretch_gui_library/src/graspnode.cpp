@@ -62,7 +62,7 @@ void GraspNode::lineUpOffset(double offset) {
     pose->header.frame_id = "base_link";
 
     double angleRad = atan(pointBaseLink_->point.y / pointBaseLink_->point.x) + 96 * M_PI / 180;
-    double speed = 0.1;
+    double speed = 0.25;
     if (angleRad >= 0) {
         cmdMsg_.angular.z = speed;
         ros::Timer timer = nh_->createTimer(
