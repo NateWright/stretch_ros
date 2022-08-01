@@ -1,8 +1,7 @@
 #include "graspnode.hpp"
 
 GraspNode::GraspNode(ros::NodeHandlePtr nh) : nh_(nh) {
-    resetPub_ = nh_->advertise<std_msgs::Bool>("/stretch_pc/reset", 30);
-    cmdArmPub_ = nh_->advertise<geometry_msgs::Pose>("/stretch_moveit_grasps/arm", 1000);
+    cmdVel_ = nh_->advertise<geometry_msgs::Twist>("/stretch/cmd_vel", 30);
     centerPointSub_ = nh_->subscribe("/stretch_pc/centerPoint", 30, &GraspNode::centerPointCallback, this);
 
     tfListener_ = new tf2_ros::TransformListener(tfBuffer_);
@@ -55,20 +54,31 @@ void GraspNode::lineUpOffset(double offset) {
     s.start();
     ros::Duration d(0.5);
     emit disableMapping();
+
     std::string targetFrame = "map", sourceFrame = "base_link";
 
     geometry_msgs::PoseStamped::Ptr pose(new geometry_msgs::PoseStamped());
 
     pose->header.frame_id = "base_link";
+
+    geometry_msgs::Twist cmdMsg, pauseMsg;
+    double angleRad = atan(pointBaseLink_->point.y / pointBaseLink_->point.x) + 96 * M_PI / 180;
+    double speed = 0.1;
+    if (angleRad >= 0) {
+        cmdMsg.angular.z = speed;
+        cmdVel_.publish(cmdMsg);
+        ros::Duration(angleRad / speed).sleep();
+        cmdVel_.publish(pauseMsg);
+    } else {
+        cmdMsg.angular.z = -speed;
+        cmdVel_.publish(cmdMsg);
+        ros::Duration(-angleRad / speed).sleep();
+        cmdVel_.publish(pauseMsg);
+    }
     tf2::Quaternion q;
     q.setRPY(0, 0, atan(pointBaseLink_->point.y / pointBaseLink_->point.x) + 96 * M_PI / 180);
     pose->pose.orientation = tf2::toMsg(q);
-    emit navigate(pose);
-    d.sleep();
-
-    while (robotMoving_) {
-        d.sleep();
-    }
+    // emit navigate(pose);
 
     d.sleep();
     emit headSetPan(-90);

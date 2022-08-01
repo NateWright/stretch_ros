@@ -27,8 +27,7 @@ class GraspNode : public QThread {
 
    private:
     ros::NodeHandlePtr nh_;
-    ros::Publisher resetPub_;
-    ros::Publisher cmdArmPub_;
+    ros::Publisher cmdVel_;
     ros::Subscriber centerPointSub_;
 
     ros::AsyncSpinner *spinner_;
