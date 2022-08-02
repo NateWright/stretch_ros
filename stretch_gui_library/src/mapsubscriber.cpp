@@ -63,11 +63,11 @@ void MapSubscriber::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
 }
 
 void MapSubscriber::mapPointCloudCallback(const pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud) {
-    if (mapSize_.width() == 0 || mapSize_.height() == 0) {
-        return;
-    }
     int width = mapSize_.width();
     int height = mapSize_.height();
+    if (width == 0 || height == 0) {
+        return;
+    }
     cv::Mat mapImage(height, width, CV_8UC3, cv::Scalar(0, 0, 0));
     for (const auto& p : *cloud) {
         mapImage.at<cv::Vec3b>(cv::Point(origin_.x() - p.x / resolution_, origin_.y() + p.y / resolution_)) = {p.r, p.g, p.b};
