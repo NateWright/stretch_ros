@@ -43,7 +43,10 @@ class GraspNode : public QThread {
 
     geometry_msgs::PoseStamped::Ptr homePose_;
 
-    Position orientation = VERTICAL;
+    Position orientation_ = VERTICAL;
+    double verticalOffset_;
+    double horizontalOffset_;
+
     bool robotMoving_;
 
     void centerPointCallback(const geometry_msgs::PointStamped::ConstPtr &input);

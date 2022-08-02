@@ -4,6 +4,9 @@ GraspNode::GraspNode(ros::NodeHandlePtr nh) : nh_(nh), robotMoving_(false) {
     cmdVel_ = nh_->advertise<geometry_msgs::Twist>("/stretch/cmd_vel", 30);
     centerPointSub_ = nh_->subscribe("/stretch_pc/centerPoint", 30, &GraspNode::centerPointCallback, this);
 
+    nh_->getParam("/stretch_gui/verticalOffset", verticalOffset_);
+    nh_->getParam("/stretch_gui/horizontalOffset", horizontalOffset_);
+
     tfListener_ = new tf2_ros::TransformListener(tfBuffer_);
     point_.reset(new geometry_msgs::PointStamped());
     moveToThread(this);
@@ -31,23 +34,23 @@ void GraspNode::centerPointCallback(const geometry_msgs::PointStamped::ConstPtr&
 }
 
 void GraspNode::lineUp() {
-    switch (orientation) {
+    switch (orientation_) {
         case VERTICAL: {
-            lineUpOffset(0.33);
+            lineUpOffset(verticalOffset_);
             break;
         }
         case HORIZONTAL: {
-            lineUpOffset(0.36);
+            lineUpOffset(horizontalOffset_);
             break;
         }
     }
 }
 
 void GraspNode::setHorizontal() {
-    orientation = HORIZONTAL;
+    orientation_ = HORIZONTAL;
 }
 void GraspNode::setVertical() {
-    orientation = VERTICAL;
+    orientation_ = VERTICAL;
 }
 void GraspNode::lineUpOffset(double offset) {
     ros::AsyncSpinner s(1);
@@ -109,13 +112,13 @@ void GraspNode::lineUpOffset(double offset) {
 }
 
 void GraspNode::replaceObject() {
-    switch (orientation) {
+    switch (orientation_) {
         case VERTICAL: {
-            replaceObjectOffset(0.35);
+            replaceObjectOffset(verticalOffset_);
             break;
         }
         case HORIZONTAL: {
-            replaceObjectOffset(0.36);
+            replaceObjectOffset(horizontalOffset_);
             break;
         }
     }
