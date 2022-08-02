@@ -134,7 +134,7 @@ void GraspNode::replaceObjectOffset(double offset) {
     d.sleep();
     d.sleep();
 
-    while (robotMoving_) {
+    while (emit moving()) {
         d.sleep();
     }
 

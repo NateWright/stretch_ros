@@ -23,6 +23,7 @@ class MoveBaseStatus : public QThread {
 
    public slots:
     void stopRobot();
+    bool robotMovingSlot() { return moving_; }
 
    private:
     ros::NodeHandlePtr nh_;
@@ -30,6 +31,8 @@ class MoveBaseStatus : public QThread {
     ros::Publisher moveBaseStopPub_;
 
     ros::AsyncSpinner *spinner_;
+
+    bool moving_;
 
     void moveBaseStatusCallback(const actionlib_msgs::GoalStatusArray::ConstPtr &msg);
 };

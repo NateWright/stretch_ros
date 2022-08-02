@@ -69,6 +69,7 @@ class GraspNode : public QThread {
     void disableMapping();
     void hasObject(bool);
     void canNavigate(bool);
+    bool moving();
    public slots:
     void setHorizontal();
     void setVertical();
@@ -79,10 +80,6 @@ class GraspNode : public QThread {
     void stowObject();
     void home();
     void releaseObject();
-    void robotMoving(bool b) {
-        robotMoving_ = b;
-        ROS_INFO_STREAM("test");
-    }
 };
 
 #endif  // GRASPNODE_HPP

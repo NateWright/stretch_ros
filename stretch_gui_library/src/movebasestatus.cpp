@@ -1,6 +1,6 @@
 #include "movebasestatus.hpp"
 
-MoveBaseStatus::MoveBaseStatus(ros::NodeHandlePtr nodeHandle) : nh_(nodeHandle) {
+MoveBaseStatus::MoveBaseStatus(ros::NodeHandlePtr nodeHandle) : nh_(nodeHandle), moving_(false) {
     moveBaseStatusSub_ = nh_->subscribe("/move_base/status", 1000, &MoveBaseStatus::moveBaseStatusCallback, this);
     moveBaseStopPub_ = nh_->advertise<actionlib_msgs::GoalID>("/move_base/cancel", 30);
     moveToThread(this);
@@ -19,9 +19,11 @@ void MoveBaseStatus::run() {
 
 void MoveBaseStatus::moveBaseStatusCallback(const actionlib_msgs::GoalStatusArray::ConstPtr &msg) {
     if (!msg.get()->status_list.empty() && msg.get()->status_list.back().status == 1) {
+        moving_ = true;
         robotMoving(true);
         return;
     }
+    moving_ = false;
     robotMoving(false);
 }
 

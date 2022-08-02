@@ -103,7 +103,7 @@ void Server::initConnections() {
     connect(graspNode_, &GraspNode::navigateHome, mapNode_, &MapSubscriber::navigateHome);
     connect(graspNode_, &GraspNode::graspDone, this, &Server::uiButtonReturnObjectSetEnabled);  // Server to client
     connect(graspNode_, &GraspNode::turnLeft, mapNode_, &MapSubscriber::rotateLeft);
-    connect(moveBaseStatusNode_, &MoveBaseStatus::robotMoving, graspNode_, &GraspNode::robotMoving);
+    connect(graspNode_, &GraspNode::moving, moveBaseStatusNode_, &MoveBaseStatus::robotMovingSlot);
 }
 
 Server::~Server() {
