@@ -69,13 +69,13 @@ void MapSubscriber::mapPointCloudCallback(const pcl::PointCloud<pcl::PointXYZRGB
     int width = mapSize_.width();
     int height = mapSize_.height();
     cv::Mat mapImage(height, width, CV_8UC3, cv::Scalar(0, 0, 0));
+    for (const auto& p : *cloud) {
+        mapImage.at<cv::Vec3b>(cv::Point(origin_.x() - p.x / resolution_, origin_.y() + p.y / resolution_)) = {p.r, p.g, p.b};
+    }
     cv_bridge::CvImage::Ptr map(new cv_bridge::CvImage());
     map->header.frame_id = cloud->header.frame_id;
     map->encoding = sensor_msgs::image_encodings::RGB8;
     map->image = mapImage;
-    for (const auto& p : *cloud) {
-        map->image.at<cv::Vec3b>(cv::Point(origin_.x() - p.x / resolution_, origin_.y() + p.y / resolution_)) = {p.r, p.g, p.b};
-    }
     mapPub_.publish(map->toImageMsg());
 }
 
