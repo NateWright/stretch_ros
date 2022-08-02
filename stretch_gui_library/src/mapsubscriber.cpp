@@ -70,8 +70,6 @@ void MapSubscriber::mapPointCloudCallback(const pcl::PointCloud<pcl::PointXYZRGB
     if (!width || !height || !originX || !originY) {
         return;
     }
-    ROS_INFO_STREAM("width: " << width);
-    ROS_INFO_STREAM("Height: " << height);
     cv::Mat mapImage(height, width, CV_8UC3, cv::Scalar(0, 0, 0));
     for (const auto& p : *cloud) {
         mapImage.at<cv::Vec3b>(cv::Point(originX - p.x / resolution_, originY + p.y / resolution_)) = {p.r, p.g, p.b};
