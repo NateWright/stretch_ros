@@ -181,9 +181,9 @@ void GraspNode::stowObject() {
     d.sleep();
     emit armSetHeight(pointBaseLink_->point.z + 0.05);
     d.sleep();
-    emit gripperSetRotate(90);
-    d.sleep();
     emit armSetReach();
+    d.sleep();
+    emit gripperSetRotate(90);
     d.sleep();
     emit headSetTilt(-30);
     d.sleep();
