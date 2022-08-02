@@ -79,7 +79,10 @@ class GraspNode : public QThread {
     void stowObject();
     void home();
     void releaseObject();
-    void robotMoving(bool b) { robotMoving_ = b; }
+    void robotMoving(bool b) {
+        robotMoving_ = b;
+        ROS_INFO_STREAM("test");
+    }
 };
 
 #endif  // GRASPNODE_HPP
