@@ -219,6 +219,5 @@ void GraspNode::home() {
     d.sleep();
     emit enableMapping();
     d.sleep();
-    emit navigate(homePose_);
     emit canNavigate(true);
 }
