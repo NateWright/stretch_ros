@@ -111,7 +111,7 @@ void GraspNode::lineUpOffset(double offset) {
 void GraspNode::replaceObject() {
     switch (orientation) {
         case VERTICAL: {
-            replaceObjectOffset(0.33);
+            replaceObjectOffset(0.35);
             break;
         }
         case HORIZONTAL: {
