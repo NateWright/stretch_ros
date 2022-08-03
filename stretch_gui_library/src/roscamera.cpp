@@ -49,14 +49,16 @@ void RosCamera::segmentedCameraCallback(const pcl::PointCloud<pcl::PointXYZRGB>:
 
     pcl::KdTreeFLANN<pcl::PointXYZRGB> kdtree;
     kdtree.setInputCloud(cloud_);
-    std::vector<int> pointIdxNKNSearch(1);
-    std::vector<float> pointNKNSquaredDistance(1);
+    const int count = 20;
+    std::vector<int> pointIdxNKNSearch(count);
+    std::vector<float> pointNKNSquaredDistance(count);
 
     QRgb red = QColor(Qt::red).rgb();
     for (pcl::PointXYZRGB p : *pc) {
-        kdtree.nearestKSearch(p, 1, pointIdxNKNSearch, pointNKNSquaredDistance);
-        int pos = pointIdxNKNSearch[0];
-        img->setPixel(height - 1 - pos / width, pos % width, red);
+        kdtree.nearestKSearch(p, count, pointIdxNKNSearch, pointNKNSquaredDistance);
+        for (int pos : pointIdxNKNSearch) {
+            img->setPixel(height - 1 - pos / width, pos % width, red);
+        }
     }
 
     emit imgUpdateWithPointQImage(*img.data());

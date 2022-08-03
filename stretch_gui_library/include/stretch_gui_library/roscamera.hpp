@@ -20,6 +20,7 @@
 #include <QSize>
 #include <QThread>
 #include <QTimer>
+#include <algorithm>
 #include <vector>
 
 #include "ObjectSegmenter.hpp"
