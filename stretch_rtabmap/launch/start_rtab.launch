@@ -38,7 +38,7 @@
   <group unless="$(arg sim)">
     <arg name="pointcloud_topic" value="/camera/aligned_depth_to_color/image_raw"/>
     <arg name="cmd_vel_topic" value="/stretch/cmd_vel"/>
-    <arg name="odom_topic" default="/stretch_diff_drive_controller/odom"/>
+    <arg name="odom_topic" default="/odom"/>
     <arg name="scan_topic" default="/scan"/>
     <arg name="rgb_topic" default="/camera/color/image_raw"/>
     <arg name="rgb_camera_info" default="/camera/color/camera_info"/>
