@@ -14,7 +14,7 @@ TrajectoryPlannerROS:
   holonomic_robot: false
   # base vel/accel profile is in robot folders
   # tolerances (defaults)
-  yaw_goal_tolerance: 0.1
+  yaw_goal_tolerance: 0.05
   xy_goal_tolerance: 0.1
   latch_xy_goal_tolerance: true
   # forward simulation
@@ -39,24 +39,23 @@ TrajectoryPlannerROS:
 
 DWAPlannerROS:
   #vel params
-  max_vel_x: 0.3 #safe speed for fetch to travel at
+  max_vel_x: 0.1
   min_vel_x: 0
-  max_vel_trans: 0.3
-  min_vel_trans: 0
-  max_vel_y: 0  #diff drive
+  max_vel_y: 0
   min_vel_y: 0
-  max_vel_theta: 1.5
-  min_vel_theta: -1.5
+  max_vel_trans: 1.0
+  min_vel_trans: 0
+  max_rot_vel: 0.1
+  min_rot_vel: 0
 
   #accel params
-  acc_lim_x: 0.7
-  acc_lim_y: 0  #diff drive
-  acc_lim_trans: 0.7
-  acc_lim_theta: 4
+  acc_lim_x: 1.0
+  acc_lim_th: 1.0
+  acc_lim_y: 0
 
   #forward sim params
   sim_time: 1.1
-  vx_samples: 3                   #was 5
+  vx_samples: 3 #was 5
   vy_samples: 0 #diff drive
   vth_samples: 15
 
@@ -68,7 +67,7 @@ DWAPlannerROS:
 
   #higher goal tolerance
   yaw_goal_tolerance: 0.1
-  xy_goal_tolerance: 0.2
+  xy_goal_tolerance: 0.25
   latch_xy_goal_tolerance: true
 
   #lower goal tolerance
