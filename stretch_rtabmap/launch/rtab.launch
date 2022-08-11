@@ -44,7 +44,7 @@
       <param name="Rtabmap/TimeThr"              type="string" value="700"/>
       <param name="Mem/RehearsalSimilarity"      type="string" value="0.30"/>
       <param name="Reg/Force3DoF"                type="string" value="true"/>
-      <param name="Grid/FromDepth"               type="string" value="true"/>
+      <param name="Grid/Sensor"                  type="string" value="true"/>
       <param name="RGBD/ProximityPathMaxNeighbors" type="string" value="10"/>
 
     </node>
