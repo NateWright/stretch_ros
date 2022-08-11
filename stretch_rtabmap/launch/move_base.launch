@@ -7,7 +7,7 @@
   <arg name="odom_topic"/>
 
   <!-- Use global costmap-->
-  <node pkg="move_base" type="move_base" respawn="false" name="move_base" output="screen" respawn="true">
+  <node pkg="move_base" type="move_base" respawn="true" name="move_base" output="screen">
     <!-- Include robot specific parameters from the robot config folder -->
     <rosparam file="$(find stretch_rtabmap)/config/$(arg config)/costmap_common_params.yaml" command="load" ns="global_costmap" />
     <rosparam file="$(find stretch_rtabmap)/config/costmap_height.yaml" command="load" ns="global_costmap" />
