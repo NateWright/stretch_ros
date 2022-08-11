@@ -42,7 +42,7 @@ Move_base_config | Gazebo          | Stretch RE1
 2d               | Okay            | Good
 2d_unkown        | Working         | Working
 3d               | Okay            | Good
-3d_unkown        | Working         | Working
+3d_unkown        | Good            | Good
 
 ## License
 
