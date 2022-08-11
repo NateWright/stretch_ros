@@ -25,13 +25,14 @@ Use `rosdep` to install the required packages.
 
 ```bash
     roslaunch stretch_rtabmap gazebo.launch
-    roslaunch stretch_rtabmap start_rtab.launch sim:=true localization:=false move_base_config:=3d
+    roslaunch stretch_rtabmap start_rtab.launch sim:=true
     roslaunch stretch_rtabmap rviz_rtab.launch mapping:=true
 ```
 
 ### Stretch RE1
 ```bash
-    roslaunch stretch_rtabmap start_rtab.launch sim:=false localization:=false move_base_config:=3d
+    roslaunch stretch_rtabmap robot.launch
+    roslaunch stretch_rtabmap start_rtab.launch sim:=false
     roslaunch stretch_rtabmap rviz_rtab.launch mapping:=true
 ```
 ## Code Status & Development Plans
