@@ -8,8 +8,6 @@
   </include>
   <node name="d435i_configure" pkg="stretch_core" type="d435i_configure" output="screen">
     <param name="initial_mode" type="string" value="Default"/>
-    <!-- <param name="initial_mode" type="string" value="Medium Density"/> -->
-    <!-- <param name="initial_mode" type="string" value="High Accuracy"/> -->
   </node>
   <!-- -->
 
@@ -24,19 +22,11 @@
     <include file="$(find stretch_core)/launch/stretch_driver.launch" pass_all_args="true"/>
     <!-- -->
 
-    <!-- IMU FILTER -->
-    <!-- <include file="$(find stretch_core)/launch/imu_filter.launch" /> -->
-    <!-- -->
-
     <!-- LASER RANGE FINDER -->
     <include file="$(find stretch_core)/launch/rplidar.launch" />
     <!-- -->
 
     <!-- LASER SCAN MATCHER FOR ODOMETRY -->
     <include file="$(find stretch_core)/launch/stretch_scan_matcher.launch" />
-    <!-- -->
-
-    <!-- ROBOT LOCALIZATION FILTER -->
-    <!-- <include file="$(find stretch_core)/launch/stretch_ekf.launch" /> -->
     <!-- -->
 </launch>
