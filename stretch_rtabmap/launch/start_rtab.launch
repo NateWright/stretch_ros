@@ -6,7 +6,7 @@
   <arg name="args"                default="-d"/>  <!--Possible arg -d to delete database on startup-->
 
   <arg name="wait_for_transform"  value="0.2"/>
-  <arg name="move_base_config"    value="3d_unknown"/>
+  <arg name="move_base_config"    default="3d_unknown"/>
 
   <!-- Gazebo Params -->
   <arg if="$(arg sim)" name="pointcloud_topic"  value="/camera/depth/image_raw"/>
