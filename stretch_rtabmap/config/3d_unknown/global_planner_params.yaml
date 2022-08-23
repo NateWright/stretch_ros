@@ -7,5 +7,5 @@ GlobalPlanner:
   orientation_mode: 0
   orientation_window_size: 1
   publish_potential: false
-  default_tolerance: 0.2
+  default_tolerance: 0.0
   outline_map: false
