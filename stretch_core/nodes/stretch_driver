@@ -1,11 +1,13 @@
 #! /usr/bin/env python3
 
 import yaml
+import copy
 import numpy as np
 import threading
 from rwlock import RWLock
 import stretch_body.robot as rb
 from stretch_body.hello_utils import ThreadServiceExit
+import stretch_body
 
 import tf2_ros
 import tf_conversions
@@ -30,12 +32,9 @@ from joint_trajectory_server import JointTrajectoryAction
 from stretch_diagnostics import StretchDiagnostics
 
 
-class StretchBodyNode:
+class StretchDriverNode:
 
     def __init__(self):
-        self.use_robotis_head = True
-        self.use_robotis_end_of_arm = True
-
         self.default_goal_timeout_s = 10.0
         self.default_goal_timeout_duration = rospy.Duration(self.default_goal_timeout_s)
 
@@ -44,6 +43,10 @@ class StretchBodyNode:
 
         self.robot_mode_rwlock = RWLock()
         self.robot_mode = None
+
+        self.voltage_history = []
+        self.charging_state_history = [BatteryState.POWER_SUPPLY_STATUS_UNKNOWN] * 10
+        self.charging_state = BatteryState.POWER_SUPPLY_STATUS_UNKNOWN
 
     ###### MOBILE BASE VELOCITY METHODS #######
 
@@ -121,18 +124,50 @@ class StretchBodyNode:
         odom.twist.twist.angular.z = theta_vel
         self.odom_pub.publish(odom)
 
-        # TODO: Add way to determine if the robot is charging
-        # TODO: Calculate the percentage
-        battery_state = BatteryState()
+        pimu_hardware_id = self.robot.pimu.board_info['hardware_id']
         invalid_reading = float('NaN')
+        v = float(robot_status['pimu']['voltage'])
+        self.voltage_history.append(v)
+        if len(self.voltage_history) > 100:
+            self.voltage_history.pop(0)
+            self.charging_state_history.pop(0)
+            if v > np.mean(self.voltage_history) + 3 * np.std(self.voltage_history):
+                self.charging_state_history.append(BatteryState.POWER_SUPPLY_STATUS_CHARGING)
+            elif v < np.mean(self.voltage_history) - 3 * np.std(self.voltage_history):
+                self.charging_state_history.append(BatteryState.POWER_SUPPLY_STATUS_DISCHARGING)
+            else:
+                self.charging_state_history.append(BatteryState.POWER_SUPPLY_STATUS_UNKNOWN)
+        filtered_charging_state = max(set(self.charging_state_history), key=self.charging_state_history.count)
+        if filtered_charging_state != BatteryState.POWER_SUPPLY_STATUS_UNKNOWN:
+            if pimu_hardware_id == 0:
+                self.charging_state = filtered_charging_state
+            elif pimu_hardware_id == 1:
+                if robot_status['pimu']['charger_connected'] == True and filtered_charging_state == BatteryState.POWER_SUPPLY_STATUS_CHARGING:
+                    self.charging_state = BatteryState.POWER_SUPPLY_STATUS_CHARGING
+                elif robot_status['pimu']['charger_connected'] == False and filtered_charging_state == BatteryState.POWER_SUPPLY_STATUS_DISCHARGING:
+                    self.charging_state = BatteryState.POWER_SUPPLY_STATUS_DISCHARGING
+
+        i = float(robot_status['pimu']['current'])
+        if self.charging_state == BatteryState.POWER_SUPPLY_STATUS_CHARGING:
+            i = float(robot_status['pimu']['current'])
+        elif self.charging_state == BatteryState.POWER_SUPPLY_STATUS_DISCHARGING:
+            i = -1 * float(robot_status['pimu']['current'])
+
+        battery_state = BatteryState()
         battery_state.header.stamp = current_time
-        battery_state.voltage = float(robot_status['pimu']['voltage'])
-        battery_state.current = float(robot_status['pimu']['current'])
+        battery_state.voltage = v
+        battery_state.current = i
+        battery_state.temperature = invalid_reading
         battery_state.charge = invalid_reading
         battery_state.capacity = invalid_reading
-        battery_state.percentage = invalid_reading
+        battery_state.percentage = invalid_reading # TODO: Calculate the percentage
         battery_state.design_capacity = 18.0
-        battery_state.present = True
+        battery_state.power_supply_status = self.charging_state
+        # misuse the 'present' flag to indicated whether the barrel jack button is pressed (i.e. charger is present, but may or may not be providing power)
+        if pimu_hardware_id == 0:
+            battery_state.present = False
+        elif pimu_hardware_id == 1:
+            battery_state.present = robot_status['pimu']['charger_connected']
         self.power_pub.publish(battery_state)
 
         calibration_status = Bool()
@@ -253,9 +288,24 @@ class StretchBodyNode:
         self.change_mode('position', code_to_run)
 
     def calibrate(self):
+        self.robot_mode_rwlock.acquire_read()
+        last_robot_mode = copy.copy(self.robot_mode)
+        self.robot_mode_rwlock.release_read()
         def code_to_run():
-            self.robot.home()
+            pass
         self.change_mode('calibration', code_to_run)
+        self.robot.home()
+        self.change_mode(last_robot_mode, code_to_run)
+
+    def stow_the_robot(self):
+        self.robot_mode_rwlock.acquire_read()
+        last_robot_mode = copy.copy(self.robot_mode)
+        self.robot_mode_rwlock.release_read()
+        def code_to_run():
+            pass
+        self.change_mode('stowing', code_to_run)
+        self.robot.stow()
+        self.change_mode(last_robot_mode, code_to_run)
 
     ######## SERVICE CALLBACKS #######
 
@@ -286,6 +336,14 @@ class StretchBodyNode:
         return TriggerResponse(
             success=True,
             message='Calibrated.'
+        )
+
+    def stow_the_robot_callback(self, request):
+        rospy.loginfo('Recevied stow_the_robot service call.')
+        self.stow_the_robot()
+        return TriggerResponse(
+            success=True,
+            message='Stowed.'
         )
 
     def navigation_mode_service_callback(self, request):
@@ -337,6 +395,10 @@ class StretchBodyNode:
         rospy.loginfo("For use with S T R E T C H (TM) RESEARCH EDITION from Hello Robot Inc.")
 
         rospy.loginfo("{0} started".format(self.node_name))
+
+        if int(stretch_body.__version__.split('.')[1]) < 4:
+            rospy.logerr("ERROR: Found old stretch_body version. Please upgrade stretch_body to 0.4.0 or above.")
+            rospy.signal_shutdown('Found old stretch_body version.')
 
         self.robot = rb.Robot()
         self.robot.startup()
@@ -446,6 +508,10 @@ class StretchBodyNode:
                                                          Trigger,
                                                          self.calibrate_callback)
 
+        self.stow_the_robot_service = rospy.Service('/stow_the_robot',
+                                                    Trigger,
+                                                    self.stow_the_robot_callback)
+
         self.runstop_service = rospy.Service('/runstop',
                                               SetBool,
                                               self.runstop_service_callback)
@@ -454,6 +520,8 @@ class StretchBodyNode:
             # start loop to command the mobile base velocity, publish
             # odometry, and publish joint states
             while not rospy.is_shutdown():
+                self.robot.pimu.set_fan_on()
+                self.robot.push_command()
                 self.command_mobile_base_velocity_and_publish_state()
                 command_base_velocity_and_publish_joint_state_rate.sleep()
         except (rospy.ROSInterruptException, ThreadServiceExit):
@@ -462,5 +530,5 @@ class StretchBodyNode:
 
 
 if __name__ == '__main__':
-    node = StretchBodyNode()
+    node = StretchDriverNode()
     node.main()
